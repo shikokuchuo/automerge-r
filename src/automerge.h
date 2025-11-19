@@ -38,6 +38,17 @@ typedef struct {
 
 // Function Declarations -------------------------------------------------------
 
+// Document operations (document.c)
+SEXP C_am_create(SEXP actor_id);
+SEXP C_am_save(SEXP doc_ptr);
+SEXP C_am_load(SEXP data);
+SEXP C_am_fork(SEXP doc_ptr, SEXP heads);
+SEXP C_am_merge(SEXP doc_ptr, SEXP other_ptr);
+SEXP C_am_get_actor(SEXP doc_ptr);
+SEXP C_am_set_actor(SEXP doc_ptr, SEXP actor_id);
+SEXP C_am_commit(SEXP doc_ptr, SEXP message, SEXP time);
+SEXP C_am_rollback(SEXP doc_ptr);
+
 // Finalizers (memory.c)
 void am_doc_finalizer(SEXP ext_ptr);
 void am_result_finalizer(SEXP ext_ptr);
