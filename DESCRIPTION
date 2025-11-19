@@ -27,6 +27,7 @@ Suggests:
     testthat (>= 3.0.0)
 VignetteBuilder: 
     knitr
+Config/build/compilation-database: true
 Encoding: UTF-8
 RoxygenNote: 7.3.3
 SystemRequirements: 'automerge-c', or the Rust toolchain (>= 1.89.0) and

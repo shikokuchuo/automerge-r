@@ -10,6 +10,8 @@
 #include <R.h>
 #include <Rinternals.h>
 #include <R_ext/Rdynload.h>
+#include <string.h>  // For memcpy, strlen
+#include <stdbool.h> // For bool type
 #include <automerge-c/automerge.h>
 
 // Protect against malicious input causing stack overflow
@@ -20,10 +22,12 @@
 
 // Memory Management Structures ------------------------------------------------
 
-// Document wrapper (tracks ownership)
+// Document wrapper
+// Stores the owning AMresult* and the borrowed AMdoc* pointer.
+// The AMdoc* is extracted from the result and is valid as long as the result lives.
 typedef struct {
-    AMdoc* doc;
-    bool is_owned;  // Track ownership to prevent double-free
+    AMresult* result;  // Owns the document (freed in finalizer)
+    AMdoc* doc;        // Borrowed pointer extracted from result
 } am_doc;
 
 // Sync state wrapper (owns AMresult, state pointer is borrowed)
@@ -34,13 +38,34 @@ typedef struct {
 
 // Function Declarations -------------------------------------------------------
 
-// Finalizers
+// Finalizers (memory.c)
 void am_doc_finalizer(SEXP ext_ptr);
 void am_result_finalizer(SEXP ext_ptr);
 void am_syncstate_finalizer(SEXP ext_ptr);
 
-// Helper functions
-static inline am_doc* get_doc(SEXP doc_ptr);
-static inline const AMobjId* get_objid(SEXP obj_ptr);
+// Helper functions (memory.c)
+AMdoc* get_doc(SEXP doc_ptr);  // Returns borrowed AMdoc* pointer
+const AMobjId* get_objid(SEXP obj_ptr);
+SEXP wrap_am_result(AMresult* result, SEXP parent_doc_sexp);
+SEXP am_wrap_objid(const AMobjId* obj_id, SEXP parent_result_sexp);
+SEXP am_wrap_nested_object(const AMobjId* obj_id, SEXP parent_result_sexp);
+
+// Error handling (errors.c)
+void check_result_impl(AMresult* result, AMvalType expected_type,
+                       const char* file, int line);
+
+/**
+ * CHECK_RESULT macro - validates AMresult and expected type.
+ * Calls Rf_error() on failure (does not return).
+ *
+ * Usage:
+ *   AMresult* result = AMmapPutStr(doc, obj_id, key, value);
+ *   CHECK_RESULT(result, AM_VAL_TYPE_VOID);
+ *
+ * IMPORTANT: This macro calls AMresultFree(result) on error, so the result
+ * is consumed. Do not use the result after calling CHECK_RESULT on error paths.
+ */
+#define CHECK_RESULT(result, expected_type) \
+    check_result_impl((result), (expected_type), __FILE__, __LINE__)
 
 #endif // R_AUTOMERGE_H
