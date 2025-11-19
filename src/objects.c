@@ -1,10 +1,15 @@
 #include "automerge.h"
 
+// Forward declarations --------------------------------------------------------
+
+static void populate_object_from_r_list(AMdoc* doc, const AMobjId* obj_id,
+                                         SEXP r_list, int depth);
+
 // Type Conversion Helpers -----------------------------------------------------
 
 /**
  * Convert R value to appropriate AMmapPut* or AMlistPut* call.
- * Handles type dispatch for scalar values.
+ * Handles type dispatch for scalar values and recursive conversion.
  */
 static AMresult* am_put_value(AMdoc* doc, const AMobjId* obj_id,
                                SEXP key_or_pos, bool is_map, SEXP value) {
@@ -44,10 +49,58 @@ static AMresult* am_put_value(AMdoc* doc, const AMobjId* obj_id,
     }
 
     // Dispatch based on R value type
+    // NOTE: Check S3 classes BEFORE generic TYPEOF checks since POSIXct is REALSXP and am_counter is INTSXP
     if (value == R_NilValue) {
         // NULL
         return is_map ? AMmapPutNull(doc, obj_id, key) :
                        AMlistPutNull(doc, obj_id, pos, insert);
+    } else if (Rf_inherits(value, "POSIXct")) {
+        // POSIXct timestamp - convert to milliseconds (must check before REALSXP)
+        if (Rf_length(value) != 1) {
+            Rf_error("Timestamp must be scalar");
+        }
+        double seconds = Rf_asReal(value);
+        int64_t milliseconds = (int64_t)(seconds * 1000.0);
+        return is_map ? AMmapPutTimestamp(doc, obj_id, key, milliseconds) :
+                       AMlistPutTimestamp(doc, obj_id, pos, insert, milliseconds);
+    } else if (Rf_inherits(value, "am_counter")) {
+        // Counter type (must check before INTSXP)
+        if (Rf_length(value) != 1) {
+            Rf_error("Counter must be scalar");
+        }
+        int64_t val = (int64_t)Rf_asInteger(value);
+        return is_map ? AMmapPutCounter(doc, obj_id, key, val) :
+                       AMlistPutCounter(doc, obj_id, pos, insert, val);
+    } else if (Rf_inherits(value, "am_text_type")) {
+        // Text object with initial content (must check before STRSXP)
+        if (TYPEOF(value) != STRSXP || Rf_length(value) != 1) {
+            Rf_error("am_text must be a single character string");
+        }
+
+        // Create text object
+        AMresult* text_result = is_map ?
+            AMmapPutObject(doc, obj_id, key, AM_OBJ_TYPE_TEXT) :
+            AMlistPutObject(doc, obj_id, pos, insert, AM_OBJ_TYPE_TEXT);
+
+        CHECK_RESULT(text_result, AM_VAL_TYPE_OBJ_TYPE);
+
+        // Get the text object ID
+        AMitem* text_item = AMresultItem(text_result);
+        const AMobjId* text_obj = AMitemObjId(text_item);
+
+        // Get initial string content
+        const char* initial = CHAR(STRING_ELT(value, 0));
+        size_t initial_len = strlen(initial);
+
+        if (initial_len > 0) {
+            // Insert initial text at position 0
+            AMbyteSpan str_span = {.src = (uint8_t const*)initial, .count = initial_len};
+            AMresult* splice_result = AMspliceText(doc, text_obj, 0, 0, str_span);
+            CHECK_RESULT(splice_result, AM_VAL_TYPE_VOID);
+            AMresultFree(splice_result);
+        }
+
+        return text_result;
     } else if (TYPEOF(value) == LGLSXP && Rf_length(value) == 1) {
         // Logical (boolean)
         bool val = (bool)LOGICAL(value)[0];
@@ -68,6 +121,37 @@ static AMresult* am_put_value(AMdoc* doc, const AMobjId* obj_id,
         AMbyteSpan val = {.src = RAW(value), .count = (size_t)Rf_length(value)};
         return is_map ? AMmapPutBytes(doc, obj_id, key, val) :
                        AMlistPutBytes(doc, obj_id, pos, insert, val);
+    } else if (TYPEOF(value) == VECSXP) {
+        // R list - handle recursive conversion or explicit type markers
+
+        // Determine nested object type
+        AMobjType nested_type;
+
+        if (Rf_inherits(value, "am_list_type")) {
+            // Explicit list type
+            nested_type = AM_OBJ_TYPE_LIST;
+        } else if (Rf_inherits(value, "am_map_type")) {
+            // Explicit map type
+            nested_type = AM_OBJ_TYPE_MAP;
+        } else {
+            // Auto-detect: named list = map, unnamed list = list
+            SEXP names = Rf_getAttrib(value, R_NamesSymbol);
+            nested_type = (names == R_NilValue) ? AM_OBJ_TYPE_LIST : AM_OBJ_TYPE_MAP;
+        }
+
+        // Create nested object
+        AMresult* obj_result = is_map ?
+            AMmapPutObject(doc, obj_id, key, nested_type) :
+            AMlistPutObject(doc, obj_id, pos, insert, nested_type);
+
+        CHECK_RESULT(obj_result, AM_VAL_TYPE_OBJ_TYPE);
+
+        // Recursively populate nested object from R list
+        AMitem* obj_item = AMresultItem(obj_result);
+        const AMobjId* nested_obj = AMitemObjId(obj_item);
+        populate_object_from_r_list(doc, nested_obj, value, 0);
+
+        return obj_result;
     } else if (TYPEOF(value) == STRSXP && Rf_length(value) == 1) {
         // String - check if it's an object type constant first
         const char* str = CHAR(STRING_ELT(value, 0));
@@ -93,6 +177,65 @@ static AMresult* am_put_value(AMdoc* doc, const AMobjId* obj_id,
     }
 
     return NULL;  // Unreachable
+}
+
+/**
+ * Recursively populate Automerge object from R list.
+ *
+ * This enables single-call nested object creation:
+ *   am_put(doc, AM_ROOT, "user", list(name = "Bob", age = 25L,
+ *                                     address = list(city = "NYC")))
+ *
+ * @param doc The Automerge document
+ * @param obj_id The object to populate (must be a list or map)
+ * @param r_list The R list with content
+ * @param depth Current recursion depth (for stack overflow protection)
+ */
+static void populate_object_from_r_list(AMdoc* doc, const AMobjId* obj_id,
+                                         SEXP r_list, int depth) {
+    if (depth > MAX_RECURSION_DEPTH) {
+        Rf_error("Maximum nesting depth (%d) exceeded", MAX_RECURSION_DEPTH);
+    }
+
+    if (TYPEOF(r_list) != VECSXP) {
+        Rf_error("Expected R list for nested object population");
+    }
+
+    // Determine if this is a map or list
+    SEXP names = Rf_getAttrib(r_list, R_NamesSymbol);
+    bool is_map = (names != R_NilValue);
+
+    R_xlen_t n = Rf_xlength(r_list);
+
+    for (R_xlen_t i = 0; i < n; i++) {
+        SEXP elem = VECTOR_ELT(r_list, i);
+
+        if (is_map) {
+            // Map: use names as keys
+            // Create a temporary key SEXP for the call
+            SEXP key_sexp = PROTECT(Rf_allocVector(STRSXP, 1));
+            SET_STRING_ELT(key_sexp, 0, STRING_ELT(names, i));
+
+            AMresult* result = am_put_value(doc, obj_id, key_sexp, true, elem);
+            if (result) {
+                CHECK_RESULT(result, AM_VAL_TYPE_VOID);
+                AMresultFree(result);
+            }
+
+            UNPROTECT(1);
+        } else {
+            // List: use position with "end" marker for append
+            SEXP end_marker = PROTECT(Rf_mkString("end"));
+
+            AMresult* result = am_put_value(doc, obj_id, end_marker, false, elem);
+            if (result) {
+                CHECK_RESULT(result, AM_VAL_TYPE_VOID);
+                AMresultFree(result);
+            }
+
+            UNPROTECT(1);
+        }
+    }
 }
 
 /**
@@ -180,8 +323,14 @@ static SEXP am_item_to_r(AMitem* item, SEXP parent_doc_sexp, SEXP parent_result_
             // Convert milliseconds to seconds for POSIXct
             SEXP result = PROTECT(Rf_allocVector(REALSXP, 1));
             REAL(result)[0] = (double)val / 1000.0;
-            Rf_classgets(result, Rf_mkString("POSIXct"));
-            UNPROTECT(1);
+
+            // Set POSIXct class (requires both "POSIXct" and "POSIXt")
+            SEXP classes = PROTECT(Rf_allocVector(STRSXP, 2));
+            SET_STRING_ELT(classes, 0, Rf_mkChar("POSIXct"));
+            SET_STRING_ELT(classes, 1, Rf_mkChar("POSIXt"));
+            Rf_classgets(result, classes);
+
+            UNPROTECT(2);
             return result;
         }
 
@@ -430,4 +579,159 @@ SEXP C_am_insert(SEXP doc_ptr, SEXP obj_ptr, SEXP pos, SEXP value) {
     // am_insert is just am_put with insert=true for lists
     // We'll use the same implementation
     return C_am_put(doc_ptr, obj_ptr, pos, value);
+}
+
+/**
+ * Splice text in a text object.
+ *
+ * @param doc_ptr External pointer to am_doc
+ * @param text_ptr External pointer to AMobjId (must be a text object)
+ * @param pos Numeric position (0-based for text operations)
+ * @param del_count Number of characters to delete
+ * @param text Character string to insert
+ * @return The document pointer (for chaining)
+ */
+SEXP C_am_text_splice(SEXP doc_ptr, SEXP text_ptr, SEXP pos, SEXP del_count, SEXP text) {
+    AMdoc* doc = get_doc(doc_ptr);
+    const AMobjId* text_obj = get_objid(text_ptr);
+
+    if (TYPEOF(pos) != INTSXP && TYPEOF(pos) != REALSXP) {
+        Rf_error("pos must be numeric");
+    }
+    if (TYPEOF(del_count) != INTSXP && TYPEOF(del_count) != REALSXP) {
+        Rf_error("del_count must be numeric");
+    }
+    if (TYPEOF(text) != STRSXP || Rf_length(text) != 1) {
+        Rf_error("text must be a single character string");
+    }
+
+    size_t pos_val = (size_t)Rf_asInteger(pos);
+    size_t del_val = (size_t)Rf_asInteger(del_count);
+    const char* text_str = CHAR(STRING_ELT(text, 0));
+
+    AMbyteSpan text_span = {.src = (uint8_t const*)text_str, .count = strlen(text_str)};
+    AMresult* result = AMspliceText(doc, text_obj, pos_val, del_val, text_span);
+
+    CHECK_RESULT(result, AM_VAL_TYPE_VOID);
+
+    AMresultFree(result);
+    return doc_ptr;  // Return document for chaining
+}
+
+/**
+ * Get the full text content from a text object.
+ *
+ * @param doc_ptr External pointer to am_doc
+ * @param text_ptr External pointer to AMobjId (must be a text object)
+ * @return Character string with the full text content
+ */
+SEXP C_am_text_get(SEXP doc_ptr, SEXP text_ptr) {
+    AMdoc* doc = get_doc(doc_ptr);
+    const AMobjId* text_obj = get_objid(text_ptr);
+
+    AMresult* result = AMtext(doc, text_obj, NULL);  // NULL = current heads
+
+    if (AMresultStatus(result) != AM_STATUS_OK) {
+        CHECK_RESULT(result, AM_VAL_TYPE_VOID);  // Will error
+    }
+
+    // Get string from result item
+    AMitem* item = AMresultItem(result);
+    if (!item) {
+        AMresultFree(result);
+        return Rf_mkString("");
+    }
+
+    AMbyteSpan text_span;
+    if (!AMitemToStr(item, &text_span)) {
+        AMresultFree(result);
+        Rf_error("Failed to extract text string");
+    }
+
+    SEXP text_sexp = PROTECT(Rf_allocVector(STRSXP, 1));
+    SET_STRING_ELT(text_sexp, 0, Rf_mkCharLen((const char*)text_span.src, text_span.count));
+
+    AMresultFree(result);
+    UNPROTECT(1);
+    return text_sexp;
+}
+
+/**
+ * Get all values from a map or list.
+ *
+ * @param doc_ptr External pointer to am_doc
+ * @param obj_ptr External pointer to AMobjId (or NULL for root)
+ * @return R list of values
+ */
+SEXP C_am_values(SEXP doc_ptr, SEXP obj_ptr) {
+    AMdoc* doc = get_doc(doc_ptr);
+    const AMobjId* obj_id = get_objid(obj_ptr);
+
+    // Determine object type
+    AMobjType obj_type = obj_id ? AMobjObjType(doc, obj_id) : AM_OBJ_TYPE_MAP;
+    bool is_list = (obj_type == AM_OBJ_TYPE_LIST);
+
+    // Get size
+    size_t count = AMobjSize(doc, obj_id, NULL);
+
+    // Allocate R list
+    SEXP values = PROTECT(Rf_allocVector(VECSXP, count));
+
+    if (is_list) {
+        // For lists, iterate by position
+        for (size_t i = 0; i < count; i++) {
+            AMresult* result = AMlistGet(doc, obj_id, i, NULL);
+            if (AMresultStatus(result) == AM_STATUS_OK) {
+                AMitem* item = AMresultItem(result);
+                if (item) {
+                    SEXP result_sexp = PROTECT(wrap_am_result(result, doc_ptr));
+                    SEXP r_value = PROTECT(am_item_to_r(item, doc_ptr, result_sexp));
+                    SET_VECTOR_ELT(values, i, r_value);
+                    UNPROTECT(2);
+                } else {
+                    AMresultFree(result);
+                }
+            } else {
+                AMresultFree(result);
+            }
+        }
+    } else {
+        // For maps, iterate by keys
+        AMresult* keys_result = AMkeys(doc, obj_id, NULL);
+        if (AMresultStatus(keys_result) != AM_STATUS_OK) {
+            AMresultFree(keys_result);
+            UNPROTECT(1);
+            Rf_error("Failed to get keys");
+        }
+
+        AMitems key_items = AMresultItems(keys_result);
+        AMitem* key_item;
+        size_t i = 0;
+
+        while ((key_item = AMitemsNext(&key_items, 1)) != NULL && i < count) {
+            AMbyteSpan key_span;
+            if (AMitemToStr(key_item, &key_span)) {
+                AMresult* result = AMmapGet(doc, obj_id, key_span, NULL);
+                if (AMresultStatus(result) == AM_STATUS_OK) {
+                    AMitem* item = AMresultItem(result);
+                    if (item) {
+                        SEXP result_sexp = PROTECT(wrap_am_result(result, doc_ptr));
+                        SEXP r_value = PROTECT(am_item_to_r(item, doc_ptr, result_sexp));
+                        SET_VECTOR_ELT(values, i, r_value);
+                        UNPROTECT(2);
+                    } else {
+                        AMresultFree(result);
+                    }
+                } else {
+                    AMresultFree(result);
+                }
+                i++;
+            }
+        }
+
+        AMresultFree(keys_result);
+    }
+
+    UNPROTECT(1);
+    return values;
 }

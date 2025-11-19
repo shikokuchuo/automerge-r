@@ -40,9 +40,9 @@
 am_put <- function(doc, obj, key, value) {
   result <- .Call(C_am_put, doc, obj, key, value)
   if (inherits(result, "am_object")) {
-    result  # Return am_object visibly
+    result # Return am_object visibly
   } else {
-    invisible(result)  # Return doc invisibly
+    invisible(result) # Return doc invisibly
   }
 }
 
@@ -161,4 +161,155 @@ am_length <- function(doc, obj) {
 #' # am_insert(doc, items$obj_id, "end", "second")
 am_insert <- function(doc, obj, pos, value) {
   invisible(.Call(C_am_insert, doc, obj, pos, value))
+}
+
+# Type Constructors -----------------------------------------------------------
+
+#' Create an Automerge counter
+#'
+#' Creates a counter value for use with Automerge. Counters are CRDT types
+#' that support conflict-free increment and decrement operations.
+#'
+#' @param value Initial counter value (default 0)
+#' @return An \code{am_counter} object
+#' @export
+#' @examples
+#' doc <- am_create()
+#' am_put(doc, AM_ROOT, "score", am_counter(0))
+am_counter <- function(value = 0L) {
+  structure(as.integer(value), class = "am_counter")
+}
+
+#' Create an Automerge list
+#'
+#' Creates an R list with explicit Automerge list type. Use this when you
+#' need to create an empty list or force list type interpretation.
+#'
+#' @param ... Elements to include in the list
+#' @return A list with class \code{am_list_type}
+#' @export
+#' @examples
+#' # Empty list (avoids ambiguity)
+#' am_list()
+#'
+#' # Populated list
+#' am_list("a", "b", "c")
+am_list <- function(...) {
+  structure(list(...), class = c("am_list_type", "list"))
+}
+
+#' Create an Automerge map
+#'
+#' Creates an R list with explicit Automerge map type. Use this when you
+#' need to create an empty map or force map type interpretation.
+#'
+#' @param ... Named elements to include in the map
+#' @return A named list with class \code{am_map_type}
+#' @export
+#' @examples
+#' # Empty map (avoids ambiguity)
+#' am_map()
+#'
+#' # Populated map
+#' am_map(key1 = "value1", key2 = "value2")
+am_map <- function(...) {
+  structure(list(...), class = c("am_map_type", "list"))
+}
+
+#' Create an Automerge text object
+#'
+#' Creates a text object for collaborative character-level editing.
+#' Unlike regular strings (which use last-write-wins semantics),
+#' text objects support character-level CRDT merging of concurrent edits,
+#' cursor stability, and marks/formatting.
+#'
+#' Use text objects for collaborative document editing. Use regular strings
+#' for metadata, labels, and IDs (99\% of cases).
+#'
+#' @param initial Initial text content (default "")
+#' @return A character vector with class \code{am_text_type}
+#' @export
+#' @examples
+#' # Empty text object
+#' am_text()
+#'
+#' # Text with initial content
+#' am_text("Hello, World!")
+am_text <- function(initial = "") {
+  if (!is.character(initial) || length(initial) != 1) {
+    stop("initial must be a single character string")
+  }
+  structure(initial, class = c("am_text_type", "character"))
+}
+
+# Text Operations -------------------------------------------------------------
+
+#' Splice text in a text object
+#'
+#' Insert or delete characters in a text object. This is the primary way to
+#' edit text CRDT objects.
+#'
+#' @param doc An Automerge document
+#' @param text_obj An Automerge text object ID
+#' @param pos Position to start splice (0-based)
+#' @param del_count Number of characters to delete
+#' @param text Text to insert
+#' @return The document \code{doc} (invisibly, for chaining)
+#' @export
+#' @examples
+#' doc <- am_create()
+#' text_obj <- am_put(doc, AM_ROOT, "doc", am_text("Hello"))
+#'
+#' # Insert " World" at position 5
+#' am_text_splice(doc, text_obj$obj_id, 5, 0, " World")
+#'
+#' # Get the full text
+#' am_text_get(doc, text_obj$obj_id)  # "Hello World"
+am_text_splice <- function(doc, text_obj, pos, del_count, text) {
+  invisible(.Call(
+    C_am_text_splice,
+    doc,
+    text_obj,
+    as.integer(pos),
+    as.integer(del_count),
+    as.character(text)
+  ))
+}
+
+#' Get text from a text object
+#'
+#' Retrieve the full text content from a text object as a string.
+#'
+#' @param doc An Automerge document
+#' @param text_obj An Automerge text object ID
+#' @return Character string with the full text
+#' @export
+#' @examples
+#' doc <- am_create()
+#' text_obj <- am_put(doc, AM_ROOT, "doc", am_text("Hello"))
+#'
+#' text <- am_text_get(doc, text_obj$obj_id)
+#' print(text)  # "Hello"
+am_text_get <- function(doc, text_obj) {
+  .Call(C_am_text_get, doc, text_obj)
+}
+
+#' Get all values from a map or list
+#'
+#' Returns all values from an Automerge map or list as an R list.
+#'
+#' @param doc An Automerge document
+#' @param obj An Automerge object ID, or \code{AM_ROOT} for the document root
+#' @return R list of values
+#' @export
+#' @examples
+#' doc <- am_create()
+#' am_put(doc, AM_ROOT, "a", 1)
+#' am_put(doc, AM_ROOT, "b", 2)
+#' am_put(doc, AM_ROOT, "c", 3)
+#'
+#' values <- am_values(doc, AM_ROOT)
+#' print(values)  # list(1, 2, 3)
+am_values <- function(doc, obj) {
+  .Call(C_am_values, doc, obj)
 }

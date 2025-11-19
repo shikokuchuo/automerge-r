@@ -53,24 +53,37 @@ This package is currently in the initial development phase. Core functionality i
 library(automerge)
 
 # Create a document
-doc <- am_create() |>
-    am_put(AM_ROOT, "name", "Alice") |>
-    am_put(AM_ROOT, "age", 30) |>
-    am_commit("Initial data")
+doc <- am_create()
+am_put(doc, AM_ROOT, "name", "Alice")
+am_put(doc, AM_ROOT, "age", 30L)
 
-# Access data
-doc[["name"]]  # "Alice"
-
-# Nested structures
+# Single-call nested structure creation (Phase 3 ✅)
 am_put(doc, AM_ROOT, "user", list(
     name = "Bob",
-    age = 25,
+    age = 25L,
     address = list(city = "NYC", zip = 10001L)
 ))
 
-# Synchronization
-doc2 <- am_create()
-result <- am_sync_bidirectional(doc, doc2)
+# Advanced types
+am_put(doc, AM_ROOT, "created", Sys.time())  # POSIXct timestamp
+am_put(doc, AM_ROOT, "score", am_counter(0))  # Counter
+am_put(doc, AM_ROOT, "notes", am_text("Initial content"))  # Text object
+
+# Text operations
+text_obj <- am_get(doc, AM_ROOT, "notes")
+am_text_splice(doc, text_obj$obj_id, 9, 0, "new ")
+content <- am_text_get(doc, text_obj$obj_id)
+
+# Document lifecycle
+am_commit(doc, "Initial data")
+bytes <- am_save(doc)
+doc2 <- am_load(bytes)
+doc3 <- am_fork(doc)
+am_merge(doc, doc3)
+
+# Coming soon: S3 methods and sync protocol
+# doc[["name"]]  # Planned
+# result <- am_sync_bidirectional(doc, doc2)  # Planned
 ```
 
 ## Resources

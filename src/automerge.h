@@ -56,6 +56,9 @@ SEXP C_am_delete(SEXP doc_ptr, SEXP obj_ptr, SEXP key_or_pos);
 SEXP C_am_keys(SEXP doc_ptr, SEXP obj_ptr);
 SEXP C_am_length(SEXP doc_ptr, SEXP obj_ptr);
 SEXP C_am_insert(SEXP doc_ptr, SEXP obj_ptr, SEXP pos, SEXP value);
+SEXP C_am_text_splice(SEXP doc_ptr, SEXP text_ptr, SEXP pos, SEXP del_count, SEXP text);
+SEXP C_am_text_get(SEXP doc_ptr, SEXP text_ptr);
+SEXP C_am_values(SEXP doc_ptr, SEXP obj_ptr);
 
 // Finalizers (memory.c)
 void am_doc_finalizer(SEXP ext_ptr);
