@@ -49,15 +49,15 @@ AM_ROOT <- NULL
 
 #' @rdname automerge-constants
 #' @export
-AM_OBJ_TYPE_LIST <- "list"
+AM_OBJ_TYPE_LIST <- structure("list", class = "am_obj_type")
 
 #' @rdname automerge-constants
 #' @export
-AM_OBJ_TYPE_MAP <- "map"
+AM_OBJ_TYPE_MAP <- structure("map", class = "am_obj_type")
 
 #' @rdname automerge-constants
 #' @export
-AM_OBJ_TYPE_TEXT <- "text"
+AM_OBJ_TYPE_TEXT <- structure("text", class = "am_obj_type")
 
 #' @rdname automerge-constants
 #' @export

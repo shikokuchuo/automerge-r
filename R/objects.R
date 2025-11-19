@@ -55,7 +55,7 @@ am_put <- function(doc, obj, key, value) {
 #' @param obj An Automerge object ID (from nested object), or \code{AM_ROOT}
 #'   for the document root
 #' @param key For maps: character string key. For lists: numeric position
-#'   (1-based)
+#'   (1-based). Returns \code{NULL} for indices \code{<= 0} or beyond list length.
 #'
 #' @return The value at the specified key/position, or \code{NULL} if not found.
 #'   Nested objects are returned as \code{am_object} instances.

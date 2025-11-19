@@ -13,7 +13,7 @@ am_get(doc, obj, key)
 for the document root}
 
 \item{key}{For maps: character string key. For lists: numeric position
-(1-based)}
+(1-based). Returns \code{NULL} for indices \code{<= 0} or beyond list length.}
 }
 \value{
 The value at the specified key/position, or \code{NULL} if not found.

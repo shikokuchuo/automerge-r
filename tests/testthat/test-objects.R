@@ -287,3 +287,193 @@ test_that("Complex document structure", {
   expect_equal(am_get(doc, author_obj$obj_id, "name"), "Alice")
   expect_equal(am_get(doc, author_obj$obj_id, "email"), "alice@example.com")
 })
+
+# Edge Cases ------------------------------------------------------------------
+
+test_that("am_put replaces nested object with scalar", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "key", list(nested = "data"))
+
+  nested <- am_get(doc, AM_ROOT, "key")
+  expect_s3_class(nested, "am_object")
+
+  am_put(doc, AM_ROOT, "key", "scalar")
+  expect_equal(am_get(doc, AM_ROOT, "key"), "scalar")
+})
+
+test_that("am_put replaces scalar with nested object", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "key", "scalar")
+  expect_equal(am_get(doc, AM_ROOT, "key"), "scalar")
+
+  am_put(doc, AM_ROOT, "key", list(nested = "data"))
+  nested <- am_get(doc, AM_ROOT, "key")
+  expect_s3_class(nested, "am_object")
+  expect_equal(am_get(doc, nested$obj_id, "nested"), "data")
+})
+
+test_that("am_delete then re-add same key", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "key", "value1")
+  am_delete(doc, AM_ROOT, "key")
+  expect_null(am_get(doc, AM_ROOT, "key"))
+
+  am_put(doc, AM_ROOT, "key", "value2")
+  expect_equal(am_get(doc, AM_ROOT, "key"), "value2")
+})
+
+test_that("am_delete then re-add maintains different value", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "key", 100)
+  am_commit(doc)
+  am_delete(doc, AM_ROOT, "key")
+  am_put(doc, AM_ROOT, "key", 200)
+
+  expect_equal(am_get(doc, AM_ROOT, "key"), 200)
+})
+
+test_that("am_keys preserves keys after delete and re-add", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "a", 1)
+  am_put(doc, AM_ROOT, "b", 2)
+  am_delete(doc, AM_ROOT, "a")
+  am_put(doc, AM_ROOT, "a", 3)
+
+  keys <- am_keys(doc, AM_ROOT)
+  expect_length(keys, 2)
+  expect_true(all(c("a", "b") %in% keys))
+})
+
+test_that("am_put with UTF-8 keys", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "键", "value")
+  am_put(doc, AM_ROOT, "clé", "value")
+  am_put(doc, AM_ROOT, "🔑", "value")
+
+  expect_equal(am_get(doc, AM_ROOT, "键"), "value")
+  expect_equal(am_get(doc, AM_ROOT, "clé"), "value")
+  expect_equal(am_get(doc, AM_ROOT, "🔑"), "value")
+
+  keys <- am_keys(doc, AM_ROOT)
+  expect_true(all(c("键", "clé", "🔑") %in% keys))
+})
+
+test_that("am_put with UTF-8 string values", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "chinese", "你好世界")
+  am_put(doc, AM_ROOT, "emoji", "🎉🎊🎈")
+  am_put(doc, AM_ROOT, "mixed", "Hello 世界 🌍")
+
+  expect_equal(am_get(doc, AM_ROOT, "chinese"), "你好世界")
+  expect_equal(am_get(doc, AM_ROOT, "emoji"), "🎉🎊🎈")
+  expect_equal(am_get(doc, AM_ROOT, "mixed"), "Hello 世界 🌍")
+})
+
+test_that("am_put with very long key name", {
+  doc <- am_create()
+  long_key <- paste(rep("key", 1000), collapse = "_")
+  am_put(doc, AM_ROOT, long_key, "value")
+  expect_equal(am_get(doc, AM_ROOT, long_key), "value")
+})
+
+test_that("am_put handles zero values correctly", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "zero_int", 0L)
+  am_put(doc, AM_ROOT, "zero_dbl", 0.0)
+
+  expect_identical(am_get(doc, AM_ROOT, "zero_int"), 0L)
+  expect_identical(am_get(doc, AM_ROOT, "zero_dbl"), 0.0)
+})
+
+test_that("am_put handles negative numbers", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "neg_int", -42L)
+  am_put(doc, AM_ROOT, "neg_dbl", -3.14)
+
+  expect_equal(am_get(doc, AM_ROOT, "neg_int"), -42L)
+  expect_equal(am_get(doc, AM_ROOT, "neg_dbl"), -3.14)
+})
+
+test_that("am_put handles very small and very large doubles", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "small", 1e-308)
+  am_put(doc, AM_ROOT, "large", 1e308)
+
+  expect_equal(am_get(doc, AM_ROOT, "small"), 1e-308)
+  expect_equal(am_get(doc, AM_ROOT, "large"), 1e308)
+})
+
+test_that("am_length updates correctly after mixed operations", {
+  doc <- am_create()
+  expect_equal(am_length(doc, AM_ROOT), 0L)
+
+  am_put(doc, AM_ROOT, "a", 1)
+  am_put(doc, AM_ROOT, "b", 2)
+  expect_equal(am_length(doc, AM_ROOT), 2L)
+
+  am_delete(doc, AM_ROOT, "a")
+  expect_equal(am_length(doc, AM_ROOT), 1L)
+
+  am_put(doc, AM_ROOT, "c", 3)
+  expect_equal(am_length(doc, AM_ROOT), 2L)
+
+  am_put(doc, AM_ROOT, "b", 22)
+  expect_equal(am_length(doc, AM_ROOT), 2L)
+})
+
+test_that("list operations maintain order after deletions", {
+  doc <- am_create()
+  list_obj <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+
+  am_put(doc, list_obj$obj_id, "end", "A")
+  am_put(doc, list_obj$obj_id, "end", "B")
+  am_put(doc, list_obj$obj_id, "end", "C")
+  am_put(doc, list_obj$obj_id, "end", "D")
+
+  am_delete(doc, list_obj$obj_id, 2)
+
+  expect_equal(am_get(doc, list_obj$obj_id, 1), "A")
+  expect_equal(am_get(doc, list_obj$obj_id, 2), "C")
+  expect_equal(am_get(doc, list_obj$obj_id, 3), "D")
+  expect_equal(am_length(doc, list_obj$obj_id), 3L)
+})
+
+test_that("multiple sequential deletes from list", {
+  doc <- am_create()
+  list_obj <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+
+  for (i in 1:5) am_put(doc, list_obj$obj_id, "end", i)
+  expect_equal(am_length(doc, list_obj$obj_id), 5L)
+
+  am_delete(doc, list_obj$obj_id, 3)
+  am_delete(doc, list_obj$obj_id, 1)
+  am_delete(doc, list_obj$obj_id, 2)
+
+  expect_equal(am_length(doc, list_obj$obj_id), 2L)
+})
+
+test_that("empty nested structures", {
+  doc <- am_create()
+
+  empty_map <- am_put(doc, AM_ROOT, "empty_map", AM_OBJ_TYPE_MAP)
+  expect_equal(am_length(doc, empty_map$obj_id), 0L)
+  expect_equal(am_keys(doc, empty_map$obj_id), character(0))
+
+  empty_list <- am_put(doc, AM_ROOT, "empty_list", AM_OBJ_TYPE_LIST)
+  expect_equal(am_length(doc, empty_list$obj_id), 0L)
+})
+
+test_that("nested structures persist after save/load", {
+  doc1 <- am_create()
+
+  outer <- am_put(doc1, AM_ROOT, "outer", AM_OBJ_TYPE_MAP)
+  inner <- am_put(doc1, outer$obj_id, "inner", AM_OBJ_TYPE_MAP)
+  am_put(doc1, inner$obj_id, "value", 42)
+
+  binary <- am_save(doc1)
+  doc2 <- am_load(binary)
+
+  outer2 <- am_get(doc2, AM_ROOT, "outer")
+  inner2 <- am_get(doc2, outer2$obj_id, "inner")
+  expect_equal(am_get(doc2, inner2$obj_id, "value"), 42)
+})

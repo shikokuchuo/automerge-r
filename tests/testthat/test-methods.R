@@ -291,11 +291,16 @@ test_that("print() displays am_object info", {
 
 test_that("as.list() converts am_object to R list", {
   doc <- am_create()
-  user <- am_put(doc, AM_ROOT, "user", list(
-    name = "Emma",
-    age = 28L,
-    tags = am_list("dev", "ops")
-  ))
+  user <- am_put(
+    doc,
+    AM_ROOT,
+    "user",
+    list(
+      name = "Emma",
+      age = 28L,
+      tags = am_list("dev", "ops")
+    )
+  )
 
   result <- as.list(user)
   expect_type(result, "list")
@@ -402,4 +407,152 @@ test_that("S3 methods respect CRDT semantics", {
   # One value should win (last-write-wins for scalars)
   result <- doc1$value
   expect_true(result %in% c("from_doc1", "from_doc2"))
+})
+
+# Edge Cases ------------------------------------------------------------------
+
+test_that("print() handles empty document", {
+  doc <- am_create()
+  output <- capture.output(print(doc))
+  expect_true(length(output) > 0)
+  expect_true(any(grepl("Automerge Document", output)))
+})
+
+test_that("print() handles document with many keys", {
+  doc <- am_create()
+  for (i in 1:100) {
+    doc[[paste0("key", i)]] <- i
+  }
+
+  output <- capture.output(print(doc))
+  expect_true(length(output) > 0)
+})
+
+test_that("print() handles very long key names", {
+  doc <- am_create()
+  long_key <- paste(rep("key", 100), collapse = "_")
+  doc[[long_key]] <- "value"
+
+  output <- capture.output(print(doc))
+  expect_true(length(output) > 0)
+})
+
+test_that("as.list() handles empty document", {
+  doc <- am_create()
+  result <- as.list(doc)
+  expect_type(result, "list")
+  expect_length(result, 0)
+})
+
+test_that("as.list() handles empty am_object map", {
+  doc <- am_create()
+  empty_map <- am_put(doc, AM_ROOT, "map", am_map())
+
+  result <- as.list(empty_map)
+  expect_type(result, "list")
+  expect_length(result, 0)
+})
+
+test_that("as.list() handles empty am_object list", {
+  doc <- am_create()
+  empty_list <- am_put(doc, AM_ROOT, "list", am_list())
+
+  result <- as.list(empty_list)
+  expect_type(result, "list")
+  expect_length(result, 0)
+})
+
+test_that("as.list() handles very deeply nested structures", {
+  doc <- am_create()
+  doc$level1 <- list(
+    level2 = list(
+      level3 = list(
+        level4 = list(
+          level5 = "deep"
+        )
+      )
+    )
+  )
+
+  result <- as.list(doc)
+  expect_equal(result$level1$level2$level3$level4$level5, "deep")
+})
+
+test_that("[[ handles out-of-bounds list index", {
+  doc <- am_create()
+  items <- am_put(doc, AM_ROOT, "items", am_list("a", "b"))
+
+  expect_null(items[[0]])
+  expect_null(items[[99]])
+  expect_null(items[[-1]])
+})
+
+test_that("$ operator with non-character name", {
+  doc <- am_create()
+  doc$`123` <- "numeric_name"
+  expect_equal(doc$`123`, "numeric_name")
+})
+
+test_that("$ operator with special characters in name", {
+  doc <- am_create()
+  doc$`my-key` <- "value1"
+  doc$`my.key` <- "value2"
+  doc$`my key` <- "value3"
+
+  expect_equal(doc$`my-key`, "value1")
+  expect_equal(doc$`my.key`, "value2")
+  expect_equal(doc$`my key`, "value3")
+})
+
+test_that("names() preserves key order or returns consistent order", {
+  doc <- am_create()
+  doc$a <- 1
+  doc$b <- 2
+  doc$c <- 3
+
+  names1 <- names(doc)
+  names2 <- names(doc)
+
+  expect_equal(names1, names2)
+})
+
+test_that("[[<- with NULL deletes key", {
+  doc <- am_create()
+  doc[["key"]] <- "value"
+  expect_equal(doc[["key"]], "value")
+
+  doc[["key"]] <- NULL
+  expect_null(doc[["key"]])
+})
+
+test_that("$<- with NULL deletes key", {
+  doc <- am_create()
+  doc$key <- "value"
+  expect_equal(doc$key, "value")
+
+  doc$key <- NULL
+  expect_null(doc$key)
+})
+
+test_that("methods work with POSIXct timestamps", {
+  doc <- am_create()
+  timestamp <- Sys.time()
+  doc$created <- timestamp
+
+  expect_s3_class(doc$created, "POSIXct")
+  expect_equal(as.numeric(doc$created), as.numeric(timestamp))
+
+  result <- as.list(doc)
+  expect_s3_class(result$created, "POSIXct")
+})
+
+test_that("methods work with raw bytes", {
+  doc <- am_create()
+  raw_data <- as.raw(c(0, 127, 255))
+  doc$bytes <- raw_data
+
+  expect_equal(doc$bytes, raw_data)
+
+  result <- as.list(doc)
+  expect_equal(result$bytes, raw_data)
 })

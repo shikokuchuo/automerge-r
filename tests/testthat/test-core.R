@@ -9,10 +9,13 @@ test_that("Constants are exported correctly", {
   # Root object constant
   expect_null(AM_ROOT)
 
-  # Object type constants
-  expect_equal(AM_OBJ_TYPE_LIST, "list")
-  expect_equal(AM_OBJ_TYPE_MAP, "map")
-  expect_equal(AM_OBJ_TYPE_TEXT, "text")
+  # Object type constants (have am_obj_type class)
+  expect_s3_class(AM_OBJ_TYPE_LIST, "am_obj_type")
+  expect_equal(as.character(AM_OBJ_TYPE_LIST), "list")
+  expect_s3_class(AM_OBJ_TYPE_MAP, "am_obj_type")
+  expect_equal(as.character(AM_OBJ_TYPE_MAP), "map")
+  expect_s3_class(AM_OBJ_TYPE_TEXT, "am_obj_type")
+  expect_equal(as.character(AM_OBJ_TYPE_TEXT), "text")
 
   # Mark expansion constants
   expect_equal(AM_MARK_EXPAND_NONE, "none")

@@ -156,19 +156,21 @@ static AMresult* am_put_value(AMdoc* doc, const AMobjId* obj_id,
         // String - check if it's an object type constant first
         const char* str = CHAR(STRING_ELT(value, 0));
 
-        // Check for object type creation
-        if (strcmp(str, "list") == 0) {
-            return is_map ? AMmapPutObject(doc, obj_id, key, AM_OBJ_TYPE_LIST) :
-                           AMlistPutObject(doc, obj_id, pos, insert, AM_OBJ_TYPE_LIST);
-        } else if (strcmp(str, "map") == 0) {
-            return is_map ? AMmapPutObject(doc, obj_id, key, AM_OBJ_TYPE_MAP) :
-                           AMlistPutObject(doc, obj_id, pos, insert, AM_OBJ_TYPE_MAP);
-        } else if (strcmp(str, "text") == 0) {
-            return is_map ? AMmapPutObject(doc, obj_id, key, AM_OBJ_TYPE_TEXT) :
-                           AMlistPutObject(doc, obj_id, pos, insert, AM_OBJ_TYPE_TEXT);
+        // Check for object type creation constants (have "am_obj_type" class)
+        if (Rf_inherits(value, "am_obj_type")) {
+            if (strcmp(str, "list") == 0) {
+                return is_map ? AMmapPutObject(doc, obj_id, key, AM_OBJ_TYPE_LIST) :
+                               AMlistPutObject(doc, obj_id, pos, insert, AM_OBJ_TYPE_LIST);
+            } else if (strcmp(str, "map") == 0) {
+                return is_map ? AMmapPutObject(doc, obj_id, key, AM_OBJ_TYPE_MAP) :
+                               AMlistPutObject(doc, obj_id, pos, insert, AM_OBJ_TYPE_MAP);
+            } else if (strcmp(str, "text") == 0) {
+                return is_map ? AMmapPutObject(doc, obj_id, key, AM_OBJ_TYPE_TEXT) :
+                               AMlistPutObject(doc, obj_id, pos, insert, AM_OBJ_TYPE_TEXT);
+            }
         }
 
-        // Regular string
+        // Regular string value
         AMbyteSpan val = {.src = (uint8_t const*)str, .count = strlen(str)};
         return is_map ? AMmapPutStr(doc, obj_id, key, val) :
                        AMlistPutStr(doc, obj_id, pos, insert, val);
@@ -432,13 +434,24 @@ SEXP C_am_get(SEXP doc_ptr, SEXP obj_ptr, SEXP key_or_pos) {
         if (Rf_length(key_or_pos) != 1) {
             Rf_error("List position must be a scalar");
         }
-        size_t pos = (size_t)(Rf_asInteger(key_or_pos) - 1);  // Convert to 0-based
+        int r_pos = Rf_asInteger(key_or_pos);
+        if (r_pos < 1) {
+            return R_NilValue;  // Out-of-bounds list index
+        }
+        size_t pos = (size_t)(r_pos - 1);  // Convert to 0-based
         result = AMlistGet(doc, obj_id, pos, NULL);  // NULL = current heads
     } else {
         Rf_error("Key must be a character string (map) or numeric (list)");
     }
 
+    // Check status - for lists, out-of-bounds returns error, but we want to return NULL
     if (AMresultStatus(result) != AM_STATUS_OK) {
+        // For list operations, check if it's an out-of-bounds error
+        if (TYPEOF(key_or_pos) == REALSXP || TYPEOF(key_or_pos) == INTSXP) {
+            AMresultFree(result);
+            return R_NilValue;  // Out-of-bounds list index
+        }
+        // For maps or other errors, propagate the error
         CHECK_RESULT(result, AM_VAL_TYPE_VOID);  // Will error
     }
 
