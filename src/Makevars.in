@@ -1,7 +1,7 @@
 PKG_CFLAGS = @PKG_CFLAGS@
 PKG_LIBS = @PKG_LIBS@
 
-OBJECTS = init.o memory.o errors.o document.o
+OBJECTS = init.o memory.o errors.o document.o objects.o
 
 all: $(SHLIB)
 

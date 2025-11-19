@@ -11,6 +11,13 @@ static const R_CallMethodDef CallEntries[] = {
     {"C_am_set_actor", (DL_FUNC) &C_am_set_actor, 2},
     {"C_am_commit", (DL_FUNC) &C_am_commit, 3},
     {"C_am_rollback", (DL_FUNC) &C_am_rollback, 1},
+    // Object operations
+    {"C_am_put", (DL_FUNC) &C_am_put, 4},
+    {"C_am_get", (DL_FUNC) &C_am_get, 3},
+    {"C_am_delete", (DL_FUNC) &C_am_delete, 3},
+    {"C_am_keys", (DL_FUNC) &C_am_keys, 2},
+    {"C_am_length", (DL_FUNC) &C_am_length, 2},
+    {"C_am_insert", (DL_FUNC) &C_am_insert, 4},
     {NULL, NULL, 0}
 };
 

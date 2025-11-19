@@ -49,6 +49,14 @@ SEXP C_am_set_actor(SEXP doc_ptr, SEXP actor_id);
 SEXP C_am_commit(SEXP doc_ptr, SEXP message, SEXP time);
 SEXP C_am_rollback(SEXP doc_ptr);
 
+// Object operations (objects.c)
+SEXP C_am_put(SEXP doc_ptr, SEXP obj_ptr, SEXP key_or_pos, SEXP value);
+SEXP C_am_get(SEXP doc_ptr, SEXP obj_ptr, SEXP key_or_pos);
+SEXP C_am_delete(SEXP doc_ptr, SEXP obj_ptr, SEXP key_or_pos);
+SEXP C_am_keys(SEXP doc_ptr, SEXP obj_ptr);
+SEXP C_am_length(SEXP doc_ptr, SEXP obj_ptr);
+SEXP C_am_insert(SEXP doc_ptr, SEXP obj_ptr, SEXP pos, SEXP value);
+
 // Finalizers (memory.c)
 void am_doc_finalizer(SEXP ext_ptr);
 void am_result_finalizer(SEXP ext_ptr);
