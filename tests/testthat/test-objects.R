@@ -5,7 +5,7 @@
 test_that("am_put() works with map (root)", {
   doc <- am_create()
   result <- am_put(doc, AM_ROOT, "key", "value")
-  expect_identical(result, doc)  # Returns doc invisibly
+  expect_identical(result, doc) # Returns doc invisibly
 })
 
 test_that("am_get() retrieves map values", {
@@ -99,7 +99,7 @@ test_that("am_put() updates existing keys", {
 
   am_put(doc, AM_ROOT, "key", "value2")
   expect_equal(am_get(doc, AM_ROOT, "key"), "value2")
-  expect_equal(am_length(doc, AM_ROOT), 1L)  # Still only 1 key
+  expect_equal(am_length(doc, AM_ROOT), 1L) # Still only 1 key
 })
 
 # List Operations -------------------------------------------------------------
@@ -147,7 +147,7 @@ test_that("am_put() replaces list elements at position", {
   am_put(doc, list_obj$obj_id, 1L, "replaced")
 
   expect_equal(am_get(doc, list_obj$obj_id, 1L), "replaced")
-  expect_equal(am_length(doc, list_obj$obj_id), 1L)  # Still 1 element
+  expect_equal(am_length(doc, list_obj$obj_id), 1L) # Still 1 element
 })
 
 test_that("am_delete() removes list elements", {
@@ -160,7 +160,7 @@ test_that("am_delete() removes list elements", {
 
   expect_equal(am_length(doc, list_obj$obj_id), 3L)
 
-  am_delete(doc, list_obj$obj_id, 2L)  # Delete "second"
+  am_delete(doc, list_obj$obj_id, 2L) # Delete "second"
   expect_equal(am_length(doc, list_obj$obj_id), 2L)
 
   # Remaining elements shift down

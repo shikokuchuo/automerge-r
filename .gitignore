@@ -5,6 +5,8 @@
 .cache
 .claude
 .DS_Store
+*.gz
+automerge.Rcheck/
 src/Makevars
 compile_commands.json
 automerge-build

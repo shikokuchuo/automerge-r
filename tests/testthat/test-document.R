@@ -72,7 +72,7 @@ test_that("am_merge() combines documents", {
 
   # Merge doc2 into doc1
   result <- am_merge(doc1, doc2)
-  expect_identical(result, doc1)  # Should return doc1
+  expect_identical(result, doc1) # Should return doc1
 })
 
 test_that("am_get_actor() returns raw bytes", {
@@ -114,7 +114,7 @@ test_that("am_set_actor() works with hex string", {
 
 test_that("am_set_actor() works with raw bytes", {
   doc <- am_create()
-  new_actor_bytes <- as.raw(seq(16, 1, -1))  # 16 bytes in reverse
+  new_actor_bytes <- as.raw(seq(16, 1, -1)) # 16 bytes in reverse
 
   am_set_actor(doc, new_actor_bytes)
   retrieved_actor <- am_get_actor(doc)
@@ -125,7 +125,7 @@ test_that("am_set_actor() works with raw bytes", {
 test_that("am_commit() works with no arguments", {
   doc <- am_create()
   result <- am_commit(doc)
-  expect_identical(result, doc)  # Returns doc invisibly
+  expect_identical(result, doc) # Returns doc invisibly
 })
 
 test_that("am_commit() works with message", {
@@ -156,7 +156,7 @@ test_that("am_commit() errors on invalid time", {
 test_that("am_rollback() works", {
   doc <- am_create()
   result <- am_rollback(doc)
-  expect_identical(result, doc)  # Returns doc invisibly
+  expect_identical(result, doc) # Returns doc invisibly
 })
 
 test_that("Document lifecycle integration test", {

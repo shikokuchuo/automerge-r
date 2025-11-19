@@ -47,7 +47,7 @@ Alternatively, install `automerge-c` system-wide to skip the source build.
 
 This package is currently in the initial development phase. Core functionality is not yet implemented and any existing functionality is subject to change at any time.
 
-## Example Usage (Planned)
+## Example Usage
 
 ```r
 library(automerge)
@@ -57,22 +57,40 @@ doc <- am_create()
 am_put(doc, AM_ROOT, "name", "Alice")
 am_put(doc, AM_ROOT, "age", 30L)
 
-# Single-call nested structure creation (Phase 3 ✅)
-am_put(doc, AM_ROOT, "user", list(
+# S3 methods
+doc$name <- "Alice"
+doc$age <- 30L
+doc[["active"]] <- TRUE
+
+# Access with $ and [[
+doc$name       # "Alice"
+doc[["age"]]   # 30L
+
+# Single-call nested structure creation
+doc$user <- list(
     name = "Bob",
     age = 25L,
     address = list(city = "NYC", zip = 10001L)
-))
+)
+
+# Nested object access and modification
+user <- doc$user
+user$email <- "bob@example.com"
 
 # Advanced types
-am_put(doc, AM_ROOT, "created", Sys.time())  # POSIXct timestamp
-am_put(doc, AM_ROOT, "score", am_counter(0))  # Counter
-am_put(doc, AM_ROOT, "notes", am_text("Initial content"))  # Text object
+doc$created <- Sys.time()  # POSIXct timestamp
+doc$score <- am_counter(0)  # Counter
+doc$notes <- am_text("Initial content")  # Text object
 
 # Text operations
-text_obj <- am_get(doc, AM_ROOT, "notes")
+text_obj <- doc$notes
 am_text_splice(doc, text_obj$obj_id, 9, 0, "new ")
 content <- am_text_get(doc, text_obj$obj_id)
+
+# Utility methods
+length(doc)    # Number of keys in root
+names(doc)     # Key names
+as.list(doc)   # Convert to R list
 
 # Document lifecycle
 am_commit(doc, "Initial data")
@@ -81,9 +99,8 @@ doc2 <- am_load(bytes)
 doc3 <- am_fork(doc)
 am_merge(doc, doc3)
 
-# Coming soon: S3 methods and sync protocol
-# doc[["name"]]  # Planned
-# result <- am_sync_bidirectional(doc, doc2)  # Planned
+# Coming soon: sync protocol (planned)
+# result <- am_sync_bidirectional(doc, doc2)
 ```
 
 ## Resources
