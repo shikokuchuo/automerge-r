@@ -3,7 +3,7 @@
 // Forward declarations --------------------------------------------------------
 
 static void populate_object_from_r_list(AMdoc* doc, const AMobjId* obj_id,
-                                         SEXP r_list, int depth);
+                                         SEXP r_list, int depth, AMresult* parent_result);
 
 // Type Conversion Helpers -----------------------------------------------------
 
@@ -96,7 +96,10 @@ static AMresult* am_put_value(AMdoc* doc, const AMobjId* obj_id,
             // Insert initial text at position 0
             AMbyteSpan str_span = {.src = (uint8_t const*)initial, .count = initial_len};
             AMresult* splice_result = AMspliceText(doc, text_obj, 0, 0, str_span);
-            CHECK_RESULT(splice_result, AM_VAL_TYPE_VOID);
+            if (AMresultStatus(splice_result) != AM_STATUS_OK) {
+                AMresultFree(text_result);
+                CHECK_RESULT(splice_result, AM_VAL_TYPE_VOID);
+            }
             AMresultFree(splice_result);
         }
 
@@ -149,7 +152,7 @@ static AMresult* am_put_value(AMdoc* doc, const AMobjId* obj_id,
         // Recursively populate nested object from R list
         AMitem* obj_item = AMresultItem(obj_result);
         const AMobjId* nested_obj = AMitemObjId(obj_item);
-        populate_object_from_r_list(doc, nested_obj, value, 0);
+        populate_object_from_r_list(doc, nested_obj, value, 0, obj_result);
 
         return obj_result;
     } else if (TYPEOF(value) == STRSXP && Rf_length(value) == 1) {
@@ -192,14 +195,17 @@ static AMresult* am_put_value(AMdoc* doc, const AMobjId* obj_id,
  * @param obj_id The object to populate (must be a list or map)
  * @param r_list The R list with content
  * @param depth Current recursion depth (for stack overflow protection)
+ * @param parent_result The AMresult* that owns this object (freed on error)
  */
 static void populate_object_from_r_list(AMdoc* doc, const AMobjId* obj_id,
-                                         SEXP r_list, int depth) {
+                                         SEXP r_list, int depth, AMresult* parent_result) {
     if (depth > MAX_RECURSION_DEPTH) {
+        if (parent_result) AMresultFree(parent_result);
         Rf_error("Maximum nesting depth (%d) exceeded", MAX_RECURSION_DEPTH);
     }
 
     if (TYPEOF(r_list) != VECSXP) {
+        if (parent_result) AMresultFree(parent_result);
         Rf_error("Expected R list for nested object population");
     }
 
@@ -220,7 +226,10 @@ static void populate_object_from_r_list(AMdoc* doc, const AMobjId* obj_id,
 
             AMresult* result = am_put_value(doc, obj_id, key_sexp, true, elem);
             if (result) {
-                CHECK_RESULT(result, AM_VAL_TYPE_VOID);
+                if (AMresultStatus(result) != AM_STATUS_OK) {
+                    if (parent_result) AMresultFree(parent_result);
+                    CHECK_RESULT(result, AM_VAL_TYPE_VOID);
+                }
                 AMresultFree(result);
             }
 
@@ -231,7 +240,10 @@ static void populate_object_from_r_list(AMdoc* doc, const AMobjId* obj_id,
 
             AMresult* result = am_put_value(doc, obj_id, end_marker, false, elem);
             if (result) {
-                CHECK_RESULT(result, AM_VAL_TYPE_VOID);
+                if (AMresultStatus(result) != AM_STATUS_OK) {
+                    if (parent_result) AMresultFree(parent_result);
+                    CHECK_RESULT(result, AM_VAL_TYPE_VOID);
+                }
                 AMresultFree(result);
             }
 
