@@ -11,3 +11,5 @@ src/Makevars
 compile_commands.json
 automerge-build
 automerge-install
+/.quarto/
+**/*.quarto_ipynb
