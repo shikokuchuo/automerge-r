@@ -16,7 +16,7 @@ SEXP C_am_create(SEXP actor_id) {
     if (actor_id == R_NilValue) {
         // NULL actor_id: AMcreate() will generate random actor ID
         result = AMcreate(NULL);
-    } else if (TYPEOF(actor_id) == STRSXP && Rf_length(actor_id) == 1) {
+    } else if (TYPEOF(actor_id) == STRSXP && Rf_xlength(actor_id) == 1) {
         // Hex string: convert to actor ID using AMactorIdFromStr
         const char *hex_str = CHAR(STRING_ELT(actor_id, 0));
         AMbyteSpan hex_span = {.src = (uint8_t const *) hex_str, .count = strlen(hex_str)};
@@ -34,7 +34,7 @@ SEXP C_am_create(SEXP actor_id) {
         AMresultFree(actor_result);
     } else if (TYPEOF(actor_id) == RAWSXP) {
         // Raw bytes: convert to actor ID using AMactorIdFromBytes
-        AMresult *actor_result = AMactorIdFromBytes(RAW(actor_id), (size_t) Rf_length(actor_id));
+        AMresult *actor_result = AMactorIdFromBytes(RAW(actor_id), (size_t) Rf_xlength(actor_id));
         CHECK_RESULT(actor_result, AM_VAL_TYPE_ACTOR_ID);
 
         AMitem *actor_item = AMresultItem(actor_result);
@@ -123,7 +123,7 @@ SEXP C_am_load(SEXP data) {
         Rf_error("data must be a raw vector");
     }
 
-    AMresult *result = AMload(RAW(data), (size_t) Rf_length(data));
+    AMresult *result = AMload(RAW(data), (size_t) Rf_xlength(data));
     CHECK_RESULT(result, AM_VAL_TYPE_DOC);
 
     // Extract the AMdoc* from the result
@@ -288,7 +288,7 @@ SEXP C_am_set_actor(SEXP doc_ptr, SEXP actor_id) {
             AMresultFree(actor_result);
             Rf_error("Failed to extract actor ID from init");
         }
-    } else if (TYPEOF(actor_id) == STRSXP && Rf_length(actor_id) == 1) {
+    } else if (TYPEOF(actor_id) == STRSXP && Rf_xlength(actor_id) == 1) {
         // Hex string
         const char *hex_str = CHAR(STRING_ELT(actor_id, 0));
         AMbyteSpan hex_span = {.src = (uint8_t const *) hex_str, .count = strlen(hex_str)};
@@ -301,7 +301,7 @@ SEXP C_am_set_actor(SEXP doc_ptr, SEXP actor_id) {
         }
     } else if (TYPEOF(actor_id) == RAWSXP) {
         // Raw bytes
-        actor_result = AMactorIdFromBytes(RAW(actor_id), (size_t) Rf_length(actor_id));
+        actor_result = AMactorIdFromBytes(RAW(actor_id), (size_t) Rf_xlength(actor_id));
         CHECK_RESULT(actor_result, AM_VAL_TYPE_ACTOR_ID);
         AMitem *actor_item = AMresultItem(actor_result);
         if (!AMitemToActorId(actor_item, &actor)) {
@@ -334,7 +334,7 @@ SEXP C_am_commit(SEXP doc_ptr, SEXP message, SEXP time) {
     // Handle message parameter
     AMbyteSpan msg_span = {.src = NULL, .count = 0};
     if (message != R_NilValue) {
-        if (TYPEOF(message) != STRSXP || Rf_length(message) != 1) {
+        if (TYPEOF(message) != STRSXP || Rf_xlength(message) != 1) {
             Rf_error("message must be NULL or a single character string");
         }
         const char *msg_str = CHAR(STRING_ELT(message, 0));
@@ -345,7 +345,7 @@ SEXP C_am_commit(SEXP doc_ptr, SEXP message, SEXP time) {
     // Handle time parameter
     int64_t timestamp = 0;
     if (time != R_NilValue) {
-        if (!Rf_inherits(time, "POSIXct") || Rf_length(time) != 1) {
+        if (!Rf_inherits(time, "POSIXct") || Rf_xlength(time) != 1) {
             Rf_error("time must be NULL or a scalar POSIXct object");
         }
         double seconds = REAL(time)[0];
