@@ -33,7 +33,11 @@ static AMresult *am_put_value(AMdoc *doc, const AMobjId *obj_id,
                 Rf_error("List position must be a scalar");
             }
             // R uses 1-based indexing, C uses 0-based
-            pos = (size_t)(Rf_asInteger(key_or_pos) - 1);
+            int r_pos = Rf_asInteger(key_or_pos);
+            if (r_pos < 1) {
+                Rf_error("List position must be positive");
+            }
+            pos = (size_t)(r_pos - 1);
             insert = false;  // Replace at position
         } else if (TYPEOF(key_or_pos) == STRSXP && Rf_xlength(key_or_pos) == 1) {
             const char* pos_str = CHAR(STRING_ELT(key_or_pos, 0));
@@ -258,20 +262,20 @@ static void populate_object_from_r_list(AMdoc *doc, const AMobjId *obj_id,
  */
 static SEXP am_item_to_r(AMitem *item, SEXP parent_doc_sexp, SEXP parent_result_sexp) {
     AMvalType val_type = AMitemValType(item);
+    SEXP result;
 
     switch (val_type) {
         case AM_VAL_TYPE_NULL:
-            return R_NilValue;
+            result = R_NilValue;
+            break;
 
         case AM_VAL_TYPE_BOOL: {
             bool val;
             if (!AMitemToBool(item, &val)) {
                 Rf_error("Failed to extract boolean value");
             }
-            SEXP result = PROTECT(Rf_allocVector(LGLSXP, 1));
-            LOGICAL(result)[0] = val ? TRUE : FALSE;
-            UNPROTECT(1);
-            return result;
+            result = Rf_ScalarLogical(val);
+            break;
         }
 
         case AM_VAL_TYPE_INT: {
@@ -279,10 +283,10 @@ static SEXP am_item_to_r(AMitem *item, SEXP parent_doc_sexp, SEXP parent_result_
             if (!AMitemToInt(item, &val)) {
                 Rf_error("Failed to extract integer value");
             }
-            SEXP result = PROTECT(Rf_allocVector(INTSXP, 1));
-            INTEGER(result)[0] = (int) val;
-            UNPROTECT(1);
-            return result;
+            result = val > INT_MAX || val < INT_MIN ?
+                Rf_ScalarReal((double) val):
+                Rf_ScalarInteger((int) val);
+            break;
         }
 
         case AM_VAL_TYPE_UINT: {
@@ -290,10 +294,8 @@ static SEXP am_item_to_r(AMitem *item, SEXP parent_doc_sexp, SEXP parent_result_
             if (!AMitemToUint(item, &val)) {
                 Rf_error("Failed to extract unsigned integer value");
             }
-            SEXP result = PROTECT(Rf_allocVector(REALSXP, 1));
-            REAL(result)[0] = (double) val;
-            UNPROTECT(1);
-            return result;
+            result = Rf_ScalarReal((double) val);
+            break;
         }
 
         case AM_VAL_TYPE_F64: {
@@ -301,10 +303,8 @@ static SEXP am_item_to_r(AMitem *item, SEXP parent_doc_sexp, SEXP parent_result_
             if (!AMitemToF64(item, &val)) {
                 Rf_error("Failed to extract double value");
             }
-            SEXP result = PROTECT(Rf_allocVector(REALSXP, 1));
-            REAL(result)[0] = val;
-            UNPROTECT(1);
-            return result;
+            result = Rf_ScalarReal(val);
+            break;
         }
 
         case AM_VAL_TYPE_STR: {
@@ -312,10 +312,10 @@ static SEXP am_item_to_r(AMitem *item, SEXP parent_doc_sexp, SEXP parent_result_
             if (!AMitemToStr(item, &val)) {
                 Rf_error("Failed to extract string value");
             }
-            SEXP result = PROTECT(Rf_allocVector(STRSXP, 1));
+            result = PROTECT(Rf_allocVector(STRSXP, 1));
             SET_STRING_ELT(result, 0, Rf_mkCharLen((const char *) val.src, val.count));
             UNPROTECT(1);
-            return result;
+            break;
         }
 
         case AM_VAL_TYPE_BYTES: {
@@ -323,10 +323,10 @@ static SEXP am_item_to_r(AMitem *item, SEXP parent_doc_sexp, SEXP parent_result_
             if (!AMitemToBytes(item, &val)) {
                 Rf_error("Failed to extract bytes value");
             }
-            SEXP result = PROTECT(Rf_allocVector(RAWSXP, val.count));
+            result = PROTECT(Rf_allocVector(RAWSXP, val.count));
             memcpy(RAW(result), val.src, val.count);
             UNPROTECT(1);
-            return result;
+            break;
         }
 
         case AM_VAL_TYPE_TIMESTAMP: {
@@ -335,8 +335,7 @@ static SEXP am_item_to_r(AMitem *item, SEXP parent_doc_sexp, SEXP parent_result_
                 Rf_error("Failed to extract timestamp value");
             }
             // Convert milliseconds to seconds for POSIXct
-            SEXP result = PROTECT(Rf_allocVector(REALSXP, 1));
-            REAL(result)[0] = (double) val / 1000.0;
+            result = PROTECT(Rf_ScalarReal((double) val / 1000.0));
 
             // Set POSIXct class (requires both "POSIXct" and "POSIXt")
             SEXP classes = PROTECT(Rf_allocVector(STRSXP, 2));
@@ -345,7 +344,7 @@ static SEXP am_item_to_r(AMitem *item, SEXP parent_doc_sexp, SEXP parent_result_
             Rf_classgets(result, classes);
 
             UNPROTECT(2);
-            return result;
+            break;
         }
 
         case AM_VAL_TYPE_COUNTER: {
@@ -353,24 +352,26 @@ static SEXP am_item_to_r(AMitem *item, SEXP parent_doc_sexp, SEXP parent_result_
             if (!AMitemToCounter(item, &val)) {
                 Rf_error("Failed to extract counter value");
             }
-            SEXP result = PROTECT(Rf_allocVector(INTSXP, 1));
-            INTEGER(result)[0] = (int) val;
+            result = val > INT_MAX || val < INT_MIN ?
+                Rf_ScalarReal((double) val):
+                Rf_ScalarInteger((int) val);
             Rf_setAttrib(result, Rf_install("class"), Rf_mkString("am_counter"));
-            UNPROTECT(1);
-            return result;
+            break;
         }
 
         case AM_VAL_TYPE_OBJ_TYPE: {
             // Nested object - return am_object wrapper
             AMobjId const *obj_id = AMitemObjId(item);
-            return am_wrap_nested_object(obj_id, parent_result_sexp);
+            result = am_wrap_nested_object(obj_id, parent_result_sexp);
+            break;
         }
 
         default:
             Rf_error("Unsupported Automerge value type: %d", val_type);
+            result = R_NilValue; // unreachable
     }
 
-    return R_NilValue;  // Unreachable
+    return result;
 }
 
 // Object Operations -----------------------------------------------------------
@@ -516,7 +517,11 @@ SEXP C_am_delete(SEXP doc_ptr, SEXP obj_ptr, SEXP key_or_pos) {
         if (Rf_xlength(key_or_pos) != 1) {
             Rf_error("List position must be a scalar");
         }
-        size_t pos = (size_t)(Rf_asInteger(key_or_pos) - 1);  // Convert to 0-based
+        int r_pos = Rf_asInteger(key_or_pos);
+        if (r_pos < 1) {
+            Rf_error("List position must be positive");
+        }
+        size_t pos = (size_t)(r_pos - 1);  // Convert to 0-based
         result = AMlistDelete(doc, obj_id, pos);
     } else {
         Rf_error("Key must be a character string (map) or numeric (list)");
@@ -585,10 +590,14 @@ SEXP C_am_length(SEXP doc_ptr, SEXP obj_ptr) {
 
     size_t size = AMobjSize(doc, obj_id, NULL);  // NULL = current heads
 
-    SEXP result = PROTECT(Rf_allocVector(INTSXP, 1));
-    INTEGER(result)[0] = (int) size;
-    UNPROTECT(1);
-    return result;
+    if (size > INT_MAX) {
+        return Rf_ScalarReal((double) size);
+    } else {
+        SEXP result = PROTECT(Rf_allocVector(INTSXP, 1));
+        INTEGER(result)[0] = (int) size;
+        UNPROTECT(1);
+        return result;
+    }
 }
 
 /**
@@ -630,8 +639,16 @@ SEXP C_am_text_splice(SEXP doc_ptr, SEXP text_ptr, SEXP pos, SEXP del_count, SEX
         Rf_error("text must be a single character string");
     }
 
-    size_t pos_val = (size_t) Rf_asInteger(pos);
-    size_t del_val = (size_t) Rf_asInteger(del_count);
+    int r_pos = Rf_asInteger(pos);
+    if (r_pos < 0) {
+        Rf_error("pos must be non-negative");
+    }
+    int r_del = Rf_asInteger(del_count);
+    if (r_del < 0) {
+        Rf_error("del_count must be non-negative");
+    }
+    size_t pos_val = (size_t) r_pos;
+    size_t del_val = (size_t) r_del;
     const char *text_str = CHAR(STRING_ELT(text, 0));
 
     AMbyteSpan text_span = {.src = (uint8_t const *) text_str, .count = strlen(text_str)};
