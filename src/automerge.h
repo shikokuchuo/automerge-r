@@ -26,14 +26,14 @@
 // Stores the owning AMresult* and the borrowed AMdoc* pointer.
 // The AMdoc* is extracted from the result and is valid as long as the result lives.
 typedef struct {
-    AMresult* result;  // Owns the document (freed in finalizer)
-    AMdoc* doc;        // Borrowed pointer extracted from result
+    AMresult *result;  // Owns the document (freed in finalizer)
+    AMdoc *doc;        // Borrowed pointer extracted from result
 } am_doc;
 
 // Sync state wrapper (owns AMresult, state pointer is borrowed)
 typedef struct {
-    AMresult* result;       // Owns the sync state (must be freed by finalizer)
-    AMsyncState* state;     // Borrowed pointer extracted from result
+    AMresult *result;       // Owns the sync state (must be freed by finalizer)
+    AMsyncState *state;     // Borrowed pointer extracted from result
 } am_syncstate;
 
 // Function Declarations -------------------------------------------------------
@@ -66,15 +66,15 @@ void am_result_finalizer(SEXP ext_ptr);
 void am_syncstate_finalizer(SEXP ext_ptr);
 
 // Helper functions (memory.c)
-AMdoc* get_doc(SEXP doc_ptr);  // Returns borrowed AMdoc* pointer
-const AMobjId* get_objid(SEXP obj_ptr);
-SEXP wrap_am_result(AMresult* result, SEXP parent_doc_sexp);
-SEXP am_wrap_objid(const AMobjId* obj_id, SEXP parent_result_sexp);
-SEXP am_wrap_nested_object(const AMobjId* obj_id, SEXP parent_result_sexp);
+AMdoc *get_doc(SEXP doc_ptr);  // Returns borrowed AMdoc* pointer
+const AMobjId *get_objid(SEXP obj_ptr);
+SEXP wrap_am_result(AMresult *result, SEXP parent_doc_sexp);
+SEXP am_wrap_objid(const AMobjId *obj_id, SEXP parent_result_sexp);
+SEXP am_wrap_nested_object(const AMobjId *obj_id, SEXP parent_result_sexp);
 
 // Error handling (errors.c)
-void check_result_impl(AMresult* result, AMvalType expected_type,
-                       const char* file, int line);
+void check_result_impl(AMresult *result, AMvalType expected_type,
+                       const char *file, int line);
 
 /**
  * CHECK_RESULT macro - validates AMresult and expected type.

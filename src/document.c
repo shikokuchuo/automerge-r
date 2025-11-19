@@ -10,7 +10,7 @@
  * @return External pointer to am_doc structure (with class "am_doc")
  */
 SEXP C_am_create(SEXP actor_id) {
-    AMresult* result = NULL;
+    AMresult *result = NULL;
 
     // Handle actor ID parameter
     if (actor_id == R_NilValue) {
@@ -18,13 +18,13 @@ SEXP C_am_create(SEXP actor_id) {
         result = AMcreate(NULL);
     } else if (TYPEOF(actor_id) == STRSXP && Rf_length(actor_id) == 1) {
         // Hex string: convert to actor ID using AMactorIdFromStr
-        const char* hex_str = CHAR(STRING_ELT(actor_id, 0));
-        AMbyteSpan hex_span = {.src = (uint8_t const*)hex_str, .count = strlen(hex_str)};
-        AMresult* actor_result = AMactorIdFromStr(hex_span);
+        const char *hex_str = CHAR(STRING_ELT(actor_id, 0));
+        AMbyteSpan hex_span = {.src = (uint8_t const *) hex_str, .count = strlen(hex_str)};
+        AMresult *actor_result = AMactorIdFromStr(hex_span);
         CHECK_RESULT(actor_result, AM_VAL_TYPE_ACTOR_ID);
 
-        AMitem* actor_item = AMresultItem(actor_result);
-        AMactorId const* actor = NULL;
+        AMitem *actor_item = AMresultItem(actor_result);
+        AMactorId const *actor = NULL;
         if (!AMitemToActorId(actor_item, &actor)) {
             AMresultFree(actor_result);
             Rf_error("Failed to extract actor ID from string");
@@ -34,11 +34,11 @@ SEXP C_am_create(SEXP actor_id) {
         AMresultFree(actor_result);
     } else if (TYPEOF(actor_id) == RAWSXP) {
         // Raw bytes: convert to actor ID using AMactorIdFromBytes
-        AMresult* actor_result = AMactorIdFromBytes(RAW(actor_id), (size_t)Rf_length(actor_id));
+        AMresult *actor_result = AMactorIdFromBytes(RAW(actor_id), (size_t) Rf_length(actor_id));
         CHECK_RESULT(actor_result, AM_VAL_TYPE_ACTOR_ID);
 
-        AMitem* actor_item = AMresultItem(actor_result);
-        AMactorId const* actor = NULL;
+        AMitem *actor_item = AMresultItem(actor_result);
+        AMactorId const *actor = NULL;
         if (!AMitemToActorId(actor_item, &actor)) {
             AMresultFree(actor_result);
             Rf_error("Failed to extract actor ID from bytes");
@@ -53,15 +53,15 @@ SEXP C_am_create(SEXP actor_id) {
     CHECK_RESULT(result, AM_VAL_TYPE_DOC);
 
     // Extract the AMdoc* from the result
-    AMitem* item = AMresultItem(result);
-    AMdoc* doc = NULL;
+    AMitem *item = AMresultItem(result);
+    AMdoc *doc = NULL;
     if (!AMitemToDoc(item, &doc)) {
         AMresultFree(result);
         Rf_error("Failed to extract document from result");
     }
 
     // Create wrapper structure
-    am_doc* doc_wrapper = (am_doc*)malloc(sizeof(am_doc));
+    am_doc *doc_wrapper = (am_doc *) malloc(sizeof(am_doc));
     if (!doc_wrapper) {
         AMresultFree(result);
         Rf_error("Failed to allocate memory for document wrapper");
@@ -90,13 +90,13 @@ SEXP C_am_create(SEXP actor_id) {
  * @return Raw vector containing the serialized document
  */
 SEXP C_am_save(SEXP doc_ptr) {
-    AMdoc* doc = get_doc(doc_ptr);
+    AMdoc *doc = get_doc(doc_ptr);
 
-    AMresult* result = AMsave(doc);
+    AMresult *result = AMsave(doc);
     CHECK_RESULT(result, AM_VAL_TYPE_BYTES);
 
     // Extract bytes from result
-    AMitem* item = AMresultItem(result);
+    AMitem *item = AMresultItem(result);
     AMbyteSpan bytes;
     if (!AMitemToBytes(item, &bytes)) {
         AMresultFree(result);
@@ -123,19 +123,19 @@ SEXP C_am_load(SEXP data) {
         Rf_error("data must be a raw vector");
     }
 
-    AMresult* result = AMload(RAW(data), (size_t)Rf_length(data));
+    AMresult *result = AMload(RAW(data), (size_t) Rf_length(data));
     CHECK_RESULT(result, AM_VAL_TYPE_DOC);
 
     // Extract the AMdoc* from the result
-    AMitem* item = AMresultItem(result);
-    AMdoc* doc = NULL;
+    AMitem *item = AMresultItem(result);
+    AMdoc *doc = NULL;
     if (!AMitemToDoc(item, &doc)) {
         AMresultFree(result);
         Rf_error("Failed to extract document from load result");
     }
 
     // Create wrapper structure
-    am_doc* doc_wrapper = (am_doc*)malloc(sizeof(am_doc));
+    am_doc *doc_wrapper = (am_doc *) malloc(sizeof(am_doc));
     if (!doc_wrapper) {
         AMresultFree(result);
         Rf_error("Failed to allocate memory for document wrapper");
@@ -165,9 +165,9 @@ SEXP C_am_load(SEXP data) {
  * @return External pointer to forked am_doc
  */
 SEXP C_am_fork(SEXP doc_ptr, SEXP heads) {
-    AMdoc* doc = get_doc(doc_ptr);
+    AMdoc *doc = get_doc(doc_ptr);
 
-    AMresult* result = NULL;
+    AMresult *result = NULL;
 
     if (heads == R_NilValue) {
         // Fork at current heads
@@ -181,15 +181,15 @@ SEXP C_am_fork(SEXP doc_ptr, SEXP heads) {
     CHECK_RESULT(result, AM_VAL_TYPE_DOC);
 
     // Extract the AMdoc* from the result
-    AMitem* item = AMresultItem(result);
-    AMdoc* forked_doc = NULL;
+    AMitem *item = AMresultItem(result);
+    AMdoc *forked_doc = NULL;
     if (!AMitemToDoc(item, &forked_doc)) {
         AMresultFree(result);
         Rf_error("Failed to extract forked document from result");
     }
 
     // Create wrapper structure
-    am_doc* doc_wrapper = (am_doc*)malloc(sizeof(am_doc));
+    am_doc *doc_wrapper = (am_doc *) malloc(sizeof(am_doc));
     if (!doc_wrapper) {
         AMresultFree(result);
         Rf_error("Failed to allocate memory for forked document wrapper");
@@ -219,10 +219,10 @@ SEXP C_am_fork(SEXP doc_ptr, SEXP heads) {
  * @return The target document pointer (for chaining)
  */
 SEXP C_am_merge(SEXP doc_ptr, SEXP other_ptr) {
-    AMdoc* doc = get_doc(doc_ptr);
-    AMdoc* other_doc = get_doc(other_ptr);
+    AMdoc *doc = get_doc(doc_ptr);
+    AMdoc *other_doc = get_doc(other_ptr);
 
-    AMresult* result = AMmerge(doc, other_doc);
+    AMresult *result = AMmerge(doc, other_doc);
 
     // AMmerge returns heads (change hashes) if changes were merged,
     // but result can be empty if there were no new changes
@@ -241,14 +241,14 @@ SEXP C_am_merge(SEXP doc_ptr, SEXP other_ptr) {
  * @return Raw vector containing actor ID bytes
  */
 SEXP C_am_get_actor(SEXP doc_ptr) {
-    AMdoc* doc = get_doc(doc_ptr);
+    AMdoc *doc = get_doc(doc_ptr);
 
-    AMresult* result = AMgetActorId(doc);
+    AMresult *result = AMgetActorId(doc);
     CHECK_RESULT(result, AM_VAL_TYPE_ACTOR_ID);
 
     // Extract actor ID
-    AMitem* item = AMresultItem(result);
-    AMactorId const* actor_id = NULL;
+    AMitem *item = AMresultItem(result);
+    AMactorId const *actor_id = NULL;
     if (!AMitemToActorId(item, &actor_id)) {
         AMresultFree(result);
         Rf_error("Failed to extract actor ID from result");
@@ -274,36 +274,36 @@ SEXP C_am_get_actor(SEXP doc_ptr) {
  * @return The document pointer (for chaining)
  */
 SEXP C_am_set_actor(SEXP doc_ptr, SEXP actor_id) {
-    AMdoc* doc = get_doc(doc_ptr);
+    AMdoc *doc = get_doc(doc_ptr);
 
     AMresult *actor_result, *put_result = NULL;
-    AMactorId const* actor = NULL;
+    AMactorId const *actor = NULL;
 
     if (actor_id == R_NilValue) {
         // NULL: generate random actor ID
         actor_result = AMactorIdInit();
         CHECK_RESULT(actor_result, AM_VAL_TYPE_ACTOR_ID);
-        AMitem* actor_item = AMresultItem(actor_result);
+        AMitem *actor_item = AMresultItem(actor_result);
         if (!AMitemToActorId(actor_item, &actor)) {
             AMresultFree(actor_result);
             Rf_error("Failed to extract actor ID from init");
         }
     } else if (TYPEOF(actor_id) == STRSXP && Rf_length(actor_id) == 1) {
         // Hex string
-        const char* hex_str = CHAR(STRING_ELT(actor_id, 0));
-        AMbyteSpan hex_span = {.src = (uint8_t const*)hex_str, .count = strlen(hex_str)};
+        const char *hex_str = CHAR(STRING_ELT(actor_id, 0));
+        AMbyteSpan hex_span = {.src = (uint8_t const *) hex_str, .count = strlen(hex_str)};
         actor_result = AMactorIdFromStr(hex_span);
         CHECK_RESULT(actor_result, AM_VAL_TYPE_ACTOR_ID);
-        AMitem* actor_item = AMresultItem(actor_result);
+        AMitem *actor_item = AMresultItem(actor_result);
         if (!AMitemToActorId(actor_item, &actor)) {
             AMresultFree(actor_result);
             Rf_error("Failed to extract actor ID from string");
         }
     } else if (TYPEOF(actor_id) == RAWSXP) {
         // Raw bytes
-        actor_result = AMactorIdFromBytes(RAW(actor_id), (size_t)Rf_length(actor_id));
+        actor_result = AMactorIdFromBytes(RAW(actor_id), (size_t) Rf_length(actor_id));
         CHECK_RESULT(actor_result, AM_VAL_TYPE_ACTOR_ID);
-        AMitem* actor_item = AMresultItem(actor_result);
+        AMitem *actor_item = AMresultItem(actor_result);
         if (!AMitemToActorId(actor_item, &actor)) {
             AMresultFree(actor_result);
             Rf_error("Failed to extract actor ID from bytes");
@@ -329,7 +329,7 @@ SEXP C_am_set_actor(SEXP doc_ptr, SEXP actor_id) {
  * @return The document pointer (for chaining)
  */
 SEXP C_am_commit(SEXP doc_ptr, SEXP message, SEXP time) {
-    AMdoc* doc = get_doc(doc_ptr);
+    AMdoc *doc = get_doc(doc_ptr);
 
     // Handle message parameter
     AMbyteSpan msg_span = {.src = NULL, .count = 0};
@@ -337,8 +337,8 @@ SEXP C_am_commit(SEXP doc_ptr, SEXP message, SEXP time) {
         if (TYPEOF(message) != STRSXP || Rf_length(message) != 1) {
             Rf_error("message must be NULL or a single character string");
         }
-        const char* msg_str = CHAR(STRING_ELT(message, 0));
-        msg_span.src = (uint8_t const*)msg_str;
+        const char *msg_str = CHAR(STRING_ELT(message, 0));
+        msg_span.src = (uint8_t const *) msg_str;
         msg_span.count = strlen(msg_str);
     }
 
@@ -352,7 +352,7 @@ SEXP C_am_commit(SEXP doc_ptr, SEXP message, SEXP time) {
         timestamp = (int64_t)(seconds * 1000.0);  // Convert to milliseconds
     }
 
-    AMresult* result = AMcommit(doc, msg_span, time == R_NilValue ? NULL : &timestamp);
+    AMresult *result = AMcommit(doc, msg_span, time == R_NilValue ? NULL : &timestamp);
 
     // AMcommit returns VOID if there were no pending operations,
     // or CHANGE_HASH if changes were committed
@@ -371,7 +371,7 @@ SEXP C_am_commit(SEXP doc_ptr, SEXP message, SEXP time) {
  * @return The document pointer (for chaining)
  */
 SEXP C_am_rollback(SEXP doc_ptr) {
-    AMdoc* doc = get_doc(doc_ptr);
+    AMdoc *doc = get_doc(doc_ptr);
 
     AMrollback(doc);
 

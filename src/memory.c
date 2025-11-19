@@ -7,7 +7,7 @@
  * Frees the owning AMresult*, which automatically frees the borrowed AMdoc*.
  */
 void am_doc_finalizer(SEXP ext_ptr) {
-    am_doc* doc_wrapper = (am_doc*) R_ExternalPtrAddr(ext_ptr);
+    am_doc *doc_wrapper = (am_doc *) R_ExternalPtrAddr(ext_ptr);
     if (doc_wrapper) {
         if (doc_wrapper->result) {
             AMresultFree(doc_wrapper->result);  // Free the owning result
@@ -24,7 +24,7 @@ void am_doc_finalizer(SEXP ext_ptr) {
  * AMresult* is wrapped directly (not in a struct).
  */
 void am_result_finalizer(SEXP ext_ptr) {
-    AMresult* result = (AMresult*) R_ExternalPtrAddr(ext_ptr);
+    AMresult *result = (AMresult *) R_ExternalPtrAddr(ext_ptr);
     if (result) {
         AMresultFree(result);
     }
@@ -36,7 +36,7 @@ void am_result_finalizer(SEXP ext_ptr) {
  * Frees the owning AMresult*, which automatically frees the borrowed state pointer.
  */
 void am_syncstate_finalizer(SEXP ext_ptr) {
-    am_syncstate* sync_state = (am_syncstate*) R_ExternalPtrAddr(ext_ptr);
+    am_syncstate *sync_state = (am_syncstate *) R_ExternalPtrAddr(ext_ptr);
     if (sync_state) {
         if (sync_state->result) {
             AMresultFree(sync_state->result);  // Frees the owning result
@@ -54,11 +54,11 @@ void am_syncstate_finalizer(SEXP ext_ptr) {
  * Get AMdoc* from external pointer with validation.
  * Returns the borrowed AMdoc* pointer, not the wrapper.
  */
-AMdoc* get_doc(SEXP doc_ptr) {
+AMdoc *get_doc(SEXP doc_ptr) {
     if (TYPEOF(doc_ptr) != EXTPTRSXP) {
         Rf_error("Expected external pointer for document");
     }
-    am_doc* doc_wrapper = (am_doc*) R_ExternalPtrAddr(doc_ptr);
+    am_doc *doc_wrapper = (am_doc *) R_ExternalPtrAddr(doc_ptr);
     if (!doc_wrapper || !doc_wrapper->doc) {
         Rf_error("Invalid document pointer (NULL or freed)");
     }
@@ -69,14 +69,14 @@ AMdoc* get_doc(SEXP doc_ptr) {
  * Get AMobjId* from external pointer.
  * Handles NULL (which represents AM_ROOT).
  */
-const AMobjId* get_objid(SEXP obj_ptr) {
+const AMobjId *get_objid(SEXP obj_ptr) {
     if (obj_ptr == R_NilValue) {
         return NULL;  // AM_ROOT
     }
     if (TYPEOF(obj_ptr) != EXTPTRSXP) {
         Rf_error("Expected external pointer for object ID");
     }
-    return (const AMobjId*) R_ExternalPtrAddr(obj_ptr);
+    return (const AMobjId *) R_ExternalPtrAddr(obj_ptr);
 }
 
 /**
@@ -87,7 +87,7 @@ const AMobjId* get_objid(SEXP obj_ptr) {
  * @param parent_doc_sexp The external pointer to the parent document (or R_NilValue)
  * @return SEXP external pointer to the result
  */
-SEXP wrap_am_result(AMresult* result, SEXP parent_doc_sexp) {
+SEXP wrap_am_result(AMresult *result, SEXP parent_doc_sexp) {
     SEXP ext_ptr = PROTECT(R_MakeExternalPtr(result, R_NilValue, parent_doc_sexp));
     R_RegisterCFinalizer(ext_ptr, am_result_finalizer);
     Rf_setAttrib(ext_ptr, Rf_install("class"), Rf_mkString("am_result"));
@@ -103,12 +103,12 @@ SEXP wrap_am_result(AMresult* result, SEXP parent_doc_sexp) {
  * @param parent_result_sexp The external pointer wrapping the owning AMresult*
  * @return SEXP external pointer to the object ID
  */
-SEXP am_wrap_objid(const AMobjId* obj_id, SEXP parent_result_sexp) {
+SEXP am_wrap_objid(const AMobjId *obj_id, SEXP parent_result_sexp) {
     if (!obj_id) return R_NilValue;
 
     // Wrap AMobjId* directly, use EXTPTR_PROT to keep parent result alive
     // No finalizer needed - obj_id is borrowed, parent will free it
-    SEXP ext_ptr = PROTECT(R_MakeExternalPtr((void*)obj_id, R_NilValue, parent_result_sexp));
+    SEXP ext_ptr = PROTECT(R_MakeExternalPtr((void *) obj_id, R_NilValue, parent_result_sexp));
     Rf_setAttrib(ext_ptr, Rf_install("class"), Rf_mkString("am_objid"));
     UNPROTECT(1);
     return ext_ptr;
@@ -122,7 +122,7 @@ SEXP am_wrap_objid(const AMobjId* obj_id, SEXP parent_result_sexp) {
  * @param parent_result_sexp The external pointer wrapping the owning AMresult*
  * @return SEXP am_object S3 class (list with doc and obj_id)
  */
-SEXP am_wrap_nested_object(const AMobjId* obj_id, SEXP parent_result_sexp) {
+SEXP am_wrap_nested_object(const AMobjId *obj_id, SEXP parent_result_sexp) {
     if (!obj_id) return R_NilValue;
 
     // Get the document from the result's parent (stored in EXTPTR_PROT)

@@ -13,8 +13,8 @@
  * @param line Line number (from __LINE__)
  * @return true if result is valid, false otherwise (does not return, calls Rf_error)
  */
-void check_result_impl(AMresult* result, AMvalType expected_type,
-                       const char* file, int line) {
+void check_result_impl(AMresult *result, AMvalType expected_type,
+                       const char *file, int line) {
     AMstatus status = AMresultStatus(result);
 
     if (status != AM_STATUS_OK) {
@@ -37,7 +37,7 @@ void check_result_impl(AMresult* result, AMvalType expected_type,
     }
 
     if (expected_type != AM_VAL_TYPE_VOID) {
-        AMitem* item = AMresultItem(result);
+        AMitem *item = AMresultItem(result);
         if (!item) {
             AMresultFree(result);
             Rf_error("Type check failed at %s:%d: AMresultItem returned NULL",
