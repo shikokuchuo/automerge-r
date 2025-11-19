@@ -1,0 +1,119 @@
+#!/bin/sh
+
+AUTOMERGE_FOUND=0
+PKG_CFLAGS=""
+PKG_LIBS=""
+
+# Find compiler and export flags
+CC=`"${R_HOME}/bin/R" CMD config CC`
+CFLAGS=`"${R_HOME}/bin/R" CMD config CFLAGS`
+LDFLAGS=`"${R_HOME}/bin/R" CMD config LDFLAGS`
+export CC CFLAGS LDFLAGS
+
+echo "Configuring automerge R package (Windows)"
+
+if [ "${AUTOMERGE_LIBS}" = "1" ]; then
+    echo "AUTOMERGE_LIBS=1: forcing bundled source compilation"
+else
+    echo "Checking for system automerge installation..."
+
+    if [ -n "${RTOOLS_ROOT}" ]; then
+        if [ -f "${RTOOLS_ROOT}/usr/include/automerge-c/automerge.h" ] && \
+           [ -f "${RTOOLS_ROOT}/usr/lib/libautomerge.a" ]; then
+            echo "Found automerge in Rtools"
+            PKG_CFLAGS="-I${RTOOLS_ROOT}/usr/include/automerge-c"
+            PKG_LIBS="-L${RTOOLS_ROOT}/usr/lib -lautomerge"
+            AUTOMERGE_FOUND=1
+        fi
+    fi
+fi
+
+if [ ${AUTOMERGE_FOUND} -eq 0 ]; then
+    echo "System automerge not found, building from bundled source..."
+
+    if ! command -v cargo >/dev/null 2>&1; then
+        echo "ERROR: Rust toolchain not found"
+        echo "Install Rust from: https://rustup.rs/"
+        echo "Or install automerge-c to a standard location"
+        exit 1
+    fi
+
+    if ! command -v cmake >/dev/null 2>&1; then
+        echo "ERROR: CMake not found"
+        echo "Install CMake from: https://cmake.org/"
+        echo "CMake is included in Rtools43+"
+        exit 1
+    fi
+
+    echo "Building automerge-c..."
+    # Report the version of Rustc for CRAN
+    echo "using Rust package manager: '$(cargo --version)'"
+    echo "using Rust compiler: '$(rustc --version)'"
+
+    # Clean up any previous build artifacts
+    rm -rf automerge-build
+    rm -rf automerge-install
+
+    # Set TMPDIR to avoid rustix test file warning in R CMD check
+    export TMPDIR="${PWD}/automerge-build/tmp"
+    mkdir -p "$TMPDIR"
+
+    # Tests disabled to reduce build time and artifacts
+    # Build in package root to avoid R CMD check warnings about GNU make
+    echo "Configuring with CMake..."
+    cmake -G "MinGW Makefiles" \
+        -S src/automerge/rust/automerge-c -B automerge-build \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+        -DCMAKE_INSTALL_PREFIX="${PWD}/automerge-install" \
+        -DCMAKE_INSTALL_LIBDIR=lib \
+        -DBUILD_TESTING=OFF \
+        -DCMAKE_COLOR_MAKEFILE=OFF \
+        -DCMAKE_C_COMPILER=gcc \
+        -DCMAKE_MAKE_PROGRAM=make
+
+    if [ $? -ne 0 ]; then
+        echo "ERROR: CMake configuration failed"
+        exit 1
+    fi
+
+    echo "Building (this may take several minutes)..."
+    cmake --build automerge-build --config Release
+
+    if [ $? -ne 0 ]; then
+        echo "ERROR: Build failed"
+        exit 1
+    fi
+
+    echo "Installing to local directory..."
+    cmake --build automerge-build --target install
+
+    if [ $? -ne 0 ]; then
+        echo "ERROR: Install failed"
+        exit 1
+    fi
+
+    # Clean up build directory
+    rm -rf automerge-build
+
+    if [ ! -d "automerge-install/lib" ]; then
+        echo "ERROR: Installation did not create expected lib directory"
+        exit 1
+    fi
+
+    echo "Successfully built automerge-c from source"
+
+    PKG_CFLAGS="-I../automerge-install/include"
+    PKG_LIBS="../automerge-install/lib/libautomerge.a"
+fi
+
+PKG_LIBS="${PKG_LIBS} -lws2_32 -luserenv -lbcrypt -lntdll"
+
+echo "Configuration:"
+echo "  PKG_CFLAGS: ${PKG_CFLAGS}"
+echo "  PKG_LIBS: ${PKG_LIBS}"
+
+sed -e "s|@PKG_CFLAGS@|${PKG_CFLAGS}|" \
+    -e "s|@PKG_LIBS@|${PKG_LIBS}|" \
+    src/Makevars.win.in > src/Makevars.win
+

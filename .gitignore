@@ -1,0 +1,11 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.cache
+.claude
+.DS_Store
+src/Makevars
+compile_commands.json
+automerge-build
+automerge-install

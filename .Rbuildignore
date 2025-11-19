@@ -1,0 +1,10 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^LICENSE\.md$
+^compile_commands\.json$
+^\.cache$
+^\.github$
+^\.claude$
+^CLAUDE.md$
+^automerge-build$
+^automerge-install$

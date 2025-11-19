@@ -1,0 +1,9 @@
+PKG_CFLAGS = @PKG_CFLAGS@
+PKG_LIBS = @PKG_LIBS@
+
+OBJECTS = init.o
+
+all: $(SHLIB)
+
+clean:
+	@rm -f $(OBJECTS) $(SHLIB)

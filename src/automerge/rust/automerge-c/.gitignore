@@ -1,0 +1,10 @@
+automerge
+automerge.h
+automerge.o
+build/
+CMakeCache.txt
+CMakeFiles
+CMakePresets.json
+Makefile
+DartConfiguration.tcl
+out/

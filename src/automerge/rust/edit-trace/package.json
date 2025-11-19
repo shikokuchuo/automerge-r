@@ -1,0 +1,12 @@
+{
+  "name": "edit-trace",
+  "version": "1.0.0",
+  "main": "wasm-text.js",
+  "license": "MIT",
+  "scripts": {
+    "prof": "0x -D prof"
+  },
+  "devDependencies": {
+    "0x": "^5.4.1"
+  }
+}

@@ -1,0 +1,23 @@
+[package]
+name = "edit-trace"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[dependencies]
+automerge = { path = "../automerge" }
+criterion = "^0.7"
+jzon = "^0.12.5"
+rand = "^0.9"
+serde_json = "1.0.128"
+
+
+[[bin]]
+name = "edit-trace"
+doc = false
+bench = false
+
+[[bench]]
+debug = true
+name = "main"
+harness = false

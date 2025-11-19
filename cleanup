@@ -1,0 +1,9 @@
+#!/bin/sh
+
+rm -f src/Makevars src/Makevars.win
+rm -f src/*.o src/*.so src/*.dll src/symbols.rds
+rm -rf automerge-build
+rm -rf automerge-install
+rm -f src/automerge/rust/automerge-c/cmake_config.log
+rm -f src/automerge/rust/automerge-c/cmake_build.log
+rm -rf src/automerge/rust/target
