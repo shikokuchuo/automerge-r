@@ -43,7 +43,7 @@ pak::pak("posit-dev/automerge-r")
 
 To build from source, you need:
 
-- R \>= 4.1.0
+- R \>= 4.2
 - Rust toolchain \>= 1.89.0 - Install from <https://rustup.rs/>
 - CMake \>= 3.25 - Included in Rtools43+ on Windows
 
@@ -73,7 +73,7 @@ doc$age <- 30L
 doc[["active"]] <- TRUE
 doc
 #> <Automerge Document>
-#> Actor: 3356c4b428a8a5bb91e08a9010af47b9 
+#> Actor: 015437c86004384856446f4a69264dab 
 #> Root keys: 3 
 #> Keys: active, age, name
 ```
@@ -83,9 +83,9 @@ doc
 Access values just like a regular R list:
 
 ``` r
-doc$name       # "Alice"
+doc$name # "Alice"
 #> [1] "Alice"
-doc[["age"]]   # 30L
+doc[["age"]] # 30L
 #> [1] 30
 ```
 
@@ -95,9 +95,9 @@ Create complex nested objects in a single call:
 
 ``` r
 doc$user <- list(
-    name = "Bob",
-    age = 25L,
-    address = list(city = "NYC", zip = 10001L)
+  name = "Bob",
+  age = 25L,
+  address = list(city = "NYC", zip = 10001L)
 )
 ```
 
@@ -117,9 +117,9 @@ user
 Automerge supports specialized CRDT types:
 
 ``` r
-doc$created <- Sys.time()  # POSIXct timestamp
-doc$score <- am_counter(0)  # Counter
-doc$notes <- am_text("new")  # Text object with CRDT semantics
+doc$created <- Sys.time() # POSIXct timestamp
+doc$score <- am_counter(0) # Counter
+doc$notes <- am_text("new") # Text object with CRDT semantics
 ```
 
 ### Working with Text
@@ -138,11 +138,11 @@ am_text_get(doc, text_obj$obj_id)
 Standard R operations work as expected:
 
 ``` r
-length(doc)    # Number of keys
+length(doc) # Number of keys
 #> [1] 7
-names(doc)     # Key names
+names(doc) # Key names
 #> [1] "active"  "age"     "created" "name"    "notes"   "score"   "user"
-as.list(doc)   # Convert to R list
+as.list(doc) # Convert to R list
 #> $active
 #> [1] TRUE
 #> 
@@ -150,7 +150,7 @@ as.list(doc)   # Convert to R list
 #> [1] 30
 #> 
 #> $created
-#> [1] "2025-11-19 20:50:33 GMT"
+#> [1] "2025-11-20 17:36:19 GMT"
 #> 
 #> $name
 #> [1] "Alice"
@@ -203,7 +203,7 @@ bytes <- am_save(doc)
 doc2 <- am_load(bytes)
 doc2
 #> <Automerge Document>
-#> Actor: ed06f4df0e6675cecb027d7fd72ede5e 
+#> Actor: 31557e91d1114cfae0345407a9b7d7a7 
 #> Root keys: 7 
 #> Keys: active, age, created, name, notes, score, user
 ```
@@ -231,7 +231,7 @@ am_put(doc, AM_ROOT, "name", "Alice")
 am_put(doc, AM_ROOT, "age", 30L)
 doc
 #> <Automerge Document>
-#> Actor: 308dcd53c2d08b7606e725d0c315ff42 
+#> Actor: 1f2771ec270b6d79e34ca3495c9484a0 
 #> Root keys: 2 
 #> Keys: age, name
 ```

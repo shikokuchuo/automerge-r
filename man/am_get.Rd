@@ -13,11 +13,11 @@ am_get(doc, obj, key)
 for the document root}
 
 \item{key}{For maps: character string key. For lists: numeric position
-(1-based). Returns \code{NULL} for indices \code{<= 0} or beyond list length.}
+(1-based). Returns \code{NULL} for indices \verb{<= 0} or beyond list length.}
 }
 \value{
 The value at the specified key/position, or \code{NULL} if not found.
-  Nested objects are returned as \code{am_object} instances.
+Nested objects are returned as \code{am_object} instances.
 }
 \description{
 Retrieves a value from an Automerge map or list. Returns \code{NULL}

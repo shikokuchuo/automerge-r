@@ -17,13 +17,13 @@
 
 \item{value}{Value to store}
 
-\item{name}{Key name (for `$<-` operator, maps only)}
+\item{name}{Key name (for \verb{$<-} operator, maps only)}
 }
 \value{
 The object (invisibly)
 }
 \description{
-Replace or insert values in an Automerge object using `[[<-` or `$<-`.
+Replace or insert values in an Automerge object using \verb{[[<-} or \verb{$<-}.
 }
 \examples{
 doc <- am_create()

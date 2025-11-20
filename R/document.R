@@ -7,19 +7,19 @@
 #'
 #' @param actor_id Optional actor ID. Can be:
 #'   \itemize{
-#'     \item \code{NULL} (default) - Generate random actor ID
+#'     \item `NULL` (default) - Generate random actor ID
 #'     \item Character string - Hex-encoded actor ID
 #'     \item Raw vector - Binary actor ID bytes
 #'   }
 #'
 #' @return An external pointer to the Automerge document with class
-#'   \code{c("am_doc", "automerge")}.
+#'   `c("am_doc", "automerge")`.
 #'
 #' @section Thread Safety:
 #' The automerge package is NOT thread-safe. Do not access the same document
 #' from multiple R threads concurrently. Each thread should create its own
-#' document with \code{am_create()} and synchronize changes via
-#' \code{am_sync_*()} functions after thread completion.
+#' document with `am_create()` and synchronize changes via
+#' `am_sync_*()` functions after thread completion.
 #'
 #' @export
 #' @examples
@@ -43,7 +43,7 @@ am_create <- function(actor_id = NULL) {
 #' The binary format is compatible across all Automerge implementations
 #' (JavaScript, Rust, etc.).
 #'
-#' @param doc An Automerge document (created with \code{am_create()} or \code{am_load()})
+#' @param doc An Automerge document (created with `am_create()` or `am_load()`)
 #'
 #' @return A raw vector containing the serialized document
 #'
@@ -69,7 +69,7 @@ am_save <- function(doc) {
 #' @param data A raw vector containing a serialized Automerge document
 #'
 #' @return An external pointer to the Automerge document with class
-#'   \code{c("am_doc", "automerge")}.
+#'   `c("am_doc", "automerge")`.
 #'
 #' @export
 #' @examples
@@ -97,7 +97,7 @@ am_load <- function(data) {
 #'
 #' @param doc An Automerge document
 #' @param heads Optional list of change hashes to fork at.
-#'   If \code{NULL} (default), forks at current heads.
+#'   If `NULL` (default), forks at current heads.
 #'   Forking at specific heads is not yet implemented (Phase 5).
 #'
 #' @return A new Automerge document (fork of the original)
@@ -115,14 +115,14 @@ am_fork <- function(doc, heads = NULL) {
 #' Merge changes from another document
 #'
 #' Merges all changes from another Automerge document into this one.
-#' This is a one-way merge: changes flow from \code{other} into \code{doc},
-#' but \code{other} is not modified. For bidirectional synchronization,
-#' use \code{am_sync_bidirectional()} (Phase 5).
+#' This is a one-way merge: changes flow from `other` into `doc`,
+#' but `other` is not modified. For bidirectional synchronization,
+#' use `am_sync_bidirectional()` (Phase 5).
 #'
 #' @param doc Target document (will receive changes)
 #' @param other Source document (provides changes)
 #'
-#' @return The target document \code{doc} (invisibly, for chaining)
+#' @return The target document `doc` (invisibly, for chaining)
 #'
 #' @export
 #' @examples
@@ -147,7 +147,7 @@ am_merge <- function(doc, other) {
 #' changes in the document.
 #'
 #' To display as a hex string, use:
-#' \code{paste(format(am_get_actor(doc), width=2), collapse="")}
+#' `paste(format(am_get_actor(doc), width=2), collapse="")`
 #'
 #' @param doc An Automerge document
 #'
@@ -174,12 +174,12 @@ am_get_actor <- function(doc) {
 #' @param doc An Automerge document
 #' @param actor_id The new actor ID. Can be:
 #'   \itemize{
-#'     \item \code{NULL} - Generate new random actor ID
+#'     \item `NULL` - Generate new random actor ID
 #'     \item Character string - Hex-encoded actor ID
 #'     \item Raw vector - Binary actor ID bytes
 #'   }
 #'
-#' @return The document \code{doc} (invisibly, for chaining)
+#' @return The document `doc` (invisibly, for chaining)
 #'
 #' @export
 #' @examples
@@ -203,9 +203,9 @@ am_set_actor <- function(doc, actor_id) {
 #'
 #' @param doc An Automerge document
 #' @param message Optional commit message (character string)
-#' @param time Optional timestamp (POSIXct). If \code{NULL}, uses current time.
+#' @param time Optional timestamp (POSIXct). If `NULL`, uses current time.
 #'
-#' @return The document \code{doc} (invisibly, for chaining)
+#' @return The document `doc` (invisibly, for chaining)
 #'
 #' @export
 #' @examples
@@ -233,7 +233,7 @@ am_commit <- function(doc, message = NULL, time = NULL) {
 #'
 #' @param doc An Automerge document
 #'
-#' @return The document \code{doc} (invisibly, for chaining)
+#' @return The document `doc` (invisibly, for chaining)
 #'
 #' @export
 #' @examples

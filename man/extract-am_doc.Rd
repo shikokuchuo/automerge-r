@@ -15,13 +15,13 @@
 
 \item{i}{Key name (character)}
 
-\item{name}{Key name (for `$` operator)}
+\item{name}{Key name (for \code{$} operator)}
 }
 \value{
 The value at the specified key
 }
 \description{
-Extract values from the root of an Automerge document using `[[` or `$`.
+Extract values from the root of an Automerge document using \code{[[} or \code{$}.
 These operators provide R-idiomatic access to document data.
 }
 \examples{

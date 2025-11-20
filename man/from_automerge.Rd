@@ -16,7 +16,7 @@ Named list with document contents
 }
 \description{
 Converts an Automerge document to a standard R list. This is a convenience
-wrapper around `as.list.am_doc()`.
+wrapper around \code{as.list.am_doc()}.
 }
 \examples{
 doc <- am_create()

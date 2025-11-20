@@ -20,7 +20,7 @@ cursor stability, and marks/formatting.
 }
 \details{
 Use text objects for collaborative document editing. Use regular strings
-for metadata, labels, and IDs (99\% of cases).
+for metadata, labels, and IDs (99\\% of cases).
 }
 \examples{
 # Empty text object

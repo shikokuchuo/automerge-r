@@ -50,7 +50,7 @@ pak::pak("posit-dev/automerge-r")
 
 To build from source, you need:
 
-- R >= 4.1.0
+- R >= 4.2
 - Rust toolchain >= 1.89.0 - Install from https://rustup.rs/
 - CMake >= 3.25 - Included in Rtools43+ on Windows
 
@@ -83,8 +83,8 @@ doc
 Access values just like a regular R list:
 
 ```{r}
-doc$name       # "Alice"
-doc[["age"]]   # 30L
+doc$name # "Alice"
+doc[["age"]] # 30L
 ```
 
 ### Nested Structures
@@ -93,9 +93,9 @@ Create complex nested objects in a single call:
 
 ```{r}
 doc$user <- list(
-    name = "Bob",
-    age = 25L,
-    address = list(city = "NYC", zip = 10001L)
+  name = "Bob",
+  age = 25L,
+  address = list(city = "NYC", zip = 10001L)
 )
 ```
 
@@ -112,9 +112,9 @@ user
 Automerge supports specialized CRDT types:
 
 ```{r}
-doc$created <- Sys.time()  # POSIXct timestamp
-doc$score <- am_counter(0)  # Counter
-doc$notes <- am_text("new")  # Text object with CRDT semantics
+doc$created <- Sys.time() # POSIXct timestamp
+doc$score <- am_counter(0) # Counter
+doc$notes <- am_text("new") # Text object with CRDT semantics
 ```
 
 ### Working with Text
@@ -132,9 +132,9 @@ am_text_get(doc, text_obj$obj_id)
 Standard R operations work as expected:
 
 ```{r}
-length(doc)    # Number of keys
-names(doc)     # Key names
-as.list(doc)   # Convert to R list
+length(doc) # Number of keys
+names(doc) # Key names
+as.list(doc) # Convert to R list
 ```
 
 ### Saving and Loading

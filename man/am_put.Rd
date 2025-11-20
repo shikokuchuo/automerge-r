@@ -17,19 +17,19 @@ for the document root}
 
 \item{value}{The value to store. Supported types:
 \itemize{
-  \item \code{NULL} - stores null
-  \item Logical - stores boolean (must be scalar)
-  \item Integer - stores integer (must be scalar)
-  \item Numeric - stores double (must be scalar)
-  \item Character - stores string (must be scalar)
-  \item Raw - stores bytes
-  \item \code{AM_OBJ_TYPE_LIST/MAP/TEXT} - creates nested object
+\item \code{NULL} - stores null
+\item Logical - stores boolean (must be scalar)
+\item Integer - stores integer (must be scalar)
+\item Numeric - stores double (must be scalar)
+\item Character - stores string (must be scalar)
+\item Raw - stores bytes
+\item \code{AM_OBJ_TYPE_LIST/MAP/TEXT} - creates nested object
 }}
 }
 \value{
-When creating a nested object (value is \code{AM_OBJ_TYPE_*}),
-  returns an \code{am_object} representing the new object. Otherwise,
-  returns the document \code{doc} (invisibly, for chaining).
+When creating a nested object (value is \verb{AM_OBJ_TYPE_*}),
+returns an \code{am_object} representing the new object. Otherwise,
+returns the document \code{doc} (invisibly, for chaining).
 }
 \description{
 Inserts or updates a value in an Automerge map or list. The function

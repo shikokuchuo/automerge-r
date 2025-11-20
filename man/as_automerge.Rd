@@ -18,7 +18,7 @@ An Automerge document
 }
 \description{
 Converts an R list to an Automerge document. This leverages the recursive
-conversion built into `am_put()` from Phase 3, allowing nested structures
+conversion built into \code{am_put()} from Phase 3, allowing nested structures
 to be created in a single call.
 }
 \examples{

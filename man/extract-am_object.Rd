@@ -15,13 +15,13 @@
 
 \item{i}{Key name (character) for maps, or position (integer) for lists}
 
-\item{name}{Key name (for `$` operator, maps only)}
+\item{name}{Key name (for \code{$} operator, maps only)}
 }
 \value{
 The value at the specified key/position
 }
 \description{
-Extract values from an Automerge object (map or list) using `[[` or `$`.
+Extract values from an Automerge object (map or list) using \code{[[} or \code{$}.
 }
 \examples{
 doc <- am_create()

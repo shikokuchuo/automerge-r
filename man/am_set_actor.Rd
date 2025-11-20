@@ -11,9 +11,9 @@ am_set_actor(doc, actor_id)
 
 \item{actor_id}{The new actor ID. Can be:
 \itemize{
-  \item \code{NULL} - Generate new random actor ID
-  \item Character string - Hex-encoded actor ID
-  \item Raw vector - Binary actor ID bytes
+\item \code{NULL} - Generate new random actor ID
+\item Character string - Hex-encoded actor ID
+\item Raw vector - Binary actor ID bytes
 }}
 }
 \value{

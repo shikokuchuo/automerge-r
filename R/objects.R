@@ -7,24 +7,24 @@
 #' type and key/position type.
 #'
 #' @param doc An Automerge document
-#' @param obj An Automerge object ID (from nested object), or \code{AM_ROOT}
+#' @param obj An Automerge object ID (from nested object), or `AM_ROOT`
 #'   for the document root
 #' @param key For maps: character string key. For lists: numeric position
-#'   (1-based) or \code{"end"} to append
+#'   (1-based) or `"end"` to append
 #' @param value The value to store. Supported types:
 #'   \itemize{
-#'     \item \code{NULL} - stores null
+#'     \item `NULL` - stores null
 #'     \item Logical - stores boolean (must be scalar)
 #'     \item Integer - stores integer (must be scalar)
 #'     \item Numeric - stores double (must be scalar)
 #'     \item Character - stores string (must be scalar)
 #'     \item Raw - stores bytes
-#'     \item \code{AM_OBJ_TYPE_LIST/MAP/TEXT} - creates nested object
+#'     \item `AM_OBJ_TYPE_LIST/MAP/TEXT` - creates nested object
 #'   }
 #'
-#' @return When creating a nested object (value is \code{AM_OBJ_TYPE_*}),
-#'   returns an \code{am_object} representing the new object. Otherwise,
-#'   returns the document \code{doc} (invisibly, for chaining).
+#' @return When creating a nested object (value is `AM_OBJ_TYPE_*`),
+#'   returns an `am_object` representing the new object. Otherwise,
+#'   returns the document `doc` (invisibly, for chaining).
 #'
 #' @export
 #' @examples
@@ -48,17 +48,17 @@ am_put <- function(doc, obj, key, value) {
 
 #' Get a value from an Automerge map or list
 #'
-#' Retrieves a value from an Automerge map or list. Returns \code{NULL}
+#' Retrieves a value from an Automerge map or list. Returns `NULL`
 #' if the key or position doesn't exist.
 #'
 #' @param doc An Automerge document
-#' @param obj An Automerge object ID (from nested object), or \code{AM_ROOT}
+#' @param obj An Automerge object ID (from nested object), or `AM_ROOT`
 #'   for the document root
 #' @param key For maps: character string key. For lists: numeric position
-#'   (1-based). Returns \code{NULL} for indices \code{<= 0} or beyond list length.
+#'   (1-based). Returns `NULL` for indices `<= 0` or beyond list length.
 #'
-#' @return The value at the specified key/position, or \code{NULL} if not found.
-#'   Nested objects are returned as \code{am_object} instances.
+#' @return The value at the specified key/position, or `NULL` if not found.
+#'   Nested objects are returned as `am_object` instances.
 #'
 #' @export
 #' @examples
@@ -76,12 +76,12 @@ am_get <- function(doc, obj, key) {
 #' Removes a key-value pair from a map or an element from a list.
 #'
 #' @param doc An Automerge document
-#' @param obj An Automerge object ID (from nested object), or \code{AM_ROOT}
+#' @param obj An Automerge object ID (from nested object), or `AM_ROOT`
 #'   for the document root
 #' @param key For maps: character string key to delete. For lists: numeric
 #'   position (1-based) to delete
 #'
-#' @return The document \code{doc} (invisibly, for chaining)
+#' @return The document `doc` (invisibly, for chaining)
 #'
 #' @export
 #' @examples
@@ -97,7 +97,7 @@ am_delete <- function(doc, obj, key) {
 #' Returns a character vector of all keys in a map.
 #'
 #' @param doc An Automerge document
-#' @param obj An Automerge object ID (must be a map), or \code{AM_ROOT}
+#' @param obj An Automerge object ID (must be a map), or `AM_ROOT`
 #'   for the document root
 #'
 #' @return Character vector of keys (empty if map is empty)
@@ -119,7 +119,7 @@ am_keys <- function(doc, obj) {
 #' Returns the number of key-value pairs in a map or elements in a list.
 #'
 #' @param doc An Automerge document
-#' @param obj An Automerge object ID, or \code{AM_ROOT} for the document root
+#' @param obj An Automerge object ID, or `AM_ROOT` for the document root
 #'
 #' @return Integer length/size
 #'
@@ -137,17 +137,17 @@ am_length <- function(doc, obj) {
 
 #' Insert a value into an Automerge list
 #'
-#' This is an alias for \code{am_put()} with insert semantics for lists.
-#' For lists, \code{am_put()} with a numeric position replaces the element
-#' at that position, while \code{am_insert()} shifts elements to make room.
+#' This is an alias for `am_put()` with insert semantics for lists.
+#' For lists, `am_put()` with a numeric position replaces the element
+#' at that position, while `am_insert()` shifts elements to make room.
 #'
 #' @param doc An Automerge document
 #' @param obj An Automerge object ID (must be a list)
-#' @param pos Numeric position (1-based) where to insert, or \code{"end"}
+#' @param pos Numeric position (1-based) where to insert, or `"end"`
 #'   to append
 #' @param value The value to insert
 #'
-#' @return The document \code{doc} (invisibly, for chaining)
+#' @return The document `doc` (invisibly, for chaining)
 #'
 #' @export
 #' @examples
@@ -171,7 +171,7 @@ am_insert <- function(doc, obj, pos, value) {
 #' that support conflict-free increment and decrement operations.
 #'
 #' @param value Initial counter value (default 0)
-#' @return An \code{am_counter} object
+#' @return An `am_counter` object
 #' @export
 #' @examples
 #' doc <- am_create()
@@ -186,7 +186,7 @@ am_counter <- function(value = 0L) {
 #' need to create an empty list or force list type interpretation.
 #'
 #' @param ... Elements to include in the list
-#' @return A list with class \code{am_list_type}
+#' @return A list with class `am_list_type`
 #' @export
 #' @examples
 #' # Empty list (avoids ambiguity)
@@ -204,7 +204,7 @@ am_list <- function(...) {
 #' need to create an empty map or force map type interpretation.
 #'
 #' @param ... Named elements to include in the map
-#' @return A named list with class \code{am_map_type}
+#' @return A named list with class `am_map_type`
 #' @export
 #' @examples
 #' # Empty map (avoids ambiguity)
@@ -227,7 +227,7 @@ am_map <- function(...) {
 #' for metadata, labels, and IDs (99\% of cases).
 #'
 #' @param initial Initial text content (default "")
-#' @return A character vector with class \code{am_text_type}
+#' @return A character vector with class `am_text_type`
 #' @export
 #' @examples
 #' # Empty text object
@@ -254,7 +254,7 @@ am_text <- function(initial = "") {
 #' @param pos Position to start splice (0-based)
 #' @param del_count Number of characters to delete
 #' @param text Text to insert
-#' @return The document \code{doc} (invisibly, for chaining)
+#' @return The document `doc` (invisibly, for chaining)
 #' @export
 #' @examples
 #' doc <- am_create()
@@ -299,7 +299,7 @@ am_text_get <- function(doc, text_obj) {
 #' Returns all values from an Automerge map or list as an R list.
 #'
 #' @param doc An Automerge document
-#' @param obj An Automerge object ID, or \code{AM_ROOT} for the document root
+#' @param obj An Automerge object ID, or `AM_ROOT` for the document root
 #' @return R list of values
 #' @export
 #' @examples

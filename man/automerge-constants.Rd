@@ -53,9 +53,9 @@ root references, and mark expansion modes.
 \section{Root Object}{
 
 \describe{
-  \item{AM_ROOT}{Reference to the root object of an Automerge document.
-    Use this as the \code{obj} parameter when operating on the top-level
-    map. Value is \code{NULL} which maps to the C API's AM_ROOT.}
+\item{AM_ROOT}{Reference to the root object of an Automerge document.
+Use this as the \code{obj} parameter when operating on the top-level
+map. Value is \code{NULL} which maps to the C API's AM_ROOT.}
 }
 }
 
@@ -63,14 +63,14 @@ root references, and mark expansion modes.
 
 String constants for creating Automerge objects:
 \describe{
-  \item{AM_OBJ_TYPE_LIST}{Create a list (array) object. Lists are ordered
-    sequences accessed by numeric index (1-based in R).}
-  \item{AM_OBJ_TYPE_MAP}{Create a map (object) object. Maps are unordered
-    key-value collections accessed by string keys.}
-  \item{AM_OBJ_TYPE_TEXT}{Create a text object for collaborative editing.
-    Text objects support character-level CRDT operations, cursor stability,
-    and formatting marks. Use text objects for collaborative document editing
-    rather than regular strings (which use last-write-wins semantics).}
+\item{AM_OBJ_TYPE_LIST}{Create a list (array) object. Lists are ordered
+sequences accessed by numeric index (1-based in R).}
+\item{AM_OBJ_TYPE_MAP}{Create a map (object) object. Maps are unordered
+key-value collections accessed by string keys.}
+\item{AM_OBJ_TYPE_TEXT}{Create a text object for collaborative editing.
+Text objects support character-level CRDT operations, cursor stability,
+and formatting marks. Use text objects for collaborative document editing
+rather than regular strings (which use last-write-wins semantics).}
 }
 }
 
@@ -79,14 +79,14 @@ String constants for creating Automerge objects:
 Constants for controlling how text marks expand when text is inserted
 at their boundaries (used with \code{am_mark_create}):
 \describe{
-  \item{AM_MARK_EXPAND_NONE}{Mark does not expand when text is inserted
-    at either boundary.}
-  \item{AM_MARK_EXPAND_BEFORE}{Mark expands to include text inserted
-    immediately before its start position.}
-  \item{AM_MARK_EXPAND_AFTER}{Mark expands to include text inserted
-    immediately after its end position.}
-  \item{AM_MARK_EXPAND_BOTH}{Mark expands to include text inserted at
-    either boundary (before start or after end).}
+\item{AM_MARK_EXPAND_NONE}{Mark does not expand when text is inserted
+at either boundary.}
+\item{AM_MARK_EXPAND_BEFORE}{Mark expands to include text inserted
+immediately before its start position.}
+\item{AM_MARK_EXPAND_AFTER}{Mark expands to include text inserted
+immediately after its end position.}
+\item{AM_MARK_EXPAND_BOTH}{Mark expands to include text inserted at
+either boundary (before start or after end).}
 }
 }
 

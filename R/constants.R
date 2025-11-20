@@ -13,8 +13,8 @@
 #' @section Root Object:
 #' \describe{
 #'   \item{AM_ROOT}{Reference to the root object of an Automerge document.
-#'     Use this as the \code{obj} parameter when operating on the top-level
-#'     map. Value is \code{NULL} which maps to the C API's AM_ROOT.}
+#'     Use this as the `obj` parameter when operating on the top-level
+#'     map. Value is `NULL` which maps to the C API's AM_ROOT.}
 #' }
 #'
 #' @section Object Types:
@@ -32,7 +32,7 @@
 #'
 #' @section Mark Expansion Modes:
 #' Constants for controlling how text marks expand when text is inserted
-#' at their boundaries (used with \code{am_mark_create}):
+#' at their boundaries (used with `am_mark_create`):
 #' \describe{
 #'   \item{AM_MARK_EXPAND_NONE}{Mark does not expand when text is inserted
 #'     at either boundary.}

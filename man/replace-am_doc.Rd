@@ -17,14 +17,14 @@
 
 \item{value}{Value to store}
 
-\item{name}{Key name (for `$<-` operator)}
+\item{name}{Key name (for \verb{$<-} operator)}
 }
 \value{
 The document (invisibly)
 }
 \description{
 Replace or insert values at the root of an Automerge document using
-`[[<-` or `$<-`. These operators provide R-idiomatic modification.
+\verb{[[<-} or \verb{$<-}. These operators provide R-idiomatic modification.
 }
 \examples{
 doc <- am_create()

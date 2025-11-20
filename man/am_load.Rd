@@ -11,7 +11,7 @@ am_load(data)
 }
 \value{
 An external pointer to the Automerge document with class
-  \code{c("am_doc", "automerge")}.
+\code{c("am_doc", "automerge")}.
 }
 \description{
 Deserializes an Automerge document from the standard binary format.

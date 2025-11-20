@@ -9,14 +9,14 @@ am_create(actor_id = NULL)
 \arguments{
 \item{actor_id}{Optional actor ID. Can be:
 \itemize{
-  \item \code{NULL} (default) - Generate random actor ID
-  \item Character string - Hex-encoded actor ID
-  \item Raw vector - Binary actor ID bytes
+\item \code{NULL} (default) - Generate random actor ID
+\item Character string - Hex-encoded actor ID
+\item Raw vector - Binary actor ID bytes
 }}
 }
 \value{
 An external pointer to the Automerge document with class
-  \code{c("am_doc", "automerge")}.
+\code{c("am_doc", "automerge")}.
 }
 \description{
 Creates a new Automerge document with an optional custom actor ID.
@@ -27,7 +27,7 @@ If no actor ID is provided, a random one is generated.
 The automerge package is NOT thread-safe. Do not access the same document
 from multiple R threads concurrently. Each thread should create its own
 document with \code{am_create()} and synchronize changes via
-\code{am_sync_*()} functions after thread completion.
+\verb{am_sync_*()} functions after thread completion.
 }
 
 \examples{
