@@ -9,3 +9,5 @@
 ^automerge-build$
 ^automerge-install$
 ^README\.Rmd$
+^[.]?air[.]toml$
+^\.vscode$
