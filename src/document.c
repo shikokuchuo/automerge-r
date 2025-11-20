@@ -276,7 +276,8 @@ SEXP C_am_get_actor(SEXP doc_ptr) {
 SEXP C_am_set_actor(SEXP doc_ptr, SEXP actor_id) {
     AMdoc *doc = get_doc(doc_ptr);
 
-    AMresult *actor_result, *put_result = NULL;
+    AMresult *actor_result = NULL;
+    AMresult *put_result = NULL;
     AMactorId const *actor = NULL;
 
     if (actor_id == R_NilValue) {
