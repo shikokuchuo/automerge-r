@@ -12,7 +12,7 @@ static void populate_object_from_r_list(AMdoc *doc, const AMobjId *obj_id,
  * Handles type dispatch for scalar values and recursive conversion.
  */
 static AMresult *am_put_value(AMdoc *doc, const AMobjId *obj_id,
-                               SEXP key_or_pos, bool is_map, SEXP value) {
+                               SEXP key_or_pos, bool is_map, SEXP value, bool force_insert) {
     // Determine whether to insert (for lists)
     bool insert = false;
     size_t pos = 0;
@@ -38,7 +38,7 @@ static AMresult *am_put_value(AMdoc *doc, const AMobjId *obj_id,
                 Rf_error("List position must be positive");
             }
             pos = (size_t)(r_pos - 1);
-            insert = false;  // Replace at position
+            insert = force_insert;  // Use caller's preference for insert vs replace
         } else if (TYPEOF(key_or_pos) == STRSXP && Rf_xlength(key_or_pos) == 1) {
             const char* pos_str = CHAR(STRING_ELT(key_or_pos, 0));
             if (strcmp(pos_str, "end") == 0) {
@@ -228,7 +228,7 @@ static void populate_object_from_r_list(AMdoc *doc, const AMobjId *obj_id,
             SEXP key_sexp = PROTECT(Rf_allocVector(STRSXP, 1));
             SET_STRING_ELT(key_sexp, 0, STRING_ELT(names, i));
 
-            AMresult *result = am_put_value(doc, obj_id, key_sexp, true, elem);
+            AMresult *result = am_put_value(doc, obj_id, key_sexp, true, elem, false);
             if (result) {
                 if (AMresultStatus(result) != AM_STATUS_OK) {
                     if (parent_result) AMresultFree(parent_result);
@@ -242,7 +242,7 @@ static void populate_object_from_r_list(AMdoc *doc, const AMobjId *obj_id,
             // List: use position with "end" marker for append
             SEXP end_marker = PROTECT(Rf_mkString("end"));
 
-            AMresult *result = am_put_value(doc, obj_id, end_marker, false, elem);
+            AMresult *result = am_put_value(doc, obj_id, end_marker, false, elem, false);
             if (result) {
                 if (AMresultStatus(result) != AM_STATUS_OK) {
                     if (parent_result) AMresultFree(parent_result);
@@ -400,8 +400,8 @@ SEXP C_am_put(SEXP doc_ptr, SEXP obj_ptr, SEXP key_or_pos, SEXP value) {
         is_map = (obj_type == AM_OBJ_TYPE_MAP);
     }
 
-    // Perform the put operation
-    AMresult *result = am_put_value(doc, obj_id, key_or_pos, is_map, value);
+    // Perform the put operation (insert=false means replace for numeric positions)
+    AMresult *result = am_put_value(doc, obj_id, key_or_pos, is_map, value, false);
 
     // Check if result contains an object ID (creating nested object)
     if (AMresultStatus(result) == AM_STATUS_OK) {
@@ -605,14 +605,27 @@ SEXP C_am_length(SEXP doc_ptr, SEXP obj_ptr) {
  *
  * @param doc_ptr External pointer to am_doc
  * @param obj_ptr External pointer to AMobjId (must be a list)
- * @param pos Numeric position (1-based, or use "end" via am_put)
+ * @param pos Numeric position (1-based) or "end" string
  * @param value R value to insert
  * @return The document pointer (for chaining)
  */
 SEXP C_am_insert(SEXP doc_ptr, SEXP obj_ptr, SEXP pos, SEXP value) {
-    // am_insert is just am_put with insert=true for lists
-    // We'll use the same implementation
-    return C_am_put(doc_ptr, obj_ptr, pos, value);
+    AMdoc *doc = get_doc(doc_ptr);
+    const AMobjId *obj_id = get_objid(obj_ptr);
+
+    // Verify this is a list object
+    AMobjType obj_type = AMobjObjType(doc, obj_id);
+    if (obj_type != AM_OBJ_TYPE_LIST) {
+        Rf_error("am_insert() can only be used on list objects");
+    }
+
+    // Perform the insert operation (insert=true means insert/shift for numeric positions)
+    AMresult *result = am_put_value(doc, obj_id, pos, false, value, true);
+
+    CHECK_RESULT(result, AM_VAL_TYPE_VOID);
+
+    AMresultFree(result);
+    return doc_ptr;  // Return document for chaining
 }
 
 /**

@@ -477,3 +477,456 @@ test_that("nested structures persist after save/load", {
   inner2 <- am_get(doc2, outer2$obj_id, "inner")
   expect_equal(am_get(doc2, inner2$obj_id, "value"), 42)
 })
+
+# am_insert() Tests -----------------------------------------------------------
+
+test_that("am_insert() inserts at position and shifts elements", {
+  doc <- am_create()
+  list_obj <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+
+  am_put(doc, list_obj$obj_id, "end", "A")
+  am_put(doc, list_obj$obj_id, "end", "C")
+
+  # Insert "B" at position 2 - should shift "C" to position 3
+  am_insert(doc, list_obj$obj_id, 2L, "B")
+
+  expect_equal(am_length(doc, list_obj$obj_id), 3L)
+  expect_equal(am_get(doc, list_obj$obj_id, 1L), "A")
+  expect_equal(am_get(doc, list_obj$obj_id, 2L), "B")
+  expect_equal(am_get(doc, list_obj$obj_id, 3L), "C")
+})
+
+test_that("am_insert() at position 1 prepends to list", {
+  doc <- am_create()
+  list_obj <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+
+  am_put(doc, list_obj$obj_id, "end", "B")
+  am_put(doc, list_obj$obj_id, "end", "C")
+
+  # Insert at position 1 - should shift everything down
+  am_insert(doc, list_obj$obj_id, 1L, "A")
+
+  expect_equal(am_length(doc, list_obj$obj_id), 3L)
+  expect_equal(am_get(doc, list_obj$obj_id, 1L), "A")
+  expect_equal(am_get(doc, list_obj$obj_id, 2L), "B")
+  expect_equal(am_get(doc, list_obj$obj_id, 3L), "C")
+})
+
+test_that("am_insert() vs am_put() behavior differs", {
+  doc <- am_create()
+  list_obj <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+
+  am_put(doc, list_obj$obj_id, "end", "A")
+  am_put(doc, list_obj$obj_id, "end", "B")
+
+  # am_put replaces
+  am_put(doc, list_obj$obj_id, 2L, "REPLACED")
+  expect_equal(am_length(doc, list_obj$obj_id), 2L)
+  expect_equal(am_get(doc, list_obj$obj_id, 2L), "REPLACED")
+
+  # am_insert shifts
+  am_insert(doc, list_obj$obj_id, 2L, "INSERTED")
+  expect_equal(am_length(doc, list_obj$obj_id), 3L)
+  expect_equal(am_get(doc, list_obj$obj_id, 2L), "INSERTED")
+  expect_equal(am_get(doc, list_obj$obj_id, 3L), "REPLACED")
+})
+
+test_that("am_insert() appends with 'end'", {
+  doc <- am_create()
+  list_obj <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+
+  am_insert(doc, list_obj$obj_id, "end", "first")
+  am_insert(doc, list_obj$obj_id, "end", "second")
+
+  expect_equal(am_length(doc, list_obj$obj_id), 2L)
+  expect_equal(am_get(doc, list_obj$obj_id, 1L), "first")
+  expect_equal(am_get(doc, list_obj$obj_id, 2L), "second")
+})
+
+test_that("am_insert() returns doc invisibly", {
+  doc <- am_create()
+  list_obj <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+
+  result <- withVisible(am_insert(doc, list_obj$obj_id, "end", "value"))
+
+  expect_identical(result$value, doc)
+  expect_false(result$visible)
+})
+
+test_that("am_insert() only works on lists", {
+  doc <- am_create()
+  map_obj <- am_put(doc, AM_ROOT, "map", AM_OBJ_TYPE_MAP)
+
+  expect_error(
+    am_insert(doc, map_obj$obj_id, 1L, "value"),
+    "can only be used on list objects"
+  )
+})
+
+# Type Constructors -----------------------------------------------------------
+
+test_that("am_counter() creates counter with default value", {
+  counter <- am_counter()
+
+  expect_s3_class(counter, "am_counter")
+  expect_equal(as.integer(counter), 0L)
+})
+
+test_that("am_counter() creates counter with specified value", {
+  counter <- am_counter(42)
+
+  expect_s3_class(counter, "am_counter")
+  expect_equal(as.integer(counter), 42L)
+})
+
+test_that("am_counter() coerces to integer", {
+  counter <- am_counter(3.7)
+
+  expect_equal(as.integer(counter), 3L)
+})
+
+test_that("am_list() creates empty list", {
+  result <- am_list()
+
+  expect_s3_class(result, "am_list_type")
+  expect_s3_class(result, "list")
+  expect_length(result, 0)
+})
+
+test_that("am_list() creates list with elements", {
+  result <- am_list("a", "b", "c")
+
+  expect_s3_class(result, "am_list_type")
+  expect_length(result, 3)
+  expect_equal(result[[1]], "a")
+  expect_equal(result[[2]], "b")
+  expect_equal(result[[3]], "c")
+})
+
+test_that("am_list() handles mixed types", {
+  result <- am_list(1L, "text", TRUE, 3.14)
+
+  expect_length(result, 4)
+  expect_equal(result[[1]], 1L)
+  expect_equal(result[[2]], "text")
+  expect_equal(result[[3]], TRUE)
+  expect_equal(result[[4]], 3.14)
+})
+
+test_that("am_map() creates empty map", {
+  result <- am_map()
+
+  expect_s3_class(result, "am_map_type")
+  expect_s3_class(result, "list")
+  expect_length(result, 0)
+})
+
+test_that("am_map() creates map with named elements", {
+  result <- am_map(key1 = "value1", key2 = "value2")
+
+  expect_s3_class(result, "am_map_type")
+  expect_length(result, 2)
+  expect_equal(result$key1, "value1")
+  expect_equal(result$key2, "value2")
+  expect_equal(names(result), c("key1", "key2"))
+})
+
+test_that("am_map() handles mixed value types", {
+  result <- am_map(int = 1L, str = "text", bool = TRUE, dbl = 3.14)
+
+  expect_length(result, 4)
+  expect_equal(result$int, 1L)
+  expect_equal(result$str, "text")
+  expect_equal(result$bool, TRUE)
+  expect_equal(result$dbl, 3.14)
+})
+
+test_that("am_text() creates empty text object", {
+  result <- am_text()
+
+  expect_s3_class(result, "am_text_type")
+  expect_s3_class(result, "character")
+  expect_equal(as.character(result), "")
+})
+
+test_that("am_text() creates text with initial content", {
+  result <- am_text("Hello, World!")
+
+  expect_s3_class(result, "am_text_type")
+  expect_equal(as.character(result), "Hello, World!")
+})
+
+test_that("am_text() requires scalar string", {
+  expect_error(am_text(c("a", "b")), "single character string")
+  expect_error(am_text(123), "single character string")
+  expect_error(am_text(NULL), "single character string")
+})
+
+# Text Operations -------------------------------------------------------------
+
+test_that("am_text_splice() inserts text", {
+  doc <- am_create()
+  text_obj <- am_put(doc, AM_ROOT, "doc", am_text("Hello"))
+
+  am_text_splice(doc, text_obj$obj_id, 5, 0, " World")
+
+  result <- am_text_get(doc, text_obj$obj_id)
+  expect_equal(result, "Hello World")
+})
+
+test_that("am_text_splice() deletes text", {
+  doc <- am_create()
+  text_obj <- am_put(doc, AM_ROOT, "doc", am_text("Hello World"))
+
+  am_text_splice(doc, text_obj$obj_id, 5, 6, "")
+
+  result <- am_text_get(doc, text_obj$obj_id)
+  expect_equal(result, "Hello")
+})
+
+test_that("am_text_splice() replaces text", {
+  doc <- am_create()
+  text_obj <- am_put(doc, AM_ROOT, "doc", am_text("Hello World"))
+
+  am_text_splice(doc, text_obj$obj_id, 6, 5, "Claude")
+
+  result <- am_text_get(doc, text_obj$obj_id)
+  expect_equal(result, "Hello Claude")
+})
+
+test_that("am_text_splice() at position 0 prepends", {
+  doc <- am_create()
+  text_obj <- am_put(doc, AM_ROOT, "doc", am_text("World"))
+
+  am_text_splice(doc, text_obj$obj_id, 0, 0, "Hello ")
+
+  result <- am_text_get(doc, text_obj$obj_id)
+  expect_equal(result, "Hello World")
+})
+
+test_that("am_text_splice() returns doc invisibly", {
+  doc <- am_create()
+  text_obj <- am_put(doc, AM_ROOT, "doc", am_text("test"))
+
+  result <- withVisible(am_text_splice(doc, text_obj$obj_id, 0, 0, "x"))
+
+  expect_identical(result$value, doc)
+  expect_false(result$visible)
+})
+
+test_that("am_text_splice() handles UTF-8 text (byte indexing)", {
+  doc <- am_create()
+  text_obj <- am_put(doc, AM_ROOT, "doc", am_text(""))
+
+  am_text_splice(doc, text_obj$obj_id, 0, 0, "你好")
+  byte_len <- nchar("你好", type = "bytes")
+  am_text_splice(doc, text_obj$obj_id, byte_len, 0, "世界")
+
+  result <- am_text_get(doc, text_obj$obj_id)
+  expect_equal(result, "你好世界")
+})
+
+test_that("am_text_splice() handles emoji", {
+  doc <- am_create()
+  text_obj <- am_put(doc, AM_ROOT, "doc", am_text("Hello"))
+
+  am_text_splice(doc, text_obj$obj_id, 5, 0, " 🌍")
+
+  result <- am_text_get(doc, text_obj$obj_id)
+  expect_equal(result, "Hello 🌍")
+})
+
+test_that("am_text_get() returns text from text object", {
+  doc <- am_create()
+  text_obj <- am_put(doc, AM_ROOT, "doc", am_text("Test content"))
+
+  result <- am_text_get(doc, text_obj$obj_id)
+
+  expect_type(result, "character")
+  expect_length(result, 1)
+  expect_equal(result, "Test content")
+})
+
+test_that("am_text_get() returns empty string for empty text", {
+  doc <- am_create()
+  text_obj <- am_put(doc, AM_ROOT, "doc", am_text())
+
+  result <- am_text_get(doc, text_obj$obj_id)
+
+  expect_equal(result, "")
+})
+
+test_that("text objects persist after save/load", {
+  doc1 <- am_create()
+  text_obj <- am_put(doc1, AM_ROOT, "doc", am_text("Original"))
+  am_text_splice(doc1, text_obj$obj_id, 8, 0, " Text")
+
+  binary <- am_save(doc1)
+  doc2 <- am_load(binary)
+
+  text_obj2 <- am_get(doc2, AM_ROOT, "doc")
+  result <- am_text_get(doc2, text_obj2$obj_id)
+  expect_equal(result, "Original Text")
+})
+
+test_that("multiple text edits accumulate correctly", {
+  doc <- am_create()
+  text_obj <- am_put(doc, AM_ROOT, "doc", am_text(""))
+
+  am_text_splice(doc, text_obj$obj_id, 0, 0, "The")
+  am_text_splice(doc, text_obj$obj_id, 3, 0, " quick")
+  am_text_splice(doc, text_obj$obj_id, 9, 0, " brown")
+  am_text_splice(doc, text_obj$obj_id, 15, 0, " fox")
+
+  result <- am_text_get(doc, text_obj$obj_id)
+  expect_equal(result, "The quick brown fox")
+})
+
+# am_values() Tests -----------------------------------------------------------
+
+test_that("am_values() returns all values from map", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "a", 1)
+  am_put(doc, AM_ROOT, "b", 2)
+  am_put(doc, AM_ROOT, "c", 3)
+
+  values <- am_values(doc, AM_ROOT)
+
+  expect_type(values, "list")
+  expect_length(values, 3)
+  expect_true(all(c(1, 2, 3) %in% values))
+})
+
+test_that("am_values() returns all values from list", {
+  doc <- am_create()
+  list_obj <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+
+  am_put(doc, list_obj$obj_id, "end", "first")
+  am_put(doc, list_obj$obj_id, "end", "second")
+  am_put(doc, list_obj$obj_id, "end", "third")
+
+  values <- am_values(doc, list_obj$obj_id)
+
+  expect_type(values, "list")
+  expect_length(values, 3)
+  expect_equal(values[[1]], "first")
+  expect_equal(values[[2]], "second")
+  expect_equal(values[[3]], "third")
+})
+
+test_that("am_values() returns empty list for empty map", {
+  doc <- am_create()
+
+  values <- am_values(doc, AM_ROOT)
+
+  expect_type(values, "list")
+  expect_length(values, 0)
+})
+
+test_that("am_values() returns empty list for empty list", {
+  doc <- am_create()
+  list_obj <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+
+  values <- am_values(doc, list_obj$obj_id)
+
+  expect_type(values, "list")
+  expect_length(values, 0)
+})
+
+test_that("am_values() handles mixed types", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "int", 42L)
+  am_put(doc, AM_ROOT, "str", "text")
+  am_put(doc, AM_ROOT, "bool", TRUE)
+  am_put(doc, AM_ROOT, "null", NULL)
+
+  values <- am_values(doc, AM_ROOT)
+
+  expect_length(values, 4)
+  expect_true(42L %in% values)
+  expect_true("text" %in% values)
+  expect_true(TRUE %in% values)
+})
+
+test_that("am_values() includes nested objects", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "scalar", "value")
+  nested <- am_put(doc, AM_ROOT, "nested", AM_OBJ_TYPE_MAP)
+
+  values <- am_values(doc, AM_ROOT)
+
+  expect_length(values, 2)
+  expect_true("value" %in% values)
+  expect_true(any(sapply(values, function(v) inherits(v, "am_object"))))
+})
+
+# List Edge Cases -------------------------------------------------------------
+
+test_that("am_get() with index 0 returns NULL", {
+  doc <- am_create()
+  list_obj <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  am_put(doc, list_obj$obj_id, "end", "value")
+
+  result <- am_get(doc, list_obj$obj_id, 0L)
+
+  expect_null(result)
+})
+
+test_that("am_get() with negative index returns NULL", {
+  doc <- am_create()
+  list_obj <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  am_put(doc, list_obj$obj_id, "end", "value")
+
+  result <- am_get(doc, list_obj$obj_id, -1L)
+
+  expect_null(result)
+})
+
+test_that("am_get() with out-of-bounds index returns NULL", {
+  doc <- am_create()
+  list_obj <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  am_put(doc, list_obj$obj_id, "end", "value")
+
+  result <- am_get(doc, list_obj$obj_id, 100L)
+
+  expect_null(result)
+})
+
+test_that("am_get() on empty list returns NULL", {
+  doc <- am_create()
+  list_obj <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+
+  result <- am_get(doc, list_obj$obj_id, 1L)
+
+  expect_null(result)
+})
+
+# Return Value Tests ----------------------------------------------------------
+
+test_that("am_put() with scalar returns doc invisibly", {
+  doc <- am_create()
+
+  result <- withVisible(am_put(doc, AM_ROOT, "key", "value"))
+
+  expect_identical(result$value, doc)
+  expect_false(result$visible)
+})
+
+test_that("am_put() with object type returns am_object visibly", {
+  doc <- am_create()
+
+  result <- withVisible(am_put(doc, AM_ROOT, "key", AM_OBJ_TYPE_MAP))
+
+  expect_s3_class(result$value, "am_object")
+  expect_true(result$visible)
+})
+
+test_that("am_delete() returns doc invisibly", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "key", "value")
+
+  result <- withVisible(am_delete(doc, AM_ROOT, "key"))
+
+  expect_identical(result$value, doc)
+  expect_false(result$visible)
+})
