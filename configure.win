@@ -67,10 +67,9 @@ if [ ${AUTOMERGE_FOUND} -eq 0 ]; then
         -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
         -DCMAKE_INSTALL_PREFIX="${PWD}/automerge-install" \
         -DCMAKE_INSTALL_LIBDIR=lib \
+        -DCMAKE_STATIC_LIBRARY_SUFFIX_C=.b \
         -DBUILD_TESTING=OFF \
-        -DCMAKE_COLOR_MAKEFILE=OFF \
-        -DCMAKE_C_COMPILER=gcc \
-        -DCMAKE_MAKE_PROGRAM=make
+        -DCMAKE_COLOR_MAKEFILE=OFF
 
     if [ $? -ne 0 ]; then
         echo "ERROR: CMake configuration failed"
@@ -104,7 +103,7 @@ if [ ${AUTOMERGE_FOUND} -eq 0 ]; then
     echo "Successfully built automerge-c from source"
 
     PKG_CFLAGS="-I../automerge-install/include"
-    PKG_LIBS="../automerge-install/lib/libautomerge.a"
+    PKG_LIBS="../automerge-install/lib/libautomerge.b"
 fi
 
 PKG_LIBS="${PKG_LIBS} -lws2_32 -luserenv -lbcrypt -lntdll"
