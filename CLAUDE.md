@@ -20,11 +20,13 @@ The package uses a two-phase build approach controlled by configure scripts:
 1. **System Library Detection**: First tries to find system-installed `automerge-c`
    - Searches standard prefixes: `/usr/local`, `/usr`, `/opt/local`, `/opt/homebrew`
    - Falls back to `pkg-config` if available
+   - **UTF-32 Verification**: Compiles a test program to verify the system library uses UTF-32 character indexing
+   - If system library uses UTF-8 byte indexing, falls back to bundled build
    - Set `AUTOMERGE_LIBS=1` environment variable to force bundled build
 
-2. **Bundled Build**: If system library not found, builds automerge-c from source
+2. **Bundled Build**: If system library not found or incompatible, builds automerge-c from source
    - Located in `src/automerge/rust/automerge-c/`
-   - Uses CMake to build the Rust library
+   - Uses CMake with `-DUTF32_INDEXING=ON` flag
    - Requires Rust toolchain >= 1.89.0 and CMake >= 3.25
 
 ### Platform-Specific Configuration
@@ -135,8 +137,11 @@ R CMD check automerge_*.tar.gz
 
 ## Important Notes
 
-- **UTF-8 Indexing**: CMake build uses UTF-8 byte indexing by default (matches R's internal strings)
-  - Alternative: Add `-DUTF32_INDEXING=ON` to configure scripts for code point indexing
+- **UTF-32 Character Indexing**: CMake build uses UTF-32 code point indexing (matches R's character semantics)
+  - Text positions work like R's `substr()` and `nchar()` - counting characters, not bytes
+  - Example: In "Hello😀", the emoji is at character position 6, not byte offset 5-8
+  - This provides natural R behavior: `nchar("😀")` returns 1, and text operations use the same indexing
+  - JavaScript Note: JS uses UTF-16, so positions may differ for emoji and some Unicode characters
 
 - **Security Considerations**:
   - Input validation limits defined in `automerge.h`

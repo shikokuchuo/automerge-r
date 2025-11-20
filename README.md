@@ -43,12 +43,11 @@ pak::pak("posit-dev/automerge-r")
 
 To build from source, you need:
 
-- R \>= 4.2
 - Rust toolchain \>= 1.89.0 - Install from <https://rustup.rs/>
 - CMake \>= 3.25 - Included in Rtools43+ on Windows
 
-Alternatively, install `automerge-c` system-wide to skip the source
-build.
+Alternatively, install `automerge-c` (with UTF-32 character indexing
+enabled) system-wide to skip the source build.
 
 ## Status
 
@@ -73,7 +72,7 @@ doc$age <- 30L
 doc[["active"]] <- TRUE
 doc
 #> <Automerge Document>
-#> Actor: 015437c86004384856446f4a69264dab 
+#> Actor: b8fef5f0036f9bded80a3ac34336e490 
 #> Root keys: 3 
 #> Keys: active, age, name
 ```
@@ -119,7 +118,7 @@ Automerge supports specialized CRDT types:
 ``` r
 doc$created <- Sys.time() # POSIXct timestamp
 doc$score <- am_counter(0) # Counter
-doc$notes <- am_text("new") # Text object with CRDT semantics
+doc$notes <- am_text("世界") # Text object with CRDT semantics
 ```
 
 ### Working with Text
@@ -128,9 +127,9 @@ Text objects support fine-grained editing:
 
 ``` r
 text_obj <- doc$notes
-am_text_splice(doc, text_obj$obj_id, 3, 0, "s")
+am_text_splice(doc, text_obj$obj_id, 2, 0, "🌍")
 am_text_get(doc, text_obj$obj_id)
-#> [1] "news"
+#> [1] "世界🌍"
 ```
 
 ### Utility Methods
@@ -150,23 +149,20 @@ as.list(doc) # Convert to R list
 #> [1] 30
 #> 
 #> $created
-#> [1] "2025-11-20 17:36:19 GMT"
+#> [1] "2025-11-20 22:20:02 GMT"
 #> 
 #> $name
 #> [1] "Alice"
 #> 
 #> $notes
 #> $notes[[1]]
-#> [1] "n"
+#> [1] "世"
 #> 
 #> $notes[[2]]
-#> [1] "e"
+#> [1] "界"
 #> 
 #> $notes[[3]]
-#> [1] "w"
-#> 
-#> $notes[[4]]
-#> [1] "s"
+#> [1] "🌍"
 #> 
 #> 
 #> $score
@@ -203,7 +199,7 @@ bytes <- am_save(doc)
 doc2 <- am_load(bytes)
 doc2
 #> <Automerge Document>
-#> Actor: 31557e91d1114cfae0345407a9b7d7a7 
+#> Actor: a5f9fb3642d05dabd1d11d2e575ae3f9 
 #> Root keys: 7 
 #> Keys: active, age, created, name, notes, score, user
 ```
@@ -231,7 +227,7 @@ am_put(doc, AM_ROOT, "name", "Alice")
 am_put(doc, AM_ROOT, "age", 30L)
 doc
 #> <Automerge Document>
-#> Actor: 1f2771ec270b6d79e34ca3495c9484a0 
+#> Actor: 4d737bd11b79c8c9cc5f93a221ca20e2 
 #> Root keys: 2 
 #> Keys: age, name
 ```

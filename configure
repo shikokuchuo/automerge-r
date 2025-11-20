@@ -12,6 +12,15 @@ export CC CFLAGS LDFLAGS
 
 echo "Configuring automerge R package"
 
+check_utf32_indexing() {
+    echo "#include <automerge-c/config.h>
+    #ifndef AUTOMERGE_C_UTF32
+    #error \"UTF-32 indexing is not enabled\"
+    #endif
+    int main(void) { return 0; }" | \
+        ${CC} -I"$1" -xc - -c -o /dev/null 2>/dev/null
+}
+
 if [ "${AUTOMERGE_LIBS}" = "1" ]; then
     echo "AUTOMERGE_LIBS=1: forcing bundled source compilation"
 else
@@ -21,19 +30,40 @@ else
         if [ -f "${prefix}/include/automerge-c/automerge.h" ] && \
            [ -f "${prefix}/lib/libautomerge.a" ]; then
             echo "Found automerge in ${prefix}"
-            PKG_CFLAGS="-I${prefix}/include/automerge-c"
-            PKG_LIBS="-L${prefix}/lib -lautomerge"
-            AUTOMERGE_FOUND=1
-            break
+
+            # Check if it's built with UTF-32 indexing via compilation test
+            if check_utf32_indexing "${prefix}/include/automerge-c"; then
+                echo "Verified UTF-32 character indexing enabled"
+                PKG_CFLAGS="-I${prefix}/include/automerge-c"
+                PKG_LIBS="-L${prefix}/lib -lautomerge"
+                AUTOMERGE_FOUND=1
+                break
+            else
+                echo "Detected system automerge uses UTF-8 byte indexing"
+                echo "This package requires UTF-32 character indexing for natural R semantics"
+                echo "Will build from bundled source instead"
+            fi
         fi
     done
 
     if [ ${AUTOMERGE_FOUND} -eq 0 ] && command -v pkg-config >/dev/null 2>&1; then
         if pkg-config --exists automerge-c 2>/dev/null; then
             echo "Found automerge via pkg-config"
-            PKG_CFLAGS=$(pkg-config --cflags automerge-c)
-            PKG_LIBS=$(pkg-config --libs automerge-c)
-            AUTOMERGE_FOUND=1
+
+            # Try to get the prefix from pkg-config
+            prefix=$(pkg-config --variable=prefix automerge-c 2>/dev/null)
+            if [ -n "${prefix}" ]; then
+                if check_utf32_indexing "${prefix}/include/automerge-c"; then
+                    echo "Verified UTF-32 character indexing enabled"
+                    PKG_CFLAGS=$(pkg-config --cflags automerge-c)
+                    PKG_LIBS=$(pkg-config --libs automerge-c)
+                    AUTOMERGE_FOUND=1
+                else
+                    echo "Detected system automerge uses UTF-8 byte indexing"
+                    echo "This package requires UTF-32 character indexing for natural R semantics"
+                    echo "Will build from bundled source instead"
+                fi
+            fi
         fi
     fi
 fi
@@ -67,10 +97,8 @@ if [ ${AUTOMERGE_FOUND} -eq 0 ]; then
     export TMPDIR="${PWD}/automerge-build/tmp"
     mkdir -p "$TMPDIR"
 
-    # UTF-8 byte indexing matches R's internal string representation
-    # Alternative: -DUTF32_INDEXING=ON for code point indexing
-    # Tests disabled to reduce build time and artifacts
-    # Build in package root to avoid R CMD check warnings about GNU make
+    # UTF-32 code point indexing for natural R character semantics
+    # This makes text positions match R's substr(), nchar() behaviour
     echo "Configuring with CMake..."
     cmake -S src/automerge/rust/automerge-c -B automerge-build \
         -DCMAKE_BUILD_TYPE=Release \
@@ -79,7 +107,8 @@ if [ ${AUTOMERGE_FOUND} -eq 0 ]; then
         -DCMAKE_INSTALL_LIBDIR=lib \
         -DCMAKE_STATIC_LIBRARY_SUFFIX_C=.b \
         -DBUILD_TESTING=OFF \
-        -DCMAKE_COLOR_MAKEFILE=OFF
+        -DCMAKE_COLOR_MAKEFILE=OFF \
+        -DUTF32_INDEXING=ON
 
     if [ $? -ne 0 ]; then
         echo "ERROR: CMake configuration failed"

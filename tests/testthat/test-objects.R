@@ -714,13 +714,13 @@ test_that("am_text_splice() returns doc invisibly", {
   expect_false(result$visible)
 })
 
-test_that("am_text_splice() handles UTF-8 text (byte indexing)", {
+test_that("am_text_splice() handles UTF-8 text (character indexing)", {
   doc <- am_create()
   text_obj <- am_put(doc, AM_ROOT, "doc", am_text(""))
 
   am_text_splice(doc, text_obj$obj_id, 0, 0, "你好")
-  byte_len <- nchar("你好", type = "bytes")
-  am_text_splice(doc, text_obj$obj_id, byte_len, 0, "世界")
+  char_len <- nchar("你好")  # Natural R character counting!
+  am_text_splice(doc, text_obj$obj_id, char_len, 0, "世界")
 
   result <- am_text_get(doc, text_obj$obj_id)
   expect_equal(result, "你好世界")

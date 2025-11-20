@@ -251,20 +251,36 @@ am_text <- function(initial = "") {
 #'
 #' @param doc An Automerge document
 #' @param text_obj An Automerge text object ID
-#' @param pos Position to start splice (0-based)
-#' @param del_count Number of characters to delete
+#' @param pos Character position to start splice (0-based, counts Unicode code points)
+#' @param del_count Number of characters to delete (counts Unicode code points)
 #' @param text Text to insert
 #' @return The document `doc` (invisibly, for chaining)
+#'
+#' @details
+#' Text positions use character (Unicode code point) indexing, matching R's
+#' `substr()` and `nchar()` behavior. For example, in "Hello😀", the emoji
+#' is at position 5 (as a single character), not byte offset 5-8.
+#'
+#' This means `nchar("😀")` returns 1, and you can use that directly in
+#' text operations without needing to calculate byte offsets.
+#'
 #' @export
 #' @examples
 #' doc <- am_create()
 #' text_obj <- am_put(doc, AM_ROOT, "doc", am_text("Hello"))
 #'
-#' # Insert " World" at position 5
+#' # Insert " World" at position 5 (after "Hello")
 #' am_text_splice(doc, text_obj$obj_id, 5, 0, " World")
 #'
 #' # Get the full text
 #' am_text_get(doc, text_obj$obj_id)  # "Hello World"
+#'
+#' # Works naturally with multibyte characters
+#' text_obj2 <- am_put(doc, AM_ROOT, "emoji", am_text(""))
+#' am_text_splice(doc, text_obj2$obj_id, 0, 0, "Hello😀")
+#' # Position 5 is the emoji (character index, not bytes)
+#' am_text_splice(doc, text_obj2$obj_id, 6, 0, "World")
+#' am_text_get(doc, text_obj2$obj_id)  # "Hello😀World"
 am_text_splice <- function(doc, text_obj, pos, del_count, text) {
   invisible(.Call(
     C_am_text_splice,
