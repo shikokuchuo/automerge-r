@@ -45,6 +45,11 @@ jobs:
         with:
           toolchain: stable-x86_64-pc-windows-gnu
 
+      - name: Add Cargo to PATH
+        if: runner.os == 'Windows'
+        shell: bash
+        run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck
