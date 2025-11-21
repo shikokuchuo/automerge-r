@@ -20,7 +20,7 @@ static AMresult *am_put_value(AMdoc *doc, const AMobjId *obj_id,
 
     if (is_map) {
         // Map: key must be character string
-        if (TYPEOF(key_or_pos) != STRSXP || Rf_xlength(key_or_pos) != 1) {
+        if (TYPEOF(key_or_pos) != STRSXP || XLENGTH(key_or_pos) != 1) {
             Rf_error("Map key must be a single character string");
         }
         const char* key_str = CHAR(STRING_ELT(key_or_pos, 0));
@@ -29,7 +29,7 @@ static AMresult *am_put_value(AMdoc *doc, const AMobjId *obj_id,
     } else {
         // List: position can be numeric or "end" marker
         if (TYPEOF(key_or_pos) == REALSXP || TYPEOF(key_or_pos) == INTSXP) {
-            if (Rf_xlength(key_or_pos) != 1) {
+            if (XLENGTH(key_or_pos) != 1) {
                 Rf_error("List position must be a scalar");
             }
             // R uses 1-based indexing, C uses 0-based
@@ -39,7 +39,7 @@ static AMresult *am_put_value(AMdoc *doc, const AMobjId *obj_id,
             }
             pos = (size_t)(r_pos - 1);
             insert = force_insert;  // Use caller's preference for insert vs replace
-        } else if (TYPEOF(key_or_pos) == STRSXP && Rf_xlength(key_or_pos) == 1) {
+        } else if (TYPEOF(key_or_pos) == STRSXP && XLENGTH(key_or_pos) == 1) {
             const char* pos_str = CHAR(STRING_ELT(key_or_pos, 0));
             if (strcmp(pos_str, "end") == 0) {
                 pos = SIZE_MAX;  // Append at end
@@ -77,7 +77,7 @@ static AMresult *am_put_value(AMdoc *doc, const AMobjId *obj_id,
                        AMlistPutCounter(doc, obj_id, pos, insert, val);
     } else if (Rf_inherits(value, "am_text_type")) {
         // Text object with initial content (must check before STRSXP)
-        if (TYPEOF(value) != STRSXP || Rf_xlength(value) != 1) {
+        if (TYPEOF(value) != STRSXP || XLENGTH(value) != 1) {
             Rf_error("am_text must be a single character string");
         }
 
@@ -108,24 +108,24 @@ static AMresult *am_put_value(AMdoc *doc, const AMobjId *obj_id,
         }
 
         return text_result;
-    } else if (TYPEOF(value) == LGLSXP && Rf_xlength(value) == 1) {
+    } else if (TYPEOF(value) == LGLSXP && XLENGTH(value) == 1) {
         // Logical (boolean)
         bool val = (bool) LOGICAL(value)[0];
         return is_map ? AMmapPutBool(doc, obj_id, key, val) :
                        AMlistPutBool(doc, obj_id, pos, insert, val);
-    } else if (TYPEOF(value) == INTSXP && Rf_xlength(value) == 1) {
+    } else if (TYPEOF(value) == INTSXP && XLENGTH(value) == 1) {
         // Integer
         int64_t val = (int64_t) INTEGER(value)[0];
         return is_map ? AMmapPutInt(doc, obj_id, key, val) :
                        AMlistPutInt(doc, obj_id, pos, insert, val);
-    } else if (TYPEOF(value) == REALSXP && Rf_xlength(value) == 1) {
+    } else if (TYPEOF(value) == REALSXP && XLENGTH(value) == 1) {
         // Numeric (double)
         double val = REAL(value)[0];
         return is_map ? AMmapPutF64(doc, obj_id, key, val) :
                        AMlistPutF64(doc, obj_id, pos, insert, val);
     } else if (TYPEOF(value) == RAWSXP) {
         // Raw bytes
-        AMbyteSpan val = {.src = RAW(value), .count = (size_t) Rf_xlength(value)};
+        AMbyteSpan val = {.src = RAW(value), .count = (size_t) XLENGTH(value)};
         return is_map ? AMmapPutBytes(doc, obj_id, key, val) :
                        AMlistPutBytes(doc, obj_id, pos, insert, val);
     } else if (TYPEOF(value) == VECSXP) {
@@ -159,7 +159,7 @@ static AMresult *am_put_value(AMdoc *doc, const AMobjId *obj_id,
         populate_object_from_r_list(doc, nested_obj, value, 0, obj_result);
 
         return obj_result;
-    } else if (TYPEOF(value) == STRSXP && Rf_xlength(value) == 1) {
+    } else if (TYPEOF(value) == STRSXP && XLENGTH(value) == 1) {
         // String - check if it's an object type constant first
         const char *str = CHAR(STRING_ELT(value, 0));
 
@@ -437,14 +437,14 @@ SEXP C_am_get(SEXP doc_ptr, SEXP obj_ptr, SEXP key_or_pos) {
     AMresult *result;
 
     // Dispatch based on key type
-    if (TYPEOF(key_or_pos) == STRSXP && Rf_xlength(key_or_pos) == 1) {
+    if (TYPEOF(key_or_pos) == STRSXP && XLENGTH(key_or_pos) == 1) {
         // Map get
         const char *key_str = CHAR(STRING_ELT(key_or_pos, 0));
         AMbyteSpan key = {.src = (uint8_t const *) key_str, .count = strlen(key_str)};
         result = AMmapGet(doc, obj_id, key, NULL);  // NULL = current heads
     } else if (TYPEOF(key_or_pos) == REALSXP || TYPEOF(key_or_pos) == INTSXP) {
         // List get
-        if (Rf_xlength(key_or_pos) != 1) {
+        if (XLENGTH(key_or_pos) != 1) {
             Rf_error("List position must be a scalar");
         }
         int r_pos = Rf_asInteger(key_or_pos);
@@ -507,14 +507,14 @@ SEXP C_am_delete(SEXP doc_ptr, SEXP obj_ptr, SEXP key_or_pos) {
     AMresult *result;
 
     // Dispatch based on key type
-    if (TYPEOF(key_or_pos) == STRSXP && Rf_xlength(key_or_pos) == 1) {
+    if (TYPEOF(key_or_pos) == STRSXP && XLENGTH(key_or_pos) == 1) {
         // Map delete
         const char *key_str = CHAR(STRING_ELT(key_or_pos, 0));
         AMbyteSpan key = {.src = (uint8_t const *) key_str, .count = strlen(key_str)};
         result = AMmapDelete(doc, obj_id, key);
     } else if (TYPEOF(key_or_pos) == REALSXP || TYPEOF(key_or_pos) == INTSXP) {
         // List delete
-        if (Rf_xlength(key_or_pos) != 1) {
+        if (XLENGTH(key_or_pos) != 1) {
             Rf_error("List position must be a scalar");
         }
         int r_pos = Rf_asInteger(key_or_pos);
@@ -648,7 +648,7 @@ SEXP C_am_text_splice(SEXP doc_ptr, SEXP text_ptr, SEXP pos, SEXP del_count, SEX
     if (TYPEOF(del_count) != INTSXP && TYPEOF(del_count) != REALSXP) {
         Rf_error("del_count must be numeric");
     }
-    if (TYPEOF(text) != STRSXP || Rf_xlength(text) != 1) {
+    if (TYPEOF(text) != STRSXP || XLENGTH(text) != 1) {
         Rf_error("text must be a single character string");
     }
 
