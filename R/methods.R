@@ -174,19 +174,15 @@ as.list.am_doc <- function(x, ...) {
 #' user[["name"]]  # "Bob"
 #' user$age        # 25L
 `[[.am_object` <- function(x, i) {
-  am_get(x$doc, x$obj_id, i)
+  doc <- .Call(C_get_doc_from_objid, x)
+  am_get(doc, x, i)
 }
 
 #' @rdname extract-am_object
 #' @export
 `$.am_object` <- function(x, name) {
-  x_unclass <- unclass(x)
-  # Allow direct access to object fields (obj_id, doc)
-  if (name %in% names(x_unclass)) {
-    return(x_unclass[[name]])
-  }
-  # Otherwise delegate to am_get
-  am_get(x_unclass$doc, x_unclass$obj_id, name)
+  doc <- .Call(C_get_doc_from_objid, x)
+  am_get(doc, x, name)
 }
 
 #' @name replace-am_object
@@ -209,14 +205,16 @@ as.list.am_doc <- function(x, ...) {
 #' user[["name"]] <- "Alice"
 #' user$age <- 30L
 `[[<-.am_object` <- function(x, i, value) {
-  am_put(x$doc, x$obj_id, i, value)
+  doc <- .Call(C_get_doc_from_objid, x)
+  am_put(doc, x, i, value)
   x
 }
 
 #' @rdname replace-am_object
 #' @export
 `$<-.am_object` <- function(x, name, value) {
-  am_put(x$doc, x$obj_id, name, value)
+  doc <- .Call(C_get_doc_from_objid, x)
+  am_put(doc, x, name, value)
   x
 }
 
@@ -228,7 +226,8 @@ as.list.am_doc <- function(x, ...) {
 #' @return Integer length
 #' @export
 length.am_object <- function(x) {
-  am_length(x$doc, x$obj_id)
+  doc <- .Call(C_get_doc_from_objid, x)
+  am_length(doc, x)
 }
 
 #' Get names from Automerge map object
@@ -239,7 +238,8 @@ length.am_object <- function(x) {
 #' @return Character vector of key names
 #' @export
 names.am_map <- function(x) {
-  am_keys(x$doc, x$obj_id)
+  doc <- .Call(C_get_doc_from_objid, x)
+  am_keys(doc, x)
 }
 
 #' Print Automerge counter
@@ -271,12 +271,13 @@ print.am_object <- function(x, ...) {
 #' @return The object (invisibly)
 #' @export
 print.am_map <- function(x, ...) {
-  obj_len <- am_length(x$doc, x$obj_id)
+  doc <- .Call(C_get_doc_from_objid, x)
+  obj_len <- am_length(doc, x)
   cat("<Automerge Map>\n")
   cat("Length:", obj_len, "\n")
 
   if (obj_len > 0) {
-    keys <- am_keys(x$doc, x$obj_id)
+    keys <- am_keys(doc, x)
     cat("Keys:", paste(head(keys, 5), collapse = ", "))
     if (obj_len > 5) {
       cat(", ...")
@@ -294,7 +295,8 @@ print.am_map <- function(x, ...) {
 #' @return The object (invisibly)
 #' @export
 print.am_list <- function(x, ...) {
-  obj_len <- am_length(x$doc, x$obj_id)
+  doc <- .Call(C_get_doc_from_objid, x)
+  obj_len <- am_length(doc, x)
   cat("<Automerge List>\n")
   cat("Length:", obj_len, "\n")
 
@@ -308,7 +310,8 @@ print.am_list <- function(x, ...) {
 #' @return The object (invisibly)
 #' @export
 print.am_text <- function(x, ...) {
-  text_content <- am_text_get(x$doc, x$obj_id)
+  doc <- .Call(C_get_doc_from_objid, x)
+  text_content <- am_text_get(doc, x)
   cat("<Automerge Text>\n")
   cat("Length:", nchar(text_content), "characters\n")
 
@@ -330,12 +333,15 @@ print.am_text <- function(x, ...) {
 #' @param ... Additional arguments (unused)
 #' @return Named list
 #' @keywords internal
-as.list.am_map <- function(x, doc = x$doc, ...) {
-  keys <- am_keys(doc, x$obj_id)
+as.list.am_map <- function(x, doc = NULL, ...) {
+  if (is.null(doc)) {
+    doc <- .Call(C_get_doc_from_objid, x)
+  }
+  keys <- am_keys(doc, x)
   result <- lapply(keys, function(k) {
-    value <- am_get(doc, x$obj_id, k)
+    value <- am_get(doc, x, k)
     if (inherits(value, "am_object")) {
-      as.list(value)
+      as.list(value, doc = doc)
     } else {
       value
     }
@@ -353,12 +359,15 @@ as.list.am_map <- function(x, doc = x$doc, ...) {
 #' @param ... Additional arguments (unused)
 #' @return Unnamed list
 #' @keywords internal
-as.list.am_list <- function(x, doc = x$doc, ...) {
-  len <- am_length(doc, x$obj_id)
+as.list.am_list <- function(x, doc = NULL, ...) {
+  if (is.null(doc)) {
+    doc <- .Call(C_get_doc_from_objid, x)
+  }
+  len <- am_length(doc, x)
   result <- lapply(seq_len(len), function(i) {
-    value <- am_get(doc, x$obj_id, i)
+    value <- am_get(doc, x, i)
     if (inherits(value, "am_object")) {
-      as.list(value)
+      as.list(value, doc = doc)
     } else {
       value
     }
@@ -375,6 +384,9 @@ as.list.am_list <- function(x, doc = x$doc, ...) {
 #' @param ... Additional arguments (unused)
 #' @return Character string
 #' @keywords internal
-as.list.am_text <- function(x, doc = x$doc, ...) {
-  am_text_get(doc, x$obj_id)
+as.list.am_text <- function(x, doc = NULL, ...) {
+  if (is.null(doc)) {
+    doc <- .Call(C_get_doc_from_objid, x)
+  }
+  am_text_get(doc, x)
 }

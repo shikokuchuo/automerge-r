@@ -4,7 +4,7 @@
 \alias{as.list.am_text}
 \title{Convert Automerge text to character string}
 \usage{
-\method{as.list}{am_text}(x, doc = x$doc, ...)
+\method{as.list}{am_text}(x, doc = NULL, ...)
 }
 \arguments{
 \item{x}{An Automerge text object}

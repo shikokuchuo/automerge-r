@@ -110,8 +110,8 @@ test_that("Text operations with invalid inputs", {
   text_obj <- am_put(doc, AM_ROOT, "text", am_text("Hello"))
 
   # These should work (baseline)
-  am_text_splice(doc, text_obj$obj_id, 5, 0, " World")
-  result <- am_text_get(doc, text_obj$obj_id)
+  am_text_splice(doc, text_obj, 5, 0, " World")
+  result <- am_text_get(doc, text_obj)
   expect_equal(result, "Hello World")
 
   # Try text operations on non-text object
@@ -119,7 +119,7 @@ test_that("Text operations with invalid inputs", {
 
   # This should fail - trying to do text operations on a map
   expect_snapshot(error = TRUE, {
-    am_text_splice(doc, map_obj$obj_id, 0, 0, "text")
+    am_text_splice(doc, map_obj, 0, 0, "text")
   })
 })
 
@@ -131,7 +131,7 @@ test_that("Operations on invalid object types", {
 
   # Try to use am_keys on text (should work or error gracefully)
   # Text objects don't have "keys" in the map sense
-  result <- am_keys(doc, text_obj$obj_id)
+  result <- am_keys(doc, text_obj)
   expect_true(is.character(result) || is.null(result))
 })
 
@@ -158,23 +158,28 @@ test_that("Nested errors propagate correctly", {
   doc <- am_create()
 
   # Create deeply nested structure
-  am_put(doc, AM_ROOT, "level1", list(
-    level2 = list(
-      level3 = list(
-        level4 = list(
-          level5 = "deep"
+  am_put(
+    doc,
+    AM_ROOT,
+    "level1",
+    list(
+      level2 = list(
+        level3 = list(
+          level4 = list(
+            level5 = "deep"
+          )
         )
       )
     )
-  ))
+  )
 
   # Now try to perform an invalid operation deep in the structure
   level1 <- am_get(doc, AM_ROOT, "level1")
-  level2 <- am_get(doc, level1$obj_id, "level2")
-  level3 <- am_get(doc, level2$obj_id, "level3")
+  level2 <- am_get(doc, level1, "level2")
+  level3 <- am_get(doc, level2, "level3")
 
   # Valid operations should work
-  expect_type(level3, "list")
+  expect_type(level3, "externalptr")
   expect_s3_class(level3, "am_object")
 })
 

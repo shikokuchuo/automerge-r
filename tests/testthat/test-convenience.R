@@ -254,7 +254,8 @@ test_that("as_automerge handles vectors", {
   doc <- as_automerge(c(1, 2, 3))
   values <- doc[["values"]]
   expect_s3_class(values, "am_object")
-  expect_equal(am_length(doc, unclass(values)$obj_id), 3)
+  # am_object is now the external pointer directly
+  expect_equal(am_length(doc, values), 3)
 })
 
 test_that("as_automerge can use existing document", {
@@ -467,7 +468,8 @@ test_that("as_automerge handles nested empty lists", {
 
   inner <- am_get_path(doc, c("outer", "inner"))
   expect_s3_class(inner, "am_object")
-  expect_equal(am_length(doc, inner$obj_id), 0)
+  # am_object is now the external pointer directly
+  expect_equal(am_length(doc, inner), 0)
 })
 
 test_that("as_automerge handles very large structures", {

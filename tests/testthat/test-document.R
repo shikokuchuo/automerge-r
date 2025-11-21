@@ -300,7 +300,7 @@ test_that("am_fork preserves all data", {
 
   nested <- am_get(doc2, AM_ROOT, "key2")
   expect_s3_class(nested, "am_object")
-  expect_equal(am_get(doc2, nested$obj_id, "nested"), "data")
+  expect_equal(am_get(doc2, nested, "nested"), "data")
 })
 
 test_that("am_save on empty document", {

@@ -4,7 +4,7 @@
 \alias{as.list.am_map}
 \title{Convert Automerge map to R list}
 \usage{
-\method{as.list}{am_map}(x, doc = x$doc, ...)
+\method{as.list}{am_map}(x, doc = NULL, ...)
 }
 \arguments{
 \item{x}{An Automerge map object}

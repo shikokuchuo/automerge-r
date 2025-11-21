@@ -54,10 +54,8 @@ am_get_path <- function(doc, path) {
       return(NULL)
     }
 
-    # If it's an am_object, extract its obj_id for the next iteration
-    if (inherits(obj, "am_object") && i < length(path)) {
-      obj <- unclass(obj)$obj_id
-    }
+    # If it's an am_object and not the final result, keep it for next iteration
+    # (am_object is now just the external pointer, so no need to extract $obj_id)
   }
 
   obj
@@ -121,9 +119,9 @@ am_put_path <- function(doc, path, value, create_intermediate = TRUE) {
       }
     }
 
-    # Extract obj_id for next iteration
+    # Use am_object directly for next iteration (it's now just the external pointer)
     if (inherits(next_obj, "am_object")) {
-      obj <- unclass(next_obj)$obj_id
+      obj <- next_obj
     } else {
       stop(sprintf("Path component at position %d is not an object", i))
     }
@@ -180,9 +178,9 @@ am_delete_path <- function(doc, path) {
       return(invisible(doc))
     }
 
-    # Extract obj_id for next iteration
+    # Use am_object directly for next iteration (it's now just the external pointer)
     if (inherits(obj_result, "am_object")) {
-      obj <- unclass(obj_result)$obj_id
+      obj <- obj_result
     } else {
       warning(sprintf("Path component at position %d is not an object", i))
       return(invisible(doc))

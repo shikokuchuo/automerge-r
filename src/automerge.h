@@ -68,6 +68,8 @@ void am_syncstate_finalizer(SEXP ext_ptr);
 // Helper functions (memory.c)
 AMdoc *get_doc(SEXP doc_ptr);  // Returns borrowed AMdoc* pointer
 const AMobjId *get_objid(SEXP obj_ptr);
+SEXP get_doc_from_objid(SEXP obj_ptr);  // Extract doc from am_object protection chain
+SEXP C_get_doc_from_objid(SEXP obj_ptr);  // Exported for R .Call() interface
 SEXP wrap_am_result(AMresult *result, SEXP parent_doc_sexp);
 SEXP am_wrap_objid(const AMobjId *obj_id, SEXP parent_result_sexp);
 SEXP am_wrap_nested_object(const AMobjId *obj_id, SEXP parent_result_sexp);

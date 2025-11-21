@@ -21,6 +21,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"C_am_text_splice", (DL_FUNC) &C_am_text_splice, 5},
     {"C_am_text_get", (DL_FUNC) &C_am_text_get, 2},
     {"C_am_values", (DL_FUNC) &C_am_values, 2},
+    // Helper functions
+    {"C_get_doc_from_objid", (DL_FUNC) &C_get_doc_from_objid, 1},
     {NULL, NULL, 0}
 };
 

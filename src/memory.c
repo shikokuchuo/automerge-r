@@ -80,6 +80,41 @@ const AMobjId *get_objid(SEXP obj_ptr) {
 }
 
 /**
+ * Get document external pointer from am_object (obj_id external pointer).
+ * Extracts the doc from the protection chain: obj_id -> result -> doc.
+ *
+ * @param obj_ptr External pointer to AMobjId (with am_object class)
+ * @return SEXP external pointer to am_doc
+ */
+SEXP get_doc_from_objid(SEXP obj_ptr) {
+    if (TYPEOF(obj_ptr) != EXTPTRSXP) {
+        Rf_error("Expected external pointer for am_object");
+    }
+
+    // Get parent result from EXTPTR_PROT
+    SEXP result_ptr = R_ExternalPtrProtected(obj_ptr);
+    if (!result_ptr || result_ptr == R_NilValue) {
+        Rf_error("Invalid am_object: no parent result in protection chain");
+    }
+
+    // Get parent doc from result's EXTPTR_PROT
+    SEXP doc_ptr = R_ExternalPtrProtected(result_ptr);
+    if (!doc_ptr || doc_ptr == R_NilValue) {
+        Rf_error("Invalid am_object: no parent document in protection chain");
+    }
+
+    return doc_ptr;
+}
+
+/**
+ * C wrapper for R .Call() interface.
+ * Exports get_doc_from_objid for use in R code.
+ */
+SEXP C_get_doc_from_objid(SEXP obj_ptr) {
+    return get_doc_from_objid(obj_ptr);
+}
+
+/**
  * Wrap AMresult* as R external pointer with parent document protection.
  * Uses EXTPTR_PROT to keep parent document alive.
  *
@@ -116,13 +151,16 @@ SEXP am_wrap_objid(const AMobjId *obj_id, SEXP parent_result_sexp) {
 
 /**
  * Wrap nested object as am_object S3 class.
- * Returns a list with 'doc' and 'obj_id' elements.
+ * Returns an external pointer to AMobjId with appropriate class.
  * The class vector includes the specific type (am_map, am_list, or am_text)
  * followed by the base class am_object.
  *
+ * The parent document is preserved through the protection chain:
+ * obj_id_ptr -> result_ptr -> doc_ptr
+ *
  * @param obj_id The AMobjId* for the nested object (borrowed)
  * @param parent_result_sexp The external pointer wrapping the owning AMresult*
- * @return SEXP am_object S3 class (list with doc and obj_id)
+ * @return SEXP am_object S3 class (external pointer to AMobjId)
  */
 SEXP am_wrap_nested_object(const AMobjId *obj_id, SEXP parent_result_sexp) {
     if (!obj_id) return R_NilValue;
@@ -130,18 +168,8 @@ SEXP am_wrap_nested_object(const AMobjId *obj_id, SEXP parent_result_sexp) {
     // Get the document from the result's parent (stored in EXTPTR_PROT)
     SEXP parent_doc_sexp = R_ExternalPtrProtected(parent_result_sexp);
 
-    // Wrap the AMobjId* as external pointer
+    // Wrap the AMobjId* as external pointer (with protection chain)
     SEXP obj_id_ptr = PROTECT(am_wrap_objid(obj_id, parent_result_sexp));
-
-    // Create am_object S3 class as a list with doc and obj_id elements
-    SEXP am_obj = PROTECT(Rf_allocVector(VECSXP, 2));
-    SET_VECTOR_ELT(am_obj, 0, parent_doc_sexp);
-    SET_VECTOR_ELT(am_obj, 1, obj_id_ptr);
-
-    SEXP names = PROTECT(Rf_allocVector(STRSXP, 2));
-    SET_STRING_ELT(names, 0, Rf_mkChar("doc"));
-    SET_STRING_ELT(names, 1, Rf_mkChar("obj_id"));
-    Rf_namesgets(am_obj, names);
 
     // Query object type and set appropriate class vector
     AMdoc *doc = get_doc(parent_doc_sexp);
@@ -163,8 +191,8 @@ SEXP am_wrap_nested_object(const AMobjId *obj_id, SEXP parent_result_sexp) {
             break;
     }
     SET_STRING_ELT(classes, 1, Rf_mkChar("am_object"));
-    Rf_classgets(am_obj, classes);
+    Rf_classgets(obj_id_ptr, classes);
 
-    UNPROTECT(4);  // obj_id_ptr, am_obj, names, classes
-    return am_obj;
+    UNPROTECT(2);  // obj_id_ptr, classes
+    return obj_id_ptr;
 }

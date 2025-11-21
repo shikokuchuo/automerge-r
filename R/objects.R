@@ -157,8 +157,8 @@ am_length <- function(doc, obj) {
 #' items <- am_get(doc, AM_ROOT, "items")
 #'
 #' # Insert items
-#' # am_insert(doc, items$obj_id, "end", "first")
-#' # am_insert(doc, items$obj_id, "end", "second")
+#' # am_insert(doc, items, "end", "first")
+#' # am_insert(doc, items, "end", "second")
 am_insert <- function(doc, obj, pos, value) {
   invisible(.Call(C_am_insert, doc, obj, pos, value))
 }
@@ -270,17 +270,17 @@ am_text <- function(initial = "") {
 #' text_obj <- am_put(doc, AM_ROOT, "doc", am_text("Hello"))
 #'
 #' # Insert " World" at position 5 (after "Hello")
-#' am_text_splice(doc, text_obj$obj_id, 5, 0, " World")
+#' am_text_splice(doc, text_obj, 5, 0, " World")
 #'
 #' # Get the full text
-#' am_text_get(doc, text_obj$obj_id)  # "Hello World"
+#' am_text_get(doc, text_obj)  # "Hello World"
 #'
 #' # Works naturally with multibyte characters
 #' text_obj2 <- am_put(doc, AM_ROOT, "emoji", am_text(""))
-#' am_text_splice(doc, text_obj2$obj_id, 0, 0, "Hello😀")
+#' am_text_splice(doc, text_obj2, 0, 0, "Hello😀")
 #' # Position 5 is the emoji (character index, not bytes)
-#' am_text_splice(doc, text_obj2$obj_id, 6, 0, "World")
-#' am_text_get(doc, text_obj2$obj_id)  # "Hello😀World"
+#' am_text_splice(doc, text_obj2, 6, 0, "World")
+#' am_text_get(doc, text_obj2)  # "Hello😀World"
 am_text_splice <- function(doc, text_obj, pos, del_count, text) {
   invisible(.Call(
     C_am_text_splice,
@@ -304,7 +304,7 @@ am_text_splice <- function(doc, text_obj, pos, del_count, text) {
 #' doc <- am_create()
 #' text_obj <- am_put(doc, AM_ROOT, "doc", am_text("Hello"))
 #'
-#' text <- am_text_get(doc, text_obj$obj_id)
+#' text <- am_text_get(doc, text_obj)
 #' print(text)  # "Hello"
 am_text_get <- function(doc, text_obj) {
   .Call(C_am_text_get, doc, text_obj)
