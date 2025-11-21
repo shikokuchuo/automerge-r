@@ -99,13 +99,7 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
 else()
     set(CARGO_BUILD_TYPE "release")
 
-    if (NOT RUSTC_VERSION MATCHES "nightly")
-        set(RUSTUP_TOOLCHAIN nightly)
-    endif()
-
-    set(RUSTFLAGS "${RUSTFLAGS} -C panic=abort")
-
-    set(CARGO_FLAGS -Z build-std=std,panic_abort --release ${CARGO_FLAGS})
+    set(CARGO_FLAGS --release ${CARGO_FLAGS})
 endif()
 
 if(UTF32_INDEXING)
@@ -293,7 +287,7 @@ if(BUILD_SHARED_LIBS)
 else()
     target_link_libraries(${LIBRARY_NAME} PUBLIC ${BINDINGS_NAME} ${LIBRARY_DEPENDENCIES})
 
-    if(WIN32)
+    if(WIN32 AND MSVC)
         find_program(LIB_TOOL "lib" REQUIRED)
 
         add_custom_command(
