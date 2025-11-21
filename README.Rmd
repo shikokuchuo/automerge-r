@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
 # automerge
 
 <!-- badges: start -->
+[![R-universe version](https://shikokuchuo.r-universe.dev/automerge/badges/version)](https://shikokuchuo.r-universe.dev/automerge)
 [![R-CMD-check](https://github.com/shikokuchuo/automerge-r/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/shikokuchuo/automerge-r/actions/workflows/R-CMD-check.yaml)
 [![Codecov test coverage](https://codecov.io/gh/shikokuchuo/automerge-r/graph/badge.svg)](https://app.codecov.io/gh/shikokuchuo/automerge-r)
 <!-- badges: end -->
@@ -41,11 +42,10 @@ R Bindings for the Automerge CRDT Library
 
 ## Installation
 
-### From Source (Development Version)
+### Development Version
 
 ```r
-# Install from GitHub
-pak::pak("posit-dev/automerge-r")
+install.packages("automerge", repos = "https://shikokuchuo.r-universe.dev")
 ```
 
 ### System Requirements
@@ -61,7 +61,7 @@ Alternatively, install `automerge-c` (with UTF-32 character indexing enabled) sy
 
 🚧 **Under Active Development** 🚧
 
-This package is currently in the initial development phase. Core functionality is not yet implemented and any existing functionality is subject to change at any time.
+This package is currently in the initial development phase. Some functionality is yet to be implemented, and any existing functionality is subject to change at any time.
 
 ## Example Usage
 
