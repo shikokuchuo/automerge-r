@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
 # automerge
 
 <!-- badges: start -->
+[![R-CMD-check](https://github.com/shikokuchuo/automerge-r/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/shikokuchuo/automerge-r/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 R Bindings for the Automerge CRDT Library
