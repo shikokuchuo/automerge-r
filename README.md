@@ -5,6 +5,9 @@
 
 <!-- badges: start -->
 
+[![R-CMD-check](https://github.com/shikokuchuo/automerge-r/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/shikokuchuo/automerge-r/actions/workflows/R-CMD-check.yaml)
+[![Codecov test
+coverage](https://codecov.io/gh/shikokuchuo/automerge-r/graph/badge.svg)](https://app.codecov.io/gh/shikokuchuo/automerge-r)
 <!-- badges: end -->
 
 R Bindings for the Automerge CRDT Library
@@ -72,7 +75,7 @@ doc$age <- 20L
 doc[["active"]] <- TRUE
 doc
 #> <Automerge Document>
-#> Actor: 51b3b8898fa52e6fad449529cc8c1fa0 
+#> Actor: 40b2c02a11b397ce63f3b20260d9c4a6 
 #> Root keys: 3 
 #> Keys: active, age, name
 ```
@@ -153,7 +156,7 @@ as.list(doc) # Convert to R list
 #> [1] 20
 #> 
 #> $created
-#> [1] "2025-11-21 15:48:49 GMT"
+#> [1] "2025-11-21 21:27:22 GMT"
 #> 
 #> $name
 #> [1] "Alice"
@@ -196,7 +199,7 @@ str(bytes)
 doc2 <- am_load(bytes)
 doc2
 #> <Automerge Document>
-#> Actor: 307702d2b62b3891ea072878360bc465 
+#> Actor: 73e24f46aac44f0ca0f161352fadddae 
 #> Root keys: 7 
 #> Keys: active, age, created, name, notes, score, user
 ```
@@ -224,7 +227,7 @@ am_put(doc, AM_ROOT, "name", "Alice")
 am_put(doc, AM_ROOT, "age", 20L)
 doc
 #> <Automerge Document>
-#> Actor: d2b73097446fb75cf1532dd6d6d4770e 
+#> Actor: 30fd8db35ed7fc4efafbec341d8e8c7b 
 #> Root keys: 2 
 #> Keys: age, name
 ```
@@ -259,12 +262,12 @@ cat("Synced in", result$rounds, "rounds\n")
 # Both documents now have all keys
 doc1
 #> <Automerge Document>
-#> Actor: ef20d1f6d3bbc930c3d1f37ee4772f94 
+#> Actor: c876dd6374e7b9260c3f7cb48d62742a 
 #> Root keys: 4 
 #> Keys: a, b, x, y
 doc2
 #> <Automerge Document>
-#> Actor: 09d7f851645747528aab9f5d1662457e 
+#> Actor: b35a314493b0c738f9f328b59c963ba1 
 #> Root keys: 4 
 #> Keys: a, b, x, y
 ```
@@ -295,18 +298,18 @@ am_commit(doc2, "Bob's changes")
 am_sync_bidirectional(doc1, doc2)
 #> $doc1
 #> <Automerge Document>
-#> Actor: 129f21bf0fca1179fc98b0059d7dc029 
+#> Actor: 38b6cf2505a2cf75fca0fc17b6d78274 
 #> Root keys: 2 
 #> Keys: counter, edited_by 
 #> 
 #> $doc2
 #> <Automerge Document>
-#> Actor: 4b45648eb68b5ecb6675bf1be6847148 
+#> Actor: 9d03c194b42e281c4adfd90f34a64482 
 #> Root keys: 2 
 #> Keys: counter, edited_by 
 #> 
 #> $rounds
-#> [1] 4
+#> [1] 5
 #> 
 #> $converged
 #> [1] TRUE
@@ -387,12 +390,12 @@ while (!is.null(response)) {
 # Documents after sync
 doc1
 #> <Automerge Document>
-#> Actor: f77d06eb7ed6827ee2ccae1927520062 
+#> Actor: fd2453d3dbb4c1092b9d237782223b20 
 #> Root keys: 3 
 #> Keys: from_doc1, from_doc2, priority
 doc2
 #> <Automerge Document>
-#> Actor: 80a4a908a7c8fb79c75c9e98b638dea7 
+#> Actor: 664a71bb523fe0ea1eab12166d4297f2 
 #> Root keys: 3 
 #> Keys: from_doc1, from_doc2, priority
 ```
@@ -439,7 +442,7 @@ doc2$additional_analysis <- list(median = 41, iqr = 8)
 am_commit(doc2)
 doc2
 #> <Automerge Document>
-#> Actor: 4561bd4f0dfd9141ce94b55b3c008190 
+#> Actor: e17d3b442844789d1431ce6aa01cffc6 
 #> Root keys: 2 
 #> Keys: additional_analysis, results
 ```
@@ -462,13 +465,13 @@ am_commit(doc_b, "Model B results")
 am_sync_bidirectional(doc_a, doc_b)
 #> $doc1
 #> <Automerge Document>
-#> Actor: 26625ebef0e47473ca4045875782c1eb 
+#> Actor: b3393ec9f392f049bd77b739cd0b331d 
 #> Root keys: 2 
 #> Keys: model_a, model_b 
 #> 
 #> $doc2
 #> <Automerge Document>
-#> Actor: 0ed21c7d5e9bb714b067d3e22b61395c 
+#> Actor: 6013da91127e8489f859c0b13c503645 
 #> Root keys: 2 
 #> Keys: model_a, model_b 
 #> 
@@ -506,13 +509,13 @@ am_commit(central_doc, "Central data")
 am_sync_bidirectional(offline_doc, central_doc)
 #> $doc1
 #> <Automerge Document>
-#> Actor: abeeaf64b1489e5056c1eb1ddc6361af 
+#> Actor: 88603aabe04ef6d3bbff4d914566f9de 
 #> Root keys: 2 
 #> Keys: field_data, processed_data 
 #> 
 #> $doc2
 #> <Automerge Document>
-#> Actor: f1f6df49403dd83e489d2c69ba6d3c67 
+#> Actor: f90a5ab2d7e4df48a818f570fee7f5bd 
 #> Root keys: 2 
 #> Keys: field_data, processed_data 
 #> 

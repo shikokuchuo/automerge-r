@@ -76,6 +76,9 @@ if [ ${AUTOMERGE_FOUND} -eq 0 ]; then
     export TMPDIR="${PWD}/automerge-build/tmp"
     mkdir -p "$TMPDIR"
 
+    # Force GNU target to match MinGW toolchain from Rtools
+    export RUSTUP_TOOLCHAIN="stable-x86_64-pc-windows-gnu"
+
     # UTF-32 code point indexing for natural R character semantics
     # This makes text positions match R's substr(), nchar() behaviour
     echo "Configuring with CMake..."
