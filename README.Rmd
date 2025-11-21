@@ -17,6 +17,7 @@ knitr::opts_chunk$set(
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/shikokuchuo/automerge-r/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/shikokuchuo/automerge-r/actions/workflows/R-CMD-check.yaml)
+[![Codecov test coverage](https://codecov.io/gh/shikokuchuo/automerge-r/graph/badge.svg)](https://app.codecov.io/gh/shikokuchuo/automerge-r)
 <!-- badges: end -->
 
 R Bindings for the Automerge CRDT Library
