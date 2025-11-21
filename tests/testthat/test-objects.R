@@ -669,9 +669,9 @@ test_that("am_text_splice() inserts text", {
   doc <- am_create()
   text_obj <- am_put(doc, AM_ROOT, "doc", am_text("Hello"))
 
-  am_text_splice(doc, text_obj, 5, 0, " World")
+  am_text_splice(text_obj, 5, 0, " World")
 
-  result <- am_text_get(doc, text_obj)
+  result <- am_text_get(text_obj)
   expect_equal(result, "Hello World")
 })
 
@@ -679,9 +679,9 @@ test_that("am_text_splice() deletes text", {
   doc <- am_create()
   text_obj <- am_put(doc, AM_ROOT, "doc", am_text("Hello World"))
 
-  am_text_splice(doc, text_obj, 5, 6, "")
+  am_text_splice(text_obj, 5, 6, "")
 
-  result <- am_text_get(doc, text_obj)
+  result <- am_text_get(text_obj)
   expect_equal(result, "Hello")
 })
 
@@ -689,9 +689,9 @@ test_that("am_text_splice() replaces text", {
   doc <- am_create()
   text_obj <- am_put(doc, AM_ROOT, "doc", am_text("Hello World"))
 
-  am_text_splice(doc, text_obj, 6, 5, "Claude")
+  am_text_splice(text_obj, 6, 5, "Claude")
 
-  result <- am_text_get(doc, text_obj)
+  result <- am_text_get(text_obj)
   expect_equal(result, "Hello Claude")
 })
 
@@ -699,19 +699,19 @@ test_that("am_text_splice() at position 0 prepends", {
   doc <- am_create()
   text_obj <- am_put(doc, AM_ROOT, "doc", am_text("World"))
 
-  am_text_splice(doc, text_obj, 0, 0, "Hello ")
+  am_text_splice(text_obj, 0, 0, "Hello ")
 
-  result <- am_text_get(doc, text_obj)
+  result <- am_text_get(text_obj)
   expect_equal(result, "Hello World")
 })
 
-test_that("am_text_splice() returns doc invisibly", {
+test_that("am_text_splice() returns text_obj invisibly", {
   doc <- am_create()
   text_obj <- am_put(doc, AM_ROOT, "doc", am_text("test"))
 
-  result <- withVisible(am_text_splice(doc, text_obj, 0, 0, "x"))
+  result <- withVisible(am_text_splice(text_obj, 0, 0, "x"))
 
-  expect_identical(result$value, doc)
+  expect_identical(result$value, text_obj)
   expect_false(result$visible)
 })
 
@@ -719,11 +719,11 @@ test_that("am_text_splice() handles UTF-8 text (character indexing)", {
   doc <- am_create()
   text_obj <- am_put(doc, AM_ROOT, "doc", am_text(""))
 
-  am_text_splice(doc, text_obj, 0, 0, "你好")
+  am_text_splice(text_obj, 0, 0, "你好")
   char_len <- nchar("你好")  # Natural R character counting!
-  am_text_splice(doc, text_obj, char_len, 0, "世界")
+  am_text_splice(text_obj, char_len, 0, "世界")
 
-  result <- am_text_get(doc, text_obj)
+  result <- am_text_get(text_obj)
   expect_equal(result, "你好世界")
 })
 
@@ -731,9 +731,9 @@ test_that("am_text_splice() handles emoji", {
   doc <- am_create()
   text_obj <- am_put(doc, AM_ROOT, "doc", am_text("Hello"))
 
-  am_text_splice(doc, text_obj, 5, 0, " 🌍")
+  am_text_splice(text_obj, 5, 0, " 🌍")
 
-  result <- am_text_get(doc, text_obj)
+  result <- am_text_get(text_obj)
   expect_equal(result, "Hello 🌍")
 })
 
@@ -741,7 +741,7 @@ test_that("am_text_get() returns text from text object", {
   doc <- am_create()
   text_obj <- am_put(doc, AM_ROOT, "doc", am_text("Test content"))
 
-  result <- am_text_get(doc, text_obj)
+  result <- am_text_get(text_obj)
 
   expect_type(result, "character")
   expect_length(result, 1)
@@ -752,7 +752,7 @@ test_that("am_text_get() returns empty string for empty text", {
   doc <- am_create()
   text_obj <- am_put(doc, AM_ROOT, "doc", am_text())
 
-  result <- am_text_get(doc, text_obj)
+  result <- am_text_get(text_obj)
 
   expect_equal(result, "")
 })
@@ -760,13 +760,13 @@ test_that("am_text_get() returns empty string for empty text", {
 test_that("text objects persist after save/load", {
   doc1 <- am_create()
   text_obj <- am_put(doc1, AM_ROOT, "doc", am_text("Original"))
-  am_text_splice(doc1, text_obj, 8, 0, " Text")
+  am_text_splice(text_obj, 8, 0, " Text")
 
   binary <- am_save(doc1)
   doc2 <- am_load(binary)
 
   text_obj2 <- am_get(doc2, AM_ROOT, "doc")
-  result <- am_text_get(doc2, text_obj2)
+  result <- am_text_get(text_obj2)
   expect_equal(result, "Original Text")
 })
 
@@ -774,12 +774,12 @@ test_that("multiple text edits accumulate correctly", {
   doc <- am_create()
   text_obj <- am_put(doc, AM_ROOT, "doc", am_text(""))
 
-  am_text_splice(doc, text_obj, 0, 0, "The")
-  am_text_splice(doc, text_obj, 3, 0, " quick")
-  am_text_splice(doc, text_obj, 9, 0, " brown")
-  am_text_splice(doc, text_obj, 15, 0, " fox")
+  am_text_splice(text_obj, 0, 0, "The")
+  am_text_splice(text_obj, 3, 0, " quick")
+  am_text_splice(text_obj, 9, 0, " brown")
+  am_text_splice(text_obj, 15, 0, " fox")
 
-  result <- am_text_get(doc, text_obj)
+  result <- am_text_get(text_obj)
   expect_equal(result, "The quick brown fox")
 })
 

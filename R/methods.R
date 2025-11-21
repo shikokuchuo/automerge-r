@@ -310,8 +310,7 @@ print.am_list <- function(x, ...) {
 #' @return The object (invisibly)
 #' @export
 print.am_text <- function(x, ...) {
-  doc <- .Call(C_get_doc_from_objid, x)
-  text_content <- am_text_get(doc, x)
+  text_content <- am_text_get(x)
   cat("<Automerge Text>\n")
   cat("Length:", nchar(text_content), "characters\n")
 
@@ -385,8 +384,5 @@ as.list.am_list <- function(x, doc = NULL, ...) {
 #' @return Character string
 #' @keywords internal
 as.list.am_text <- function(x, doc = NULL, ...) {
-  if (is.null(doc)) {
-    doc <- .Call(C_get_doc_from_objid, x)
-  }
-  am_text_get(doc, x)
+  am_text_get(x)
 }

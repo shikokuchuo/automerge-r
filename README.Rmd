@@ -123,8 +123,8 @@ Text objects support fine-grained editing:
 ```{r}
 text_obj <- doc$notes
 text_obj
-am_text_splice(doc, text_obj, 2, 0, "🌍")
-am_text_get(doc, text_obj)
+am_text_splice(text_obj, 2, 0, "🌍")
+am_text_get(text_obj)
 ```
 
 ### Utility Methods

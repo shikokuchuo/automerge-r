@@ -29,7 +29,7 @@ for the document root}
 \value{
 When creating a nested object (value is \verb{AM_OBJ_TYPE_*}),
 returns an \code{am_object} representing the new object. Otherwise,
-returns the document \code{doc} (invisibly, for chaining).
+returns the document \code{doc} (invisibly).
 }
 \description{
 Inserts or updates a value in an Automerge map or list. The function

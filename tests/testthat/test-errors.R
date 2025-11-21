@@ -110,8 +110,8 @@ test_that("Text operations with invalid inputs", {
   text_obj <- am_put(doc, AM_ROOT, "text", am_text("Hello"))
 
   # These should work (baseline)
-  am_text_splice(doc, text_obj, 5, 0, " World")
-  result <- am_text_get(doc, text_obj)
+  am_text_splice(text_obj, 5, 0, " World")
+  result <- am_text_get(text_obj)
   expect_equal(result, "Hello World")
 
   # Try text operations on non-text object
@@ -119,7 +119,7 @@ test_that("Text operations with invalid inputs", {
 
   # This should fail - trying to do text operations on a map
   expect_snapshot(error = TRUE, {
-    am_text_splice(doc, map_obj, 0, 0, "text")
+    am_text_splice(map_obj, 0, 0, "text")
   })
 })
 

@@ -17,7 +17,7 @@ to append}
 \item{value}{The value to insert}
 }
 \value{
-The document \code{doc} (invisibly, for chaining)
+The document \code{doc} (invisibly)
 }
 \description{
 This is an alias for \code{am_put()} with insert semantics for lists.

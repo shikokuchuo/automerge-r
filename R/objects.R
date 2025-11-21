@@ -24,7 +24,7 @@
 #'
 #' @return When creating a nested object (value is `AM_OBJ_TYPE_*`),
 #'   returns an `am_object` representing the new object. Otherwise,
-#'   returns the document `doc` (invisibly, for chaining).
+#'   returns the document `doc` (invisibly).
 #'
 #' @export
 #' @examples
@@ -81,7 +81,7 @@ am_get <- function(doc, obj, key) {
 #' @param key For maps: character string key to delete. For lists: numeric
 #'   position (1-based) to delete
 #'
-#' @return The document `doc` (invisibly, for chaining)
+#' @return The document `doc` (invisibly)
 #'
 #' @export
 #' @examples
@@ -147,7 +147,7 @@ am_length <- function(doc, obj) {
 #'   to append
 #' @param value The value to insert
 #'
-#' @return The document `doc` (invisibly, for chaining)
+#' @return The document `doc` (invisibly)
 #'
 #' @export
 #' @examples
@@ -249,12 +249,11 @@ am_text <- function(initial = "") {
 #' Insert or delete characters in a text object. This is the primary way to
 #' edit text CRDT objects.
 #'
-#' @param doc An Automerge document
 #' @param text_obj An Automerge text object ID
 #' @param pos Character position to start splice (0-based, counts Unicode code points)
 #' @param del_count Number of characters to delete (counts Unicode code points)
 #' @param text Text to insert
-#' @return The document `doc` (invisibly, for chaining)
+#' @return The text object `text_obj` (invisibly)
 #'
 #' @details
 #' Text positions use character (Unicode code point) indexing, matching R's
@@ -270,21 +269,20 @@ am_text <- function(initial = "") {
 #' text_obj <- am_put(doc, AM_ROOT, "doc", am_text("Hello"))
 #'
 #' # Insert " World" at position 5 (after "Hello")
-#' am_text_splice(doc, text_obj, 5, 0, " World")
+#' am_text_splice(text_obj, 5, 0, " World")
 #'
 #' # Get the full text
-#' am_text_get(doc, text_obj)  # "Hello World"
+#' am_text_get(text_obj)  # "Hello World"
 #'
 #' # Works naturally with multibyte characters
 #' text_obj2 <- am_put(doc, AM_ROOT, "emoji", am_text(""))
-#' am_text_splice(doc, text_obj2, 0, 0, "Hello😀")
+#' am_text_splice(text_obj2, 0, 0, "Hello😀")
 #' # Position 5 is the emoji (character index, not bytes)
-#' am_text_splice(doc, text_obj2, 6, 0, "World")
-#' am_text_get(doc, text_obj2)  # "Hello😀World"
-am_text_splice <- function(doc, text_obj, pos, del_count, text) {
+#' am_text_splice(text_obj2, 6, 0, "World")
+#' am_text_get(text_obj2)  # "Hello😀World"
+am_text_splice <- function(text_obj, pos, del_count, text) {
   invisible(.Call(
     C_am_text_splice,
-    doc,
     text_obj,
     as.integer(pos),
     as.integer(del_count),
@@ -296,7 +294,6 @@ am_text_splice <- function(doc, text_obj, pos, del_count, text) {
 #'
 #' Retrieve the full text content from a text object as a string.
 #'
-#' @param doc An Automerge document
 #' @param text_obj An Automerge text object ID
 #' @return Character string with the full text
 #' @export
@@ -304,10 +301,10 @@ am_text_splice <- function(doc, text_obj, pos, del_count, text) {
 #' doc <- am_create()
 #' text_obj <- am_put(doc, AM_ROOT, "doc", am_text("Hello"))
 #'
-#' text <- am_text_get(doc, text_obj)
+#' text <- am_text_get(text_obj)
 #' print(text)  # "Hello"
-am_text_get <- function(doc, text_obj) {
-  .Call(C_am_text_get, doc, text_obj)
+am_text_get <- function(text_obj) {
+  .Call(C_am_text_get, text_obj)
 }
 
 #' Get all values from a map or list

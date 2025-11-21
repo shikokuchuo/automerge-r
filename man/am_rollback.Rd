@@ -10,7 +10,7 @@ am_rollback(doc)
 \item{doc}{An Automerge document}
 }
 \value{
-The document \code{doc} (invisibly, for chaining)
+The document \code{doc} (invisibly)
 }
 \description{
 Cancels all pending operations in the current transaction without

@@ -12,7 +12,7 @@ am_merge(doc, other)
 \item{other}{Source document (provides changes)}
 }
 \value{
-The target document \code{doc} (invisibly, for chaining)
+The target document \code{doc} (invisibly)
 }
 \description{
 Merges all changes from another Automerge document into this one.

@@ -72,7 +72,7 @@ doc$age <- 20L
 doc[["active"]] <- TRUE
 doc
 #> <Automerge Document>
-#> Actor: ca749734fe2b7476ae6b3618bfc14b8f 
+#> Actor: c17950d550943ed8fe66f03c590cb07a 
 #> Root keys: 3 
 #> Keys: active, age, name
 ```
@@ -131,8 +131,8 @@ text_obj
 #> <Automerge Text>
 #> Length: 2 characters
 #> Content: "世界"
-am_text_splice(doc, text_obj, 2, 0, "🌍")
-am_text_get(doc, text_obj)
+am_text_splice(text_obj, 2, 0, "🌍")
+am_text_get(text_obj)
 #> [1] "世界🌍"
 ```
 
@@ -153,7 +153,7 @@ as.list(doc) # Convert to R list
 #> [1] 20
 #> 
 #> $created
-#> [1] "2025-11-21 13:57:36 GMT"
+#> [1] "2025-11-21 14:20:00 GMT"
 #> 
 #> $name
 #> [1] "Alice"
@@ -196,7 +196,7 @@ str(bytes)
 doc2 <- am_load(bytes)
 doc2
 #> <Automerge Document>
-#> Actor: f9ee9a84516dd287c7b30d3b9b9dc7e3 
+#> Actor: dc2871cf8ca5b7c039008c4de3a1b914 
 #> Root keys: 7 
 #> Keys: active, age, created, name, notes, score, user
 ```
@@ -224,7 +224,7 @@ am_put(doc, AM_ROOT, "name", "Alice")
 am_put(doc, AM_ROOT, "age", 20L)
 doc
 #> <Automerge Document>
-#> Actor: 5c9443f6bbfb3f91a3a7b28619d7d04b 
+#> Actor: 0394d48b63d7626e6d958383a05829d6 
 #> Root keys: 2 
 #> Keys: age, name
 ```

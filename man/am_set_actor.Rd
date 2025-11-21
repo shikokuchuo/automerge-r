@@ -17,7 +17,7 @@ am_set_actor(doc, actor_id)
 }}
 }
 \value{
-The document \code{doc} (invisibly, for chaining)
+The document \code{doc} (invisibly)
 }
 \description{
 Sets the actor ID for an Automerge document. This should typically

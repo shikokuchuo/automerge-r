@@ -631,14 +631,14 @@ SEXP C_am_insert(SEXP doc_ptr, SEXP obj_ptr, SEXP pos, SEXP value) {
 /**
  * Splice text in a text object.
  *
- * @param doc_ptr External pointer to am_doc
  * @param text_ptr External pointer to AMobjId (must be a text object)
  * @param pos Numeric position (0-based for text operations)
  * @param del_count Number of characters to delete
  * @param text Character string to insert
- * @return The document pointer (for chaining)
+ * @return The text object pointer (for chaining)
  */
-SEXP C_am_text_splice(SEXP doc_ptr, SEXP text_ptr, SEXP pos, SEXP del_count, SEXP text) {
+SEXP C_am_text_splice(SEXP text_ptr, SEXP pos, SEXP del_count, SEXP text) {
+    SEXP doc_ptr = get_doc_from_objid(text_ptr);
     AMdoc *doc = get_doc(doc_ptr);
     const AMobjId *text_obj = get_objid(text_ptr);
 
@@ -670,17 +670,17 @@ SEXP C_am_text_splice(SEXP doc_ptr, SEXP text_ptr, SEXP pos, SEXP del_count, SEX
     CHECK_RESULT(result, AM_VAL_TYPE_VOID);
 
     AMresultFree(result);
-    return doc_ptr;  // Return document for chaining
+    return text_ptr;  // Return text object for chaining
 }
 
 /**
  * Get the full text content from a text object.
  *
- * @param doc_ptr External pointer to am_doc
  * @param text_ptr External pointer to AMobjId (must be a text object)
  * @return Character string with the full text content
  */
-SEXP C_am_text_get(SEXP doc_ptr, SEXP text_ptr) {
+SEXP C_am_text_get(SEXP text_ptr) {
+    SEXP doc_ptr = get_doc_from_objid(text_ptr);
     AMdoc *doc = get_doc(doc_ptr);
     const AMobjId *text_obj = get_objid(text_ptr);
 

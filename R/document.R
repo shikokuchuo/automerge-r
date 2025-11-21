@@ -122,7 +122,7 @@ am_fork <- function(doc, heads = NULL) {
 #' @param doc Target document (will receive changes)
 #' @param other Source document (provides changes)
 #'
-#' @return The target document `doc` (invisibly, for chaining)
+#' @return The target document `doc` (invisibly)
 #'
 #' @export
 #' @examples
@@ -179,7 +179,7 @@ am_get_actor <- function(doc) {
 #'     \item Raw vector - Binary actor ID bytes
 #'   }
 #'
-#' @return The document `doc` (invisibly, for chaining)
+#' @return The document `doc` (invisibly)
 #'
 #' @export
 #' @examples
@@ -205,7 +205,7 @@ am_set_actor <- function(doc, actor_id) {
 #' @param message Optional commit message (character string)
 #' @param time Optional timestamp (POSIXct). If `NULL`, uses current time.
 #'
-#' @return The document `doc` (invisibly, for chaining)
+#' @return The document `doc` (invisibly)
 #'
 #' @export
 #' @examples
@@ -233,7 +233,7 @@ am_commit <- function(doc, message = NULL, time = NULL) {
 #'
 #' @param doc An Automerge document
 #'
-#' @return The document `doc` (invisibly, for chaining)
+#' @return The document `doc` (invisibly)
 #'
 #' @export
 #' @examples

@@ -4,11 +4,9 @@
 \alias{am_text_get}
 \title{Get text from a text object}
 \usage{
-am_text_get(doc, text_obj)
+am_text_get(text_obj)
 }
 \arguments{
-\item{doc}{An Automerge document}
-
 \item{text_obj}{An Automerge text object ID}
 }
 \value{
@@ -21,6 +19,6 @@ Retrieve the full text content from a text object as a string.
 doc <- am_create()
 text_obj <- am_put(doc, AM_ROOT, "doc", am_text("Hello"))
 
-text <- am_text_get(doc, text_obj)
+text <- am_text_get(text_obj)
 print(text)  # "Hello"
 }

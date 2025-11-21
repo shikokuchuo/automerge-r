@@ -14,7 +14,7 @@ am_commit(doc, message = NULL, time = NULL)
 \item{time}{Optional timestamp (POSIXct). If \code{NULL}, uses current time.}
 }
 \value{
-The document \code{doc} (invisibly, for chaining)
+The document \code{doc} (invisibly)
 }
 \description{
 Commits all pending operations in the current transaction,

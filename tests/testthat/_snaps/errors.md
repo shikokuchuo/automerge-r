@@ -145,7 +145,7 @@
 # Text operations with invalid inputs
 
     Code
-      am_text_splice(doc, map_obj, 0, 0, "text")
+      am_text_splice(map_obj, 0, 0, "text")
     Condition
       Error in `am_text_splice()`:
       ! Automerge error at objects.c:670: invalid op for object of type `map`

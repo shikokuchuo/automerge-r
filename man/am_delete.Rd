@@ -16,7 +16,7 @@ for the document root}
 position (1-based) to delete}
 }
 \value{
-The document \code{doc} (invisibly, for chaining)
+The document \code{doc} (invisibly)
 }
 \description{
 Removes a key-value pair from a map or an element from a list.

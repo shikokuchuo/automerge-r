@@ -4,11 +4,9 @@
 \alias{am_text_splice}
 \title{Splice text in a text object}
 \usage{
-am_text_splice(doc, text_obj, pos, del_count, text)
+am_text_splice(text_obj, pos, del_count, text)
 }
 \arguments{
-\item{doc}{An Automerge document}
-
 \item{text_obj}{An Automerge text object ID}
 
 \item{pos}{Character position to start splice (0-based, counts Unicode code points)}
@@ -18,7 +16,7 @@ am_text_splice(doc, text_obj, pos, del_count, text)
 \item{text}{Text to insert}
 }
 \value{
-The document \code{doc} (invisibly, for chaining)
+The text object \code{text_obj} (invisibly)
 }
 \description{
 Insert or delete characters in a text object. This is the primary way to
@@ -37,15 +35,15 @@ doc <- am_create()
 text_obj <- am_put(doc, AM_ROOT, "doc", am_text("Hello"))
 
 # Insert " World" at position 5 (after "Hello")
-am_text_splice(doc, text_obj, 5, 0, " World")
+am_text_splice(text_obj, 5, 0, " World")
 
 # Get the full text
-am_text_get(doc, text_obj)  # "Hello World"
+am_text_get(text_obj)  # "Hello World"
 
 # Works naturally with multibyte characters
 text_obj2 <- am_put(doc, AM_ROOT, "emoji", am_text(""))
-am_text_splice(doc, text_obj2, 0, 0, "Hello😀")
+am_text_splice(text_obj2, 0, 0, "Hello😀")
 # Position 5 is the emoji (character index, not bytes)
-am_text_splice(doc, text_obj2, 6, 0, "World")
-am_text_get(doc, text_obj2)  # "Hello😀World"
+am_text_splice(text_obj2, 6, 0, "World")
+am_text_get(text_obj2)  # "Hello😀World"
 }
