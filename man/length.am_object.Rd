@@ -13,10 +13,5 @@
 Integer length
 }
 \description{
-Returns the number of elements in an Automerge object (map or list).
-}
-\examples{
-doc <- am_create()
-user <- am_put(doc, AM_ROOT, "user", list(a = 1, b = 2))
-length(user)  # 2
+Returns the number of elements/keys in an Automerge object.
 }

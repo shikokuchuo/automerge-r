@@ -144,7 +144,7 @@ as.list.am_doc <- function(x, ...) {
   result <- lapply(root_keys, function(k) {
     value <- am_get(x, AM_ROOT, k)
     if (inherits(value, "am_object")) {
-      as.list.am_object(value, x)
+      as.list(value)
     } else {
       value
     }
@@ -174,8 +174,7 @@ as.list.am_doc <- function(x, ...) {
 #' user[["name"]]  # "Bob"
 #' user$age        # 25L
 `[[.am_object` <- function(x, i) {
-  x_unclass <- unclass(x)
-  am_get(x_unclass$doc, x_unclass$obj_id, i)
+  am_get(x$doc, x$obj_id, i)
 }
 
 #' @rdname extract-am_object
@@ -205,139 +204,166 @@ as.list.am_doc <- function(x, ...) {
 #' @export
 #' @examples
 #' doc <- am_create()
-#' user <- am_put(doc, AM_ROOT, "user", list(name = "Bob"))
-#' user[["age"]] <- 25L
-#' user$city <- "NYC"
+#' user <- am_put(doc, AM_ROOT, "user", list(name = "Bob", age = 25L))
+#'
+#' user[["name"]] <- "Alice"
+#' user$age <- 30L
 `[[<-.am_object` <- function(x, i, value) {
-  x_unclass <- unclass(x)
-  am_put(x_unclass$doc, x_unclass$obj_id, i, value)
+  am_put(x$doc, x$obj_id, i, value)
   x
 }
 
 #' @rdname replace-am_object
 #' @export
 `$<-.am_object` <- function(x, name, value) {
-  x_unclass <- unclass(x)
-  am_put(x_unclass$doc, x_unclass$obj_id, name, value)
+  am_put(x$doc, x$obj_id, name, value)
   x
 }
 
 #' Get length of Automerge object
 #'
-#' Returns the number of elements in an Automerge object (map or list).
+#' Returns the number of elements/keys in an Automerge object.
 #'
 #' @param x An Automerge object
 #' @return Integer length
 #' @export
-#' @examples
-#' doc <- am_create()
-#' user <- am_put(doc, AM_ROOT, "user", list(a = 1, b = 2))
-#' length(user)  # 2
 length.am_object <- function(x) {
-  x_unclass <- unclass(x)
-  am_length(x_unclass$doc, x_unclass$obj_id)
+  am_length(x$doc, x$obj_id)
 }
 
-#' Get names from Automerge object
+#' Get names from Automerge map object
 #'
-#' Returns the keys from an Automerge map object. Returns NULL for lists.
+#' Returns the keys from a map object.
 #'
-#' @param x An Automerge object
-#' @return Character vector of key names (for maps), or NULL (for lists)
+#' @param x An Automerge map object
+#' @return Character vector of key names
 #' @export
-#' @examples
-#' doc <- am_create()
-#' user <- am_put(doc, AM_ROOT, "user", list(name = "Alice", age = 30L))
-#' names(user)  # c("name", "age")
-names.am_object <- function(x) {
-  # Try to get keys - will return NULL for non-map objects
-  tryCatch(
-    am_keys(unclass(x)$doc, unclass(x)$obj_id),
-    error = function(e) NULL
-  )
+names.am_map <- function(x) {
+  am_keys(x$doc, x$obj_id)
 }
 
-#' Print Automerge object
-#'
-#' Print method for Automerge objects showing type and contents summary.
+#' Print Automerge object (fallback for unknown types)
 #'
 #' @param x An Automerge object
 #' @param ... Additional arguments (unused)
 #' @return The object (invisibly)
 #' @export
 print.am_object <- function(x, ...) {
-  x_unclass <- unclass(x)
-  doc <- x_unclass$doc
-  obj_id <- x_unclass$obj_id
-  obj_len <- am_length(doc, obj_id)
+  cat("<Automerge object>\n")
+  invisible(x)
+}
 
-  # Determine object type by checking if it has keys
-  keys <- tryCatch(am_keys(doc, obj_id), error = function(e) NULL)
-  is_map <- !is.null(keys)
-
-  obj_type_label <- if (is_map) "Map" else "List"
-
-  cat(sprintf("<%s object>\n", obj_type_label))
+#' Print Automerge map object
+#'
+#' @param x An Automerge map object
+#' @param ... Additional arguments (unused)
+#' @return The object (invisibly)
+#' @export
+print.am_map <- function(x, ...) {
+  obj_len <- am_length(x$doc, x$obj_id)
+  cat("<Map object>\n")
   cat("Length:", obj_len, "\n")
 
-  if (is_map && obj_len > 0) {
+  if (obj_len > 0) {
+    keys <- am_keys(x$doc, x$obj_id)
     cat("Keys:", paste(head(keys, 5), collapse = ", "))
-    if (obj_len > 5) cat(", ...")
+    if (obj_len > 5) {
+      cat(", ...")
+    }
     cat("\n")
   }
 
   invisible(x)
 }
 
-#' Convert Automerge object to R list
+#' Print Automerge list object
 #'
-#' Recursively converts an Automerge object to a standard R list.
-#'
-#' @param x An Automerge object
-#' @param doc The document containing this object (automatically provided)
+#' @param x An Automerge list object
 #' @param ... Additional arguments (unused)
-#' @return List or named list
-#' @keywords internal
-as.list.am_object <- function(x, doc = unclass(x)$doc, ...) {
-  x_unclass <- unclass(x)
-  obj_id <- x_unclass$obj_id
+#' @return The object (invisibly)
+#' @export
+print.am_list <- function(x, ...) {
+  obj_len <- am_length(x$doc, x$obj_id)
+  cat("<List object>\n")
+  cat("Length:", obj_len, "\n")
 
-  len <- am_length(doc, obj_id)
+  invisible(x)
+}
 
-  # Try to access by numeric index first (works for lists and maps)
-  result_list <- tryCatch({
-    lapply(seq_len(len), function(i) {
-      value <- am_get(doc, obj_id, i)
-      if (inherits(value, "am_object")) {
-        as.list.am_object(value, doc)
-      } else {
-        value
-      }
-    })
-  }, error = function(e) {
-    # If numeric indexing fails, it might be a text object
-    tryCatch(am_text_get(doc, obj_id), error = function(e2) list())
-  })
+#' Print Automerge text object
+#'
+#' @param x An Automerge text object
+#' @param ... Additional arguments (unused)
+#' @return The object (invisibly)
+#' @export
+print.am_text <- function(x, ...) {
+  text_content <- am_text_get(x$doc, x$obj_id)
+  cat("<Text object>\n")
+  cat("Length:", nchar(text_content), "characters\n")
 
-  # Check if it's a map by trying to get keys
-  keys <- tryCatch(am_keys(doc, obj_id), error = function(e) NULL)
-
-  # If keys exist and look like map keys (not element IDs), use them
-  # Map keys are regular strings, element IDs contain '@'
-  if (!is.null(keys) && length(keys) > 0 && !grepl("@", keys[1])) {
-    # It's a map - create named list
-    result <- lapply(keys, function(k) {
-      value <- am_get(doc, obj_id, k)
-      if (inherits(value, "am_object")) {
-        as.list.am_object(value, doc)
-      } else {
-        value
-      }
-    })
-    names(result) <- keys
-    return(result)
+  if (nchar(text_content) > 50) {
+    cat("Content:", paste0('"', substr(text_content, 1, 47), '..."'), "\n")
+  } else {
+    cat("Content:", paste0('"', text_content, '"'), "\n")
   }
 
-  # Otherwise return unnamed list
-  result_list
+  invisible(x)
+}
+
+#' Convert Automerge map to R list
+#'
+#' Recursively converts an Automerge map to a named R list.
+#'
+#' @param x An Automerge map object
+#' @param doc The document containing this object (automatically provided)
+#' @param ... Additional arguments (unused)
+#' @return Named list
+#' @keywords internal
+as.list.am_map <- function(x, doc = x$doc, ...) {
+  keys <- am_keys(doc, x$obj_id)
+  result <- lapply(keys, function(k) {
+    value <- am_get(doc, x$obj_id, k)
+    if (inherits(value, "am_object")) {
+      as.list(value)
+    } else {
+      value
+    }
+  })
+  names(result) <- keys
+  result
+}
+
+#' Convert Automerge list to R list
+#'
+#' Recursively converts an Automerge list to an unnamed R list.
+#'
+#' @param x An Automerge list object
+#' @param doc The document containing this object (automatically provided)
+#' @param ... Additional arguments (unused)
+#' @return Unnamed list
+#' @keywords internal
+as.list.am_list <- function(x, doc = x$doc, ...) {
+  len <- am_length(doc, x$obj_id)
+  result <- lapply(seq_len(len), function(i) {
+    value <- am_get(doc, x$obj_id, i)
+    if (inherits(value, "am_object")) {
+      as.list(value)
+    } else {
+      value
+    }
+  })
+  result
+}
+
+#' Convert Automerge text to character string
+#'
+#' Returns the text content as a character string.
+#'
+#' @param x An Automerge text object
+#' @param doc The document containing this object (automatically provided)
+#' @param ... Additional arguments (unused)
+#' @return Character string
+#' @keywords internal
+as.list.am_text <- function(x, doc = x$doc, ...) {
+  am_text_get(doc, x$obj_id)
 }

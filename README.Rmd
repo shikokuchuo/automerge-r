@@ -122,6 +122,7 @@ Text objects support fine-grained editing:
 
 ```{r}
 text_obj <- doc$notes
+text_obj
 am_text_splice(doc, text_obj$obj_id, 2, 0, "🌍")
 am_text_get(doc, text_obj$obj_id)
 ```
@@ -143,6 +144,8 @@ Persist documents to disk or transfer over network:
 ```{r}
 doc |> am_commit("Initial data")
 bytes <- am_save(doc)
+str(bytes)
+
 doc2 <- am_load(bytes)
 doc2
 ```

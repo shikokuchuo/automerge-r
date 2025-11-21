@@ -2,7 +2,7 @@
 % Please edit documentation in R/methods.R
 \name{print.am_object}
 \alias{print.am_object}
-\title{Print Automerge object}
+\title{Print Automerge object (fallback for unknown types)}
 \usage{
 \method{print}{am_object}(x, ...)
 }
@@ -15,5 +15,5 @@
 The object (invisibly)
 }
 \description{
-Print method for Automerge objects showing type and contents summary.
+Print Automerge object (fallback for unknown types)
 }

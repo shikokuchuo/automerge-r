@@ -72,7 +72,7 @@ doc$age <- 30L
 doc[["active"]] <- TRUE
 doc
 #> <Automerge Document>
-#> Actor: b8fef5f0036f9bded80a3ac34336e490 
+#> Actor: 6f1142bd65d1bb6aa0a36825ce08f32f 
 #> Root keys: 3 
 #> Keys: active, age, name
 ```
@@ -127,6 +127,10 @@ Text objects support fine-grained editing:
 
 ``` r
 text_obj <- doc$notes
+text_obj
+#> <Text object>
+#> Length: 2 characters
+#> Content: "世界"
 am_text_splice(doc, text_obj$obj_id, 2, 0, "🌍")
 am_text_get(doc, text_obj$obj_id)
 #> [1] "世界🌍"
@@ -149,21 +153,13 @@ as.list(doc) # Convert to R list
 #> [1] 30
 #> 
 #> $created
-#> [1] "2025-11-20 22:20:02 GMT"
+#> [1] "2025-11-21 12:12:00 GMT"
 #> 
 #> $name
 #> [1] "Alice"
 #> 
 #> $notes
-#> $notes[[1]]
-#> [1] "世"
-#> 
-#> $notes[[2]]
-#> [1] "界"
-#> 
-#> $notes[[3]]
-#> [1] "🌍"
-#> 
+#> [1] "世界🌍"
 #> 
 #> $score
 #> [1] 0
@@ -196,10 +192,13 @@ Persist documents to disk or transfer over network:
 ``` r
 doc |> am_commit("Initial data")
 bytes <- am_save(doc)
+str(bytes)
+#>  raw [1:329] 85 6f 4a 83 ...
+
 doc2 <- am_load(bytes)
 doc2
 #> <Automerge Document>
-#> Actor: a5f9fb3642d05dabd1d11d2e575ae3f9 
+#> Actor: d6a5daa136520872a873ed60b271a698 
 #> Root keys: 7 
 #> Keys: active, age, created, name, notes, score, user
 ```
@@ -227,7 +226,7 @@ am_put(doc, AM_ROOT, "name", "Alice")
 am_put(doc, AM_ROOT, "age", 30L)
 doc
 #> <Automerge Document>
-#> Actor: 4d737bd11b79c8c9cc5f93a221ca20e2 
+#> Actor: 4958955e00aaee226137000d3aa922ef 
 #> Root keys: 2 
 #> Keys: age, name
 ```

@@ -117,6 +117,8 @@ SEXP am_wrap_objid(const AMobjId *obj_id, SEXP parent_result_sexp) {
 /**
  * Wrap nested object as am_object S3 class.
  * Returns a list with 'doc' and 'obj_id' elements.
+ * The class vector includes the specific type (am_map, am_list, or am_text)
+ * followed by the base class am_object.
  *
  * @param obj_id The AMobjId* for the nested object (borrowed)
  * @param parent_result_sexp The external pointer wrapping the owning AMresult*
@@ -141,8 +143,28 @@ SEXP am_wrap_nested_object(const AMobjId *obj_id, SEXP parent_result_sexp) {
     SET_STRING_ELT(names, 1, Rf_mkChar("obj_id"));
     Rf_namesgets(am_obj, names);
 
-    Rf_classgets(am_obj, Rf_mkString("am_object"));
+    // Query object type and set appropriate class vector
+    AMdoc *doc = get_doc(parent_doc_sexp);
+    AMobjType obj_type = AMobjObjType(doc, obj_id);
 
-    UNPROTECT(3);
+    SEXP classes = PROTECT(Rf_allocVector(STRSXP, 2));
+    switch(obj_type) {
+        case AM_OBJ_TYPE_MAP:
+            SET_STRING_ELT(classes, 0, Rf_mkChar("am_map"));
+            break;
+        case AM_OBJ_TYPE_LIST:
+            SET_STRING_ELT(classes, 0, Rf_mkChar("am_list"));
+            break;
+        case AM_OBJ_TYPE_TEXT:
+            SET_STRING_ELT(classes, 0, Rf_mkChar("am_text"));
+            break;
+        default:
+            SET_STRING_ELT(classes, 0, Rf_mkChar("am_unknown"));
+            break;
+    }
+    SET_STRING_ELT(classes, 1, Rf_mkChar("am_object"));
+    Rf_classgets(am_obj, classes);
+
+    UNPROTECT(4);  // obj_id_ptr, am_obj, names, classes
     return am_obj;
 }
