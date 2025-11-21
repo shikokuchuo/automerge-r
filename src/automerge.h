@@ -60,6 +60,14 @@ SEXP C_am_text_splice(SEXP text_ptr, SEXP pos, SEXP del_count, SEXP text);
 SEXP C_am_text_get(SEXP text_ptr);
 SEXP C_am_values(SEXP doc_ptr, SEXP obj_ptr);
 
+// Synchronization operations (sync.c)
+SEXP C_am_sync_state_new(void);
+SEXP C_am_sync_encode(SEXP doc_ptr, SEXP sync_state_ptr);
+SEXP C_am_sync_decode(SEXP doc_ptr, SEXP sync_state_ptr, SEXP message);
+SEXP C_am_get_heads(SEXP doc_ptr);
+SEXP C_am_get_changes(SEXP doc_ptr, SEXP heads);
+SEXP C_am_apply_changes(SEXP doc_ptr, SEXP changes);
+
 // Finalizers (memory.c)
 void am_doc_finalizer(SEXP ext_ptr);
 void am_result_finalizer(SEXP ext_ptr);

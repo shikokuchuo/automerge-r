@@ -21,6 +21,13 @@ static const R_CallMethodDef CallEntries[] = {
     {"C_am_text_splice", (DL_FUNC) &C_am_text_splice, 4},
     {"C_am_text_get", (DL_FUNC) &C_am_text_get, 1},
     {"C_am_values", (DL_FUNC) &C_am_values, 2},
+    // Synchronization operations
+    {"C_am_sync_state_new", (DL_FUNC) &C_am_sync_state_new, 0},
+    {"C_am_sync_encode", (DL_FUNC) &C_am_sync_encode, 2},
+    {"C_am_sync_decode", (DL_FUNC) &C_am_sync_decode, 3},
+    {"C_am_get_heads", (DL_FUNC) &C_am_get_heads, 1},
+    {"C_am_get_changes", (DL_FUNC) &C_am_get_changes, 2},
+    {"C_am_apply_changes", (DL_FUNC) &C_am_apply_changes, 2},
     // Helper functions
     {"C_get_doc_from_objid", (DL_FUNC) &C_get_doc_from_objid, 1},
     {NULL, NULL, 0}

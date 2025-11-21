@@ -72,7 +72,7 @@ doc$age <- 20L
 doc[["active"]] <- TRUE
 doc
 #> <Automerge Document>
-#> Actor: c17950d550943ed8fe66f03c590cb07a 
+#> Actor: 51b3b8898fa52e6fad449529cc8c1fa0 
 #> Root keys: 3 
 #> Keys: active, age, name
 ```
@@ -153,7 +153,7 @@ as.list(doc) # Convert to R list
 #> [1] 20
 #> 
 #> $created
-#> [1] "2025-11-21 14:20:00 GMT"
+#> [1] "2025-11-21 15:48:49 GMT"
 #> 
 #> $name
 #> [1] "Alice"
@@ -196,7 +196,7 @@ str(bytes)
 doc2 <- am_load(bytes)
 doc2
 #> <Automerge Document>
-#> Actor: dc2871cf8ca5b7c039008c4de3a1b914 
+#> Actor: 307702d2b62b3891ea072878360bc465 
 #> Root keys: 7 
 #> Keys: active, age, created, name, notes, score, user
 ```
@@ -224,9 +224,309 @@ am_put(doc, AM_ROOT, "name", "Alice")
 am_put(doc, AM_ROOT, "age", 20L)
 doc
 #> <Automerge Document>
-#> Actor: 0394d48b63d7626e6d958383a05829d6 
+#> Actor: d2b73097446fb75cf1532dd6d6d4770e 
 #> Root keys: 2 
 #> Keys: age, name
+```
+
+## Synchronization
+
+Automerge’s core strength is automatic synchronization of concurrent
+changes across multiple documents. The package provides both low-level
+sync protocol access and high-level convenience functions.
+
+### Basic Synchronization
+
+The simplest way to sync two documents:
+
+``` r
+# Create two documents with different changes
+doc1 <- am_create()
+doc1$x <- 1
+doc1$y <- 2
+am_commit(doc1, "Add x and y")
+
+doc2 <- am_create()
+doc2$a <- "hello"
+doc2$b <- "world"
+am_commit(doc2, "Add a and b")
+
+# Synchronize them automatically
+result <- am_sync_bidirectional(doc1, doc2)
+cat("Synced in", result$rounds, "rounds\n")
+#> Synced in 4 rounds
+
+# Both documents now have all keys
+doc1
+#> <Automerge Document>
+#> Actor: ef20d1f6d3bbc930c3d1f37ee4772f94 
+#> Root keys: 4 
+#> Keys: a, b, x, y
+doc2
+#> <Automerge Document>
+#> Actor: 09d7f851645747528aab9f5d1662457e 
+#> Root keys: 4 
+#> Keys: a, b, x, y
+```
+
+### Concurrent Edits
+
+Automerge automatically resolves conflicts from concurrent edits:
+
+``` r
+# Start with a synchronized document
+doc1 <- am_create()
+doc1$counter <- 0
+am_commit(doc1)
+
+# Fork to create independent copy
+doc2 <- am_fork(doc1)
+
+# Make different changes in each document
+doc1$counter <- 10
+doc1$edited_by <- "Alice"
+am_commit(doc1, "Alice's changes")
+
+doc2$counter <- 20
+doc2$edited_by <- "Bob"
+am_commit(doc2, "Bob's changes")
+
+# Sync automatically resolves conflicts
+am_sync_bidirectional(doc1, doc2)
+#> $doc1
+#> <Automerge Document>
+#> Actor: 129f21bf0fca1179fc98b0059d7dc029 
+#> Root keys: 2 
+#> Keys: counter, edited_by 
+#> 
+#> $doc2
+#> <Automerge Document>
+#> Actor: 4b45648eb68b5ecb6675bf1be6847148 
+#> Root keys: 2 
+#> Keys: counter, edited_by 
+#> 
+#> $rounds
+#> [1] 4
+#> 
+#> $converged
+#> [1] TRUE
+
+# Both documents converge to the same state
+# The counter value is deterministically chosen (CRDT semantics)
+doc1$counter == doc2$counter
+#> [1] TRUE
+doc1$edited_by == doc2$edited_by
+#> [1] TRUE
+```
+
+### Manual Change Management
+
+For custom sync workflows, use the low-level change tracking API:
+
+``` r
+# Track document history
+doc <- am_create()
+doc$version <- 1
+am_commit(doc, "v1")
+
+doc$version <- 2
+am_commit(doc, "v2")
+
+# Get all changes
+changes <- am_get_changes(doc, NULL)
+cat("Number of changes:", length(changes), "\n")
+#> Number of changes: 2
+
+# Apply changes to another document
+doc_replica <- am_create()
+am_apply_changes(doc_replica, changes)
+
+doc_replica$version
+#> [1] 2
+```
+
+### Low-Level Sync Protocol
+
+For network synchronization or custom protocols:
+
+``` r
+# Create two documents with different data
+doc1 <- am_create()
+doc1$from_doc1 <- "Alice's data"
+doc1$priority <- 1L
+am_commit(doc1)
+
+doc2 <- am_create()
+doc2$from_doc2 <- "Bob's data"
+doc2$priority <- 2L
+am_commit(doc2)
+
+# Create sync states (one per peer)
+sync1 <- am_sync_state_new()
+sync2 <- am_sync_state_new()
+
+# Generate sync message from doc1
+msg <- am_sync_encode(doc1, sync1)
+
+# Receive and apply on doc2
+am_sync_decode(doc2, sync2, msg)
+
+# Generate response from doc2
+response <- am_sync_encode(doc2, sync2)
+
+# Continue until both return NULL (converged)
+while (!is.null(response)) {
+  am_sync_decode(doc1, sync1, response)
+  response <- am_sync_encode(doc1, sync1)
+  if (!is.null(response)) {
+    am_sync_decode(doc2, sync2, response)
+    response <- am_sync_encode(doc2, sync2)
+  }
+}
+
+# Documents after sync
+doc1
+#> <Automerge Document>
+#> Actor: f77d06eb7ed6827ee2ccae1927520062 
+#> Root keys: 3 
+#> Keys: from_doc1, from_doc2, priority
+doc2
+#> <Automerge Document>
+#> Actor: 80a4a908a7c8fb79c75c9e98b638dea7 
+#> Root keys: 3 
+#> Keys: from_doc1, from_doc2, priority
+```
+
+### Document Heads
+
+Track document state with change hashes:
+
+``` r
+doc <- am_create()
+doc$data <- "initial"
+am_commit(doc)
+
+# Get current heads (change hashes)
+heads <- am_get_heads(doc)
+cat("Number of heads:", length(heads), "\n")
+#> Number of heads: 1
+
+# Make more changes
+doc$data <- "updated"
+am_commit(doc)
+
+# Heads have changed
+new_heads <- am_get_heads(doc)
+identical(heads, new_heads)
+#> [1] FALSE
+```
+
+### Use Cases
+
+**Distributed Systems**: Sync R sessions across multiple machines
+
+``` r
+# On machine 1
+doc1 <- am_create()
+doc1$results <- list(mean = 42, sd = 5)
+am_commit(doc1)
+temp_file <- tempfile(fileext = ".rds")
+saveRDS(am_save(doc1), temp_file)
+
+# On machine 2
+doc2 <- am_load(readRDS(temp_file))
+doc2$additional_analysis <- list(median = 41, iqr = 8)
+am_commit(doc2)
+doc2
+#> <Automerge Document>
+#> Actor: 4561bd4f0dfd9141ce94b55b3c008190 
+#> Root keys: 2 
+#> Keys: additional_analysis, results
+```
+
+**Collaborative Analysis**: Multiple analysts working on the same
+dataset
+
+``` r
+# Analyst A adds model results
+doc_a <- am_create()
+doc_a$model_a <- list(accuracy = 0.95, f1 = 0.93)
+am_commit(doc_a, "Model A results")
+
+# Analyst B adds different model (concurrent)
+doc_b <- am_create()
+doc_b$model_b <- list(accuracy = 0.97, f1 = 0.94)
+am_commit(doc_b, "Model B results")
+
+# Sync merges both contributions automatically
+am_sync_bidirectional(doc_a, doc_b)
+#> $doc1
+#> <Automerge Document>
+#> Actor: 26625ebef0e47473ca4045875782c1eb 
+#> Root keys: 2 
+#> Keys: model_a, model_b 
+#> 
+#> $doc2
+#> <Automerge Document>
+#> Actor: 0ed21c7d5e9bb714b067d3e22b61395c 
+#> Root keys: 2 
+#> Keys: model_a, model_b 
+#> 
+#> $rounds
+#> [1] 4
+#> 
+#> $converged
+#> [1] TRUE
+
+# Both documents now have all models
+names(doc_a)
+#> [1] "model_a" "model_b"
+names(doc_b)
+#> [1] "model_a" "model_b"
+```
+
+**Offline-First Workflows**: Make changes offline, sync when connected
+
+``` r
+# Work offline
+offline_doc <- am_create()
+offline_doc$field_data <- list(
+  temp = 23.5,
+  humidity = 65,
+  timestamp = Sys.time()
+)
+am_commit(offline_doc, "Offline data collection")
+
+# Central repository has other data
+central_doc <- am_create()
+central_doc$processed_data <- list(status = "ready", samples = 100L)
+am_commit(central_doc, "Central data")
+
+# Later, sync with central repository
+am_sync_bidirectional(offline_doc, central_doc)
+#> $doc1
+#> <Automerge Document>
+#> Actor: abeeaf64b1489e5056c1eb1ddc6361af 
+#> Root keys: 2 
+#> Keys: field_data, processed_data 
+#> 
+#> $doc2
+#> <Automerge Document>
+#> Actor: f1f6df49403dd83e489d2c69ba6d3c67 
+#> Root keys: 2 
+#> Keys: field_data, processed_data 
+#> 
+#> $rounds
+#> [1] 4
+#> 
+#> $converged
+#> [1] TRUE
+
+# Both documents have all data
+names(offline_doc)
+#> [1] "field_data"     "processed_data"
+names(central_doc)
+#> [1] "field_data"     "processed_data"
 ```
 
 ## Resources
