@@ -68,11 +68,11 @@ library(automerge)
 
 doc <- am_create()
 doc$name <- "Alice"
-doc$age <- 30L
+doc$age <- 20L
 doc[["active"]] <- TRUE
 doc
 #> <Automerge Document>
-#> Actor: 6f1142bd65d1bb6aa0a36825ce08f32f 
+#> Actor: 3f5dca82c20426d385bf77dd72725776 
 #> Root keys: 3 
 #> Keys: active, age, name
 ```
@@ -82,10 +82,10 @@ doc
 Access values just like a regular R list:
 
 ``` r
-doc$name # "Alice"
+doc$name
 #> [1] "Alice"
-doc[["age"]] # 30L
-#> [1] 30
+doc[["age"]]
+#> [1] 20
 ```
 
 ### Nested Structures
@@ -106,7 +106,7 @@ Nested objects work independently:
 user <- doc$user
 user$email <- "bob@example.com"
 user
-#> <Map object>
+#> <Automerge Map>
 #> Length: 4 
 #> Keys: address, age, email, name
 ```
@@ -128,7 +128,7 @@ Text objects support fine-grained editing:
 ``` r
 text_obj <- doc$notes
 text_obj
-#> <Text object>
+#> <Automerge Text>
 #> Length: 2 characters
 #> Content: "世界"
 am_text_splice(doc, text_obj$obj_id, 2, 0, "🌍")
@@ -150,10 +150,10 @@ as.list(doc) # Convert to R list
 #> [1] TRUE
 #> 
 #> $age
-#> [1] 30
+#> [1] 20
 #> 
 #> $created
-#> [1] "2025-11-21 12:12:00 GMT"
+#> [1] "2025-11-21 12:43:05 GMT"
 #> 
 #> $name
 #> [1] "Alice"
@@ -162,9 +162,7 @@ as.list(doc) # Convert to R list
 #> [1] "世界🌍"
 #> 
 #> $score
-#> [1] 0
-#> attr(,"class")
-#> [1] "am_counter"
+#> <Automerge Counter: 0 >
 #> 
 #> $user
 #> $user$address
@@ -198,7 +196,7 @@ str(bytes)
 doc2 <- am_load(bytes)
 doc2
 #> <Automerge Document>
-#> Actor: d6a5daa136520872a873ed60b271a698 
+#> Actor: 9a56909ba868c73cb97ebbee067250e1 
 #> Root keys: 7 
 #> Keys: active, age, created, name, notes, score, user
 ```
@@ -223,10 +221,10 @@ For fine-grained control, use the functional API:
 ``` r
 doc <- am_create()
 am_put(doc, AM_ROOT, "name", "Alice")
-am_put(doc, AM_ROOT, "age", 30L)
+am_put(doc, AM_ROOT, "age", 20L)
 doc
 #> <Automerge Document>
-#> Actor: 4958955e00aaee226137000d3aa922ef 
+#> Actor: 3c72210a4035022ed54053b4d1a63014 
 #> Root keys: 2 
 #> Keys: age, name
 ```

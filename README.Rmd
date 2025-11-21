@@ -72,7 +72,7 @@ library(automerge)
 
 doc <- am_create()
 doc$name <- "Alice"
-doc$age <- 30L
+doc$age <- 20L
 doc[["active"]] <- TRUE
 doc
 ```
@@ -82,8 +82,8 @@ doc
 Access values just like a regular R list:
 
 ```{r}
-doc$name # "Alice"
-doc[["age"]] # 30L
+doc$name
+doc[["age"]]
 ```
 
 ### Nested Structures
@@ -169,7 +169,7 @@ For fine-grained control, use the functional API:
 ```{r}
 doc <- am_create()
 am_put(doc, AM_ROOT, "name", "Alice")
-am_put(doc, AM_ROOT, "age", 30L)
+am_put(doc, AM_ROOT, "age", 20L)
 doc
 ```
 

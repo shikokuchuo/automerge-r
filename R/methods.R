@@ -242,6 +242,17 @@ names.am_map <- function(x) {
   am_keys(x$doc, x$obj_id)
 }
 
+#' Print Automerge counter
+#'
+#' @param x An Automerge counter
+#' @param ... Additional arguments (unused)
+#' @return The counter (invisibly)
+#' @export
+print.am_counter <- function(x, ...) {
+  cat("<Automerge Counter:", as.integer(x), ">\n")
+  invisible(x)
+}
+
 #' Print Automerge object (fallback for unknown types)
 #'
 #' @param x An Automerge object
@@ -249,7 +260,7 @@ names.am_map <- function(x) {
 #' @return The object (invisibly)
 #' @export
 print.am_object <- function(x, ...) {
-  cat("<Automerge object>\n")
+  cat("<Automerge Object>\n")
   invisible(x)
 }
 
@@ -261,7 +272,7 @@ print.am_object <- function(x, ...) {
 #' @export
 print.am_map <- function(x, ...) {
   obj_len <- am_length(x$doc, x$obj_id)
-  cat("<Map object>\n")
+  cat("<Automerge Map>\n")
   cat("Length:", obj_len, "\n")
 
   if (obj_len > 0) {
@@ -284,7 +295,7 @@ print.am_map <- function(x, ...) {
 #' @export
 print.am_list <- function(x, ...) {
   obj_len <- am_length(x$doc, x$obj_id)
-  cat("<List object>\n")
+  cat("<Automerge List>\n")
   cat("Length:", obj_len, "\n")
 
   invisible(x)
@@ -298,7 +309,7 @@ print.am_list <- function(x, ...) {
 #' @export
 print.am_text <- function(x, ...) {
   text_content <- am_text_get(x$doc, x$obj_id)
-  cat("<Text object>\n")
+  cat("<Automerge Text>\n")
   cat("Length:", nchar(text_content), "characters\n")
 
   if (nchar(text_content) > 50) {

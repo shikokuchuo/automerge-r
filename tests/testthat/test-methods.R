@@ -279,14 +279,57 @@ test_that("names() returns NULL or element IDs for am_object (lists)", {
   expect_true(is.null(result) || is.character(result))
 })
 
-test_that("print() displays am_object info", {
+test_that("print() displays am_object info (map)", {
   doc <- am_create()
   user <- am_put(doc, AM_ROOT, "user", list(name = "Test", age = 25L))
 
   output <- capture.output(print(user))
-  expect_true(any(grepl("Map object", output)))
+  expect_true(any(grepl("Automerge Map", output)))
   expect_true(any(grepl("Length:", output)))
   expect_true(any(grepl("Keys:", output)))
+})
+
+test_that("print() displays am_object info (list)", {
+  doc <- am_create()
+  items <- am_put(doc, AM_ROOT, "items", am_list("a", "b", "c"))
+
+  output <- capture.output(print(items))
+  expect_true(any(grepl("Automerge List", output)))
+  expect_true(any(grepl("Length:", output)))
+  expect_true(any(grepl("3", output)))
+})
+
+test_that("print() displays am_object info (text)", {
+  doc <- am_create()
+  text_obj <- am_put(doc, AM_ROOT, "text", am_text("Hello, world!"))
+
+  output <- capture.output(print(text_obj))
+  expect_true(any(grepl("Automerge Text", output)))
+  expect_true(any(grepl("Length:", output)))
+  expect_true(any(grepl("Content:", output)))
+  expect_true(any(grepl("Hello, world!", output)))
+})
+
+test_that("print() handles very long text with truncation", {
+  doc <- am_create()
+  long_text <- paste(rep("a", 100), collapse = "")
+  text_obj <- am_put(doc, AM_ROOT, "text", am_text(long_text))
+
+  output <- capture.output(print(text_obj))
+  expect_true(any(grepl("Automerge Text", output)))
+  expect_true(any(grepl("100 characters", output)))
+  expect_true(any(grepl('\\.\\.\\."', output)))
+})
+
+test_that("print() displays map with many keys truncated", {
+  doc <- am_create()
+  map_data <- list(a = 1, b = 2, c = 3, d = 4, e = 5, f = 6, g = 7)
+  map_obj <- am_put(doc, AM_ROOT, "map", map_data)
+
+  output <- capture.output(print(map_obj))
+  expect_true(any(grepl("Automerge Map", output)))
+  expect_true(any(grepl("Length:", output)))
+  expect_true(any(grepl("\\.\\.\\.", output)))
 })
 
 test_that("as.list() converts am_object to R list", {
