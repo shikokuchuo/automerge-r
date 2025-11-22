@@ -107,8 +107,9 @@ test_that("am_put() updates existing keys", {
 test_that("am_put() creates and works with lists", {
   doc <- am_create()
 
-  # Create a list (returns am_object directly)
-  list_obj <- am_put(doc, AM_ROOT, "items", AM_OBJ_TYPE_LIST)
+  # Create a list (returns doc, retrieve with am_get)
+  am_put(doc, AM_ROOT, "items", AM_OBJ_TYPE_LIST)
+  list_obj <- am_get(doc, AM_ROOT, "items")
 
   # am_object is now an external pointer with am_object class
   expect_s3_class(list_obj, "am_object")
@@ -118,7 +119,8 @@ test_that("am_put() creates and works with lists", {
 
 test_that("am_put() appends to lists with 'end'", {
   doc <- am_create()
-  list_obj <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  list_obj <- am_get(doc, AM_ROOT, "list")
 
   # Append items
   am_put(doc, list_obj, "end", "first")
@@ -130,7 +132,8 @@ test_that("am_put() appends to lists with 'end'", {
 
 test_that("am_get() retrieves list elements by position", {
   doc <- am_create()
-  list_obj <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  list_obj <- am_get(doc, AM_ROOT, "list")
 
   am_put(doc, list_obj, "end", "first")
   am_put(doc, list_obj, "end", "second")
@@ -142,7 +145,8 @@ test_that("am_get() retrieves list elements by position", {
 
 test_that("am_put() replaces list elements at position", {
   doc <- am_create()
-  list_obj <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  list_obj <- am_get(doc, AM_ROOT, "list")
 
   am_put(doc, list_obj, "end", "original")
   am_put(doc, list_obj, 1L, "replaced")
@@ -153,7 +157,8 @@ test_that("am_put() replaces list elements at position", {
 
 test_that("am_delete() removes list elements", {
   doc <- am_create()
-  list_obj <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  list_obj <- am_get(doc, AM_ROOT, "list")
 
   am_put(doc, list_obj, "end", "first")
   am_put(doc, list_obj, "end", "second")
@@ -173,7 +178,8 @@ test_that("am_delete() removes list elements", {
 
 test_that("am_put() creates nested maps", {
   doc <- am_create()
-  person_obj <- am_put(doc, AM_ROOT, "person", AM_OBJ_TYPE_MAP)
+  am_put(doc, AM_ROOT, "person", AM_OBJ_TYPE_MAP)
+  person_obj <- am_get(doc, AM_ROOT, "person")
 
   expect_s3_class(person_obj, "am_object")
 
@@ -189,13 +195,16 @@ test_that("Multiple levels of nesting work", {
   doc <- am_create()
 
   # Level 1: root -> "data" (map)
-  data_obj <- am_put(doc, AM_ROOT, "data", AM_OBJ_TYPE_MAP)
+  am_put(doc, AM_ROOT, "data", AM_OBJ_TYPE_MAP)
+  data_obj <- am_get(doc, AM_ROOT, "data")
 
   # Level 2: data -> "users" (list)
-  users_obj <- am_put(doc, data_obj, "users", AM_OBJ_TYPE_LIST)
+  am_put(doc, data_obj, "users", AM_OBJ_TYPE_LIST)
+  users_obj <- am_get(doc, data_obj, "users")
 
   # Level 3: users[0] -> user (map)
-  user_obj <- am_put(doc, users_obj, "end", AM_OBJ_TYPE_MAP)
+  am_put(doc, users_obj, "end", AM_OBJ_TYPE_MAP)
+  user_obj <- am_get(doc, users_obj, 1)  # Get first element (just added)
 
   # Level 4: user -> "name"
   am_put(doc, user_obj, "name", "Charlie")
@@ -224,7 +233,8 @@ test_that("Map operations integrate with commit/save/load", {
 
 test_that("List operations integrate with commit/save/load", {
   doc1 <- am_create()
-  list_obj <- am_put(doc1, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  am_put(doc1, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  list_obj <- am_get(doc1, AM_ROOT, "list")
 
   am_put(doc1, list_obj, "end", "a")
   am_put(doc1, list_obj, "end", "b")
@@ -273,11 +283,13 @@ test_that("Complex document structure", {
 
   am_put(doc, AM_ROOT, "title", "My Doc")
 
-  tags_obj <- am_put(doc, AM_ROOT, "tags", AM_OBJ_TYPE_LIST)
+  am_put(doc, AM_ROOT, "tags", AM_OBJ_TYPE_LIST)
+  tags_obj <- am_get(doc, AM_ROOT, "tags")
   am_put(doc, tags_obj, "end", "tag1")
   am_put(doc, tags_obj, "end", "tag2")
 
-  author_obj <- am_put(doc, AM_ROOT, "author", AM_OBJ_TYPE_MAP)
+  am_put(doc, AM_ROOT, "author", AM_OBJ_TYPE_MAP)
+  author_obj <- am_get(doc, AM_ROOT, "author")
   am_put(doc, author_obj, "name", "Alice")
   am_put(doc, author_obj, "email", "alice@example.com")
 
@@ -424,7 +436,8 @@ test_that("am_length updates correctly after mixed operations", {
 
 test_that("list operations maintain order after deletions", {
   doc <- am_create()
-  list_obj <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  list_obj <- am_get(doc, AM_ROOT, "list")
 
   am_put(doc, list_obj, "end", "A")
   am_put(doc, list_obj, "end", "B")
@@ -441,7 +454,8 @@ test_that("list operations maintain order after deletions", {
 
 test_that("multiple sequential deletes from list", {
   doc <- am_create()
-  list_obj <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  list_obj <- am_get(doc, AM_ROOT, "list")
 
   for (i in 1:5) am_put(doc, list_obj, "end", i)
   expect_equal(am_length(doc, list_obj), 5L)
@@ -456,19 +470,23 @@ test_that("multiple sequential deletes from list", {
 test_that("empty nested structures", {
   doc <- am_create()
 
-  empty_map <- am_put(doc, AM_ROOT, "empty_map", AM_OBJ_TYPE_MAP)
+  am_put(doc, AM_ROOT, "empty_map", AM_OBJ_TYPE_MAP)
+  empty_map <- am_get(doc, AM_ROOT, "empty_map")
   expect_equal(am_length(doc, empty_map), 0L)
   expect_equal(am_keys(doc, empty_map), character(0))
 
-  empty_list <- am_put(doc, AM_ROOT, "empty_list", AM_OBJ_TYPE_LIST)
+  am_put(doc, AM_ROOT, "empty_list", AM_OBJ_TYPE_LIST)
+  empty_list <- am_get(doc, AM_ROOT, "empty_list")
   expect_equal(am_length(doc, empty_list), 0L)
 })
 
 test_that("nested structures persist after save/load", {
   doc1 <- am_create()
 
-  outer <- am_put(doc1, AM_ROOT, "outer", AM_OBJ_TYPE_MAP)
-  inner <- am_put(doc1, outer, "inner", AM_OBJ_TYPE_MAP)
+  am_put(doc1, AM_ROOT, "outer", AM_OBJ_TYPE_MAP)
+  outer <- am_get(doc1, AM_ROOT, "outer")
+  am_put(doc1, outer, "inner", AM_OBJ_TYPE_MAP)
+  inner <- am_get(doc1, outer, "inner")
   am_put(doc1, inner, "value", 42)
 
   binary <- am_save(doc1)
@@ -483,7 +501,8 @@ test_that("nested structures persist after save/load", {
 
 test_that("am_insert() inserts at position and shifts elements", {
   doc <- am_create()
-  list_obj <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  list_obj <- am_get(doc, AM_ROOT, "list")
 
   am_put(doc, list_obj, "end", "A")
   am_put(doc, list_obj, "end", "C")
@@ -499,7 +518,8 @@ test_that("am_insert() inserts at position and shifts elements", {
 
 test_that("am_insert() at position 1 prepends to list", {
   doc <- am_create()
-  list_obj <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  list_obj <- am_get(doc, AM_ROOT, "list")
 
   am_put(doc, list_obj, "end", "B")
   am_put(doc, list_obj, "end", "C")
@@ -515,7 +535,8 @@ test_that("am_insert() at position 1 prepends to list", {
 
 test_that("am_insert() vs am_put() behavior differs", {
   doc <- am_create()
-  list_obj <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  list_obj <- am_get(doc, AM_ROOT, "list")
 
   am_put(doc, list_obj, "end", "A")
   am_put(doc, list_obj, "end", "B")
@@ -534,7 +555,8 @@ test_that("am_insert() vs am_put() behavior differs", {
 
 test_that("am_insert() appends with 'end'", {
   doc <- am_create()
-  list_obj <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  list_obj <- am_get(doc, AM_ROOT, "list")
 
   am_insert(doc, list_obj, "end", "first")
   am_insert(doc, list_obj, "end", "second")
@@ -546,7 +568,8 @@ test_that("am_insert() appends with 'end'", {
 
 test_that("am_insert() returns doc invisibly", {
   doc <- am_create()
-  list_obj <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  list_obj <- am_get(doc, AM_ROOT, "list")
 
   result <- withVisible(am_insert(doc, list_obj, "end", "value"))
 
@@ -556,7 +579,8 @@ test_that("am_insert() returns doc invisibly", {
 
 test_that("am_insert() only works on lists", {
   doc <- am_create()
-  map_obj <- am_put(doc, AM_ROOT, "map", AM_OBJ_TYPE_MAP)
+  am_put(doc, AM_ROOT, "map", AM_OBJ_TYPE_MAP)
+  map_obj <- am_get(doc, AM_ROOT, "map")
 
   expect_error(
     am_insert(doc, map_obj, 1L, "value"),
@@ -667,7 +691,8 @@ test_that("am_text() requires scalar string", {
 
 test_that("am_text_splice() inserts text", {
   doc <- am_create()
-  text_obj <- am_put(doc, AM_ROOT, "doc", am_text("Hello"))
+  am_put(doc, AM_ROOT, "doc", am_text("Hello"))
+  text_obj <- am_get(doc, AM_ROOT, "doc")
 
   am_text_splice(text_obj, 5, 0, " World")
 
@@ -677,7 +702,8 @@ test_that("am_text_splice() inserts text", {
 
 test_that("am_text_splice() deletes text", {
   doc <- am_create()
-  text_obj <- am_put(doc, AM_ROOT, "doc", am_text("Hello World"))
+  am_put(doc, AM_ROOT, "doc", am_text("Hello World"))
+  text_obj <- am_get(doc, AM_ROOT, "doc")
 
   am_text_splice(text_obj, 5, 6, "")
 
@@ -687,7 +713,8 @@ test_that("am_text_splice() deletes text", {
 
 test_that("am_text_splice() replaces text", {
   doc <- am_create()
-  text_obj <- am_put(doc, AM_ROOT, "doc", am_text("Hello World"))
+  am_put(doc, AM_ROOT, "doc", am_text("Hello World"))
+  text_obj <- am_get(doc, AM_ROOT, "doc")
 
   am_text_splice(text_obj, 6, 5, "Claude")
 
@@ -697,7 +724,8 @@ test_that("am_text_splice() replaces text", {
 
 test_that("am_text_splice() at position 0 prepends", {
   doc <- am_create()
-  text_obj <- am_put(doc, AM_ROOT, "doc", am_text("World"))
+  am_put(doc, AM_ROOT, "doc", am_text("World"))
+  text_obj <- am_get(doc, AM_ROOT, "doc")
 
   am_text_splice(text_obj, 0, 0, "Hello ")
 
@@ -707,7 +735,8 @@ test_that("am_text_splice() at position 0 prepends", {
 
 test_that("am_text_splice() returns text_obj invisibly", {
   doc <- am_create()
-  text_obj <- am_put(doc, AM_ROOT, "doc", am_text("test"))
+  am_put(doc, AM_ROOT, "doc", am_text("test"))
+  text_obj <- am_get(doc, AM_ROOT, "doc")
 
   result <- withVisible(am_text_splice(text_obj, 0, 0, "x"))
 
@@ -717,7 +746,8 @@ test_that("am_text_splice() returns text_obj invisibly", {
 
 test_that("am_text_splice() handles UTF-8 text (character indexing)", {
   doc <- am_create()
-  text_obj <- am_put(doc, AM_ROOT, "doc", am_text(""))
+  am_put(doc, AM_ROOT, "doc", am_text(""))
+  text_obj <- am_get(doc, AM_ROOT, "doc")
 
   am_text_splice(text_obj, 0, 0, "你好")
   char_len <- nchar("你好")  # Natural R character counting!
@@ -729,7 +759,8 @@ test_that("am_text_splice() handles UTF-8 text (character indexing)", {
 
 test_that("am_text_splice() handles emoji", {
   doc <- am_create()
-  text_obj <- am_put(doc, AM_ROOT, "doc", am_text("Hello"))
+  am_put(doc, AM_ROOT, "doc", am_text("Hello"))
+  text_obj <- am_get(doc, AM_ROOT, "doc")
 
   am_text_splice(text_obj, 5, 0, " 🌍")
 
@@ -739,7 +770,8 @@ test_that("am_text_splice() handles emoji", {
 
 test_that("am_text_get() returns text from text object", {
   doc <- am_create()
-  text_obj <- am_put(doc, AM_ROOT, "doc", am_text("Test content"))
+  am_put(doc, AM_ROOT, "doc", am_text("Test content"))
+  text_obj <- am_get(doc, AM_ROOT, "doc")
 
   result <- am_text_get(text_obj)
 
@@ -750,7 +782,8 @@ test_that("am_text_get() returns text from text object", {
 
 test_that("am_text_get() returns empty string for empty text", {
   doc <- am_create()
-  text_obj <- am_put(doc, AM_ROOT, "doc", am_text())
+  am_put(doc, AM_ROOT, "doc", am_text())
+  text_obj <- am_get(doc, AM_ROOT, "doc")
 
   result <- am_text_get(text_obj)
 
@@ -759,7 +792,8 @@ test_that("am_text_get() returns empty string for empty text", {
 
 test_that("text objects persist after save/load", {
   doc1 <- am_create()
-  text_obj <- am_put(doc1, AM_ROOT, "doc", am_text("Original"))
+  am_put(doc1, AM_ROOT, "doc", am_text("Original"))
+  text_obj <- am_get(doc1, AM_ROOT, "doc")
   am_text_splice(text_obj, 8, 0, " Text")
 
   binary <- am_save(doc1)
@@ -772,7 +806,8 @@ test_that("text objects persist after save/load", {
 
 test_that("multiple text edits accumulate correctly", {
   doc <- am_create()
-  text_obj <- am_put(doc, AM_ROOT, "doc", am_text(""))
+  am_put(doc, AM_ROOT, "doc", am_text(""))
+  text_obj <- am_get(doc, AM_ROOT, "doc")
 
   am_text_splice(text_obj, 0, 0, "The")
   am_text_splice(text_obj, 3, 0, " quick")
@@ -800,7 +835,8 @@ test_that("am_values() returns all values from map", {
 
 test_that("am_values() returns all values from list", {
   doc <- am_create()
-  list_obj <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  list_obj <- am_get(doc, AM_ROOT, "list")
 
   am_put(doc, list_obj, "end", "first")
   am_put(doc, list_obj, "end", "second")
@@ -826,7 +862,8 @@ test_that("am_values() returns empty list for empty map", {
 
 test_that("am_values() returns empty list for empty list", {
   doc <- am_create()
-  list_obj <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  list_obj <- am_get(doc, AM_ROOT, "list")
 
   values <- am_values(doc, list_obj)
 
@@ -852,7 +889,8 @@ test_that("am_values() handles mixed types", {
 test_that("am_values() includes nested objects", {
   doc <- am_create()
   am_put(doc, AM_ROOT, "scalar", "value")
-  nested <- am_put(doc, AM_ROOT, "nested", AM_OBJ_TYPE_MAP)
+  am_put(doc, AM_ROOT, "nested", AM_OBJ_TYPE_MAP)
+  nested <- am_get(doc, AM_ROOT, "nested")
 
   values <- am_values(doc, AM_ROOT)
 
@@ -865,7 +903,8 @@ test_that("am_values() includes nested objects", {
 
 test_that("am_get() with index 0 returns NULL", {
   doc <- am_create()
-  list_obj <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  list_obj <- am_get(doc, AM_ROOT, "list")
   am_put(doc, list_obj, "end", "value")
 
   result <- am_get(doc, list_obj, 0L)
@@ -875,7 +914,8 @@ test_that("am_get() with index 0 returns NULL", {
 
 test_that("am_get() with negative index returns NULL", {
   doc <- am_create()
-  list_obj <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  list_obj <- am_get(doc, AM_ROOT, "list")
   am_put(doc, list_obj, "end", "value")
 
   result <- am_get(doc, list_obj, -1L)
@@ -885,7 +925,8 @@ test_that("am_get() with negative index returns NULL", {
 
 test_that("am_get() with out-of-bounds index returns NULL", {
   doc <- am_create()
-  list_obj <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  list_obj <- am_get(doc, AM_ROOT, "list")
   am_put(doc, list_obj, "end", "value")
 
   result <- am_get(doc, list_obj, 100L)
@@ -895,7 +936,8 @@ test_that("am_get() with out-of-bounds index returns NULL", {
 
 test_that("am_get() on empty list returns NULL", {
   doc <- am_create()
-  list_obj <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  list_obj <- am_get(doc, AM_ROOT, "list")
 
   result <- am_get(doc, list_obj, 1L)
 
@@ -913,13 +955,13 @@ test_that("am_put() with scalar returns doc invisibly", {
   expect_false(result$visible)
 })
 
-test_that("am_put() with object type returns am_object visibly", {
+test_that("am_put() with object type returns doc invisibly", {
   doc <- am_create()
 
   result <- withVisible(am_put(doc, AM_ROOT, "key", AM_OBJ_TYPE_MAP))
 
-  expect_s3_class(result$value, "am_object")
-  expect_true(result$visible)
+  expect_identical(result$value, doc)
+  expect_false(result$visible)
 })
 
 test_that("am_delete() returns doc invisibly", {

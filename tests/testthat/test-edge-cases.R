@@ -6,16 +6,19 @@ test_that("operations on empty objects of various types", {
   doc <- am_create()
 
   # Empty map
-  empty_map <- am_put(doc, AM_ROOT, "map", AM_OBJ_TYPE_MAP)
+  am_put(doc, AM_ROOT, "map", AM_OBJ_TYPE_MAP)
+  empty_map <- am_get(doc, AM_ROOT, "map")
   expect_equal(am_length(doc, empty_map), 0)
   expect_equal(length(am_keys(doc, empty_map)), 0)
 
   # Empty list
-  empty_list <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  empty_list <- am_get(doc, AM_ROOT, "list")
   expect_equal(am_length(doc, empty_list), 0)
 
   # Empty text
-  empty_text <- am_put(doc, AM_ROOT, "text", AM_OBJ_TYPE_TEXT)
+  am_put(doc, AM_ROOT, "text", AM_OBJ_TYPE_TEXT)
+  empty_text <- am_get(doc, AM_ROOT, "text")
   expect_equal(am_text_get(empty_text), "")
 })
 
@@ -23,7 +26,8 @@ test_that("operations on objects with many elements", {
   doc <- am_create()
 
   # Large map
-  large_map <- am_put(doc, AM_ROOT, "map", AM_OBJ_TYPE_MAP)
+  am_put(doc, AM_ROOT, "map", AM_OBJ_TYPE_MAP)
+  large_map <- am_get(doc, AM_ROOT, "map")
   for (i in 1:100) {
     am_put(doc, large_map, paste0("key", i), i)
   }
@@ -31,7 +35,8 @@ test_that("operations on objects with many elements", {
   expect_equal(length(am_keys(doc, large_map)), 100)
 
   # Large list
-  large_list <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  large_list <- am_get(doc, AM_ROOT, "list")
   for (i in 1:100) {
     am_insert(doc, large_list, "end", i)
   }
@@ -42,15 +47,18 @@ test_that("text operations with various Unicode characters", {
   doc <- am_create()
 
   # Emoji
-  text1 <- am_put(doc, AM_ROOT, "emoji", am_text("Hello 😀🎉"))
+  am_put(doc, AM_ROOT, "emoji", am_text("Hello 😀🎉"))
+  text1 <- am_get(doc, AM_ROOT, "emoji")
   expect_equal(am_text_get(text1), "Hello 😀🎉")
 
   # Various Unicode blocks
-  text2 <- am_put(doc, AM_ROOT, "unicode", am_text("日本語 Ελληνικά العربية"))
+  am_put(doc, AM_ROOT, "unicode", am_text("日本語 Ελληνικά العربية"))
+  text2 <- am_get(doc, AM_ROOT, "unicode")
   expect_equal(am_text_get(text2), "日本語 Ελληνικά العربية")
 
   # Text with control characters
-  text3 <- am_put(doc, AM_ROOT, "control", am_text("line1\nline2\ttab"))
+  am_put(doc, AM_ROOT, "control", am_text("line1\nline2\ttab"))
+  text3 <- am_get(doc, AM_ROOT, "control")
   expect_equal(am_text_get(text3), "line1\nline2\ttab")
 })
 
@@ -77,8 +85,10 @@ test_that("nested objects of different types", {
   doc <- am_create()
 
   # Map containing list containing map
-  map1 <- am_put(doc, AM_ROOT, "map1", AM_OBJ_TYPE_MAP)
-  list1 <- am_put(doc, map1, "list1", AM_OBJ_TYPE_LIST)
+  am_put(doc, AM_ROOT, "map1", AM_OBJ_TYPE_MAP)
+  map1 <- am_get(doc, AM_ROOT, "map1")
+  am_put(doc, map1, "list1", AM_OBJ_TYPE_LIST)
+  list1 <- am_get(doc, map1, "list1")
   am_insert(doc, list1, 1, AM_OBJ_TYPE_MAP)
   map2 <- am_get(doc, list1, 1)  # Get the object we just inserted
   am_put(doc, map2, "deep", "value")
@@ -100,14 +110,16 @@ test_that("delete operations on various object types", {
   expect_equal(am_get(doc, AM_ROOT, "k2"), "v2")
 
   # Delete from list
-  list_obj <- am_put(doc, AM_ROOT, "list", am_list("a", "b", "c"))
+  am_put(doc, AM_ROOT, "list", am_list("a", "b", "c"))
+  list_obj <- am_get(doc, AM_ROOT, "list")
   am_delete(doc, list_obj, 2)
   expect_equal(am_length(doc, list_obj), 2)
 })
 
 test_that("insert at various positions in list", {
   doc <- am_create()
-  list_obj <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  list_obj <- am_get(doc, AM_ROOT, "list")
 
   # Insert at position 1 (beginning)
   am_insert(doc, list_obj, 1, "first")
@@ -126,7 +138,8 @@ test_that("insert at various positions in list", {
 
 test_that("text splice at various positions", {
   doc <- am_create()
-  text_obj <- am_put(doc, AM_ROOT, "text", am_text("Hello World"))
+  am_put(doc, AM_ROOT, "text", am_text("Hello World"))
+  text_obj <- am_get(doc, AM_ROOT, "text")
 
   # Splice at beginning
   am_text_splice(text_obj, 0, 0, "Greetings: ")
@@ -199,20 +212,24 @@ test_that("commit with various parameters", {
   doc <- am_create()
 
   # Commit with no changes
-  am_commit(doc)
+  result1 <- am_commit(doc)
+  expect_s3_class(result1, "am_doc")
 
   # Commit with message only
   am_put(doc, AM_ROOT, "k1", "v1")
-  am_commit(doc, "First commit")
+  result2 <- am_commit(doc, "First commit")
+  expect_s3_class(result2, "am_doc")
 
   # Commit with NULL message
   am_put(doc, AM_ROOT, "k2", "v2")
-  am_commit(doc, NULL)
+  result3 <- am_commit(doc, NULL)
+  expect_s3_class(result3, "am_doc")
 
   # Commit with message and time
   am_put(doc, AM_ROOT, "k3", "v3")
   time <- Sys.time()
-  am_commit(doc, "Timed commit", time)
+  result4 <- am_commit(doc, "Timed commit", time)
+  expect_s3_class(result4, "am_doc")
 })
 
 test_that("fork and merge with various scenarios", {
@@ -257,8 +274,10 @@ test_that("save and load with various document states", {
 
   # Document with nested structures
   doc2 <- am_create()
-  map <- am_put(doc2, AM_ROOT, "data", AM_OBJ_TYPE_MAP)
-  list <- am_put(doc2, map, "items", AM_OBJ_TYPE_LIST)
+  am_put(doc2, AM_ROOT, "data", AM_OBJ_TYPE_MAP)
+  map <- am_get(doc2, AM_ROOT, "data")
+  am_put(doc2, map, "items", AM_OBJ_TYPE_LIST)
+  list <- am_get(doc2, map, "items")
   am_insert(doc2, list, 1, "item1")
 
   bytes2 <- am_save(doc2)
@@ -297,13 +316,15 @@ test_that("length method on various object types", {
   expect_equal(am_length(doc, AM_ROOT), 1)
 
   # Length of nested map
-  map <- am_put(doc, AM_ROOT, "map", AM_OBJ_TYPE_MAP)
+  am_put(doc, AM_ROOT, "map", AM_OBJ_TYPE_MAP)
+  map <- am_get(doc, AM_ROOT, "map")
   expect_equal(am_length(doc, map), 0)
   am_put(doc, map, "nested", "value")
   expect_equal(am_length(doc, map), 1)
 
   # Length of list
-  list <- am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  am_put(doc, AM_ROOT, "list", AM_OBJ_TYPE_LIST)
+  list <- am_get(doc, AM_ROOT, "list")
   expect_equal(am_length(doc, list), 0)
   am_insert(doc, list, 1, "item")
   expect_equal(am_length(doc, list), 1)

@@ -22,9 +22,7 @@
 #'     \item `AM_OBJ_TYPE_LIST/MAP/TEXT` - creates nested object
 #'   }
 #'
-#' @return When creating a nested object (value is `AM_OBJ_TYPE_*`),
-#'   returns an `am_object` representing the new object. Otherwise,
-#'   returns the document `doc` (invisibly).
+#' @return The document `doc` (invisibly).
 #'
 #' @export
 #' @examples
@@ -35,15 +33,11 @@
 #' am_put(doc, AM_ROOT, "age", 30L)
 #' am_put(doc, AM_ROOT, "active", TRUE)
 #'
-#' # Create nested list (returns am_object)
-#' items <- am_put(doc, AM_ROOT, "items", AM_OBJ_TYPE_LIST)
+#' # Create nested list and retrieve it
+#' am_put(doc, AM_ROOT, "items", AM_OBJ_TYPE_LIST)
+#' items <- am_get(doc, AM_ROOT, "items")
 am_put <- function(doc, obj, key, value) {
-  result <- .Call(C_am_put, doc, obj, key, value)
-  if (inherits(result, "am_object")) {
-    result # Return am_object visibly
-  } else {
-    invisible(result) # Return doc invisibly
-  }
+  invisible(.Call(C_am_put, doc, obj, key, value))
 }
 
 #' Get a value from an Automerge map or list
@@ -152,7 +146,7 @@ am_length <- function(doc, obj) {
 #' @export
 #' @examples
 #' doc <- am_create()
-#' # Create a list
+#' # Create a list and get it
 #' am_put(doc, AM_ROOT, "items", AM_OBJ_TYPE_LIST)
 #' items <- am_get(doc, AM_ROOT, "items")
 #'
@@ -266,7 +260,8 @@ am_text <- function(initial = "") {
 #' @export
 #' @examples
 #' doc <- am_create()
-#' text_obj <- am_put(doc, AM_ROOT, "doc", am_text("Hello"))
+#' am_put(doc, AM_ROOT, "doc", am_text("Hello"))
+#' text_obj <- am_get(doc, AM_ROOT, "doc")
 #'
 #' # Insert " World" at position 5 (after "Hello")
 #' am_text_splice(text_obj, 5, 0, " World")
@@ -275,7 +270,8 @@ am_text <- function(initial = "") {
 #' am_text_get(text_obj)  # "Hello World"
 #'
 #' # Works naturally with multibyte characters
-#' text_obj2 <- am_put(doc, AM_ROOT, "emoji", am_text(""))
+#' am_put(doc, AM_ROOT, "emoji", am_text(""))
+#' text_obj2 <- am_get(doc, AM_ROOT, "emoji")
 #' am_text_splice(text_obj2, 0, 0, "Hello😀")
 #' # Position 5 is the emoji (character index, not bytes)
 #' am_text_splice(text_obj2, 6, 0, "World")
@@ -299,7 +295,8 @@ am_text_splice <- function(text_obj, pos, del_count, text) {
 #' @export
 #' @examples
 #' doc <- am_create()
-#' text_obj <- am_put(doc, AM_ROOT, "doc", am_text("Hello"))
+#' am_put(doc, AM_ROOT, "doc", am_text("Hello"))
+#' text_obj <- am_get(doc, AM_ROOT, "doc")
 #'
 #' text <- am_text_get(text_obj)
 #' print(text)  # "Hello"

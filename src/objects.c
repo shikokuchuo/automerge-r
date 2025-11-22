@@ -403,23 +403,10 @@ SEXP C_am_put(SEXP doc_ptr, SEXP obj_ptr, SEXP key_or_pos, SEXP value) {
     // Perform the put operation (insert=false means replace for numeric positions)
     AMresult *result = am_put_value(doc, obj_id, key_or_pos, is_map, value, false);
 
-    // Check if result contains an object ID (creating nested object)
-    if (AMresultStatus(result) == AM_STATUS_OK) {
-        AMitem *item = AMresultItem(result);
-        if (item && AMitemValType(item) == AM_VAL_TYPE_OBJ_TYPE) {
-            // Creating a nested object - wrap and return it
-            SEXP result_sexp = PROTECT(wrap_am_result(result, doc_ptr));
-            AMobjId const *new_obj_id = AMitemObjId(item);
-            SEXP wrapped_obj = PROTECT(am_wrap_nested_object(new_obj_id, result_sexp));
-            UNPROTECT(2);
-            return wrapped_obj;
-        }
-    }
-
     CHECK_RESULT(result, AM_VAL_TYPE_VOID);
 
     AMresultFree(result);
-    return doc_ptr;  // Return document for chaining
+    return doc_ptr;  // Always return document for consistency
 }
 
 /**

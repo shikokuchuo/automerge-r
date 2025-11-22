@@ -107,7 +107,8 @@ test_that("Commit with invalid parameters", {
 
 test_that("Text operations with invalid inputs", {
   doc <- am_create()
-  text_obj <- am_put(doc, AM_ROOT, "text", am_text("Hello"))
+  am_put(doc, AM_ROOT, "text", am_text("Hello"))
+  text_obj <- am_get(doc, AM_ROOT, "text")
 
   # These should work (baseline)
   am_text_splice(text_obj, 5, 0, " World")
@@ -115,7 +116,8 @@ test_that("Text operations with invalid inputs", {
   expect_equal(result, "Hello World")
 
   # Try text operations on non-text object
-  map_obj <- am_put(doc, AM_ROOT, "map", AM_OBJ_TYPE_MAP)
+  am_put(doc, AM_ROOT, "map", AM_OBJ_TYPE_MAP)
+  map_obj <- am_get(doc, AM_ROOT, "map")
 
   # This should fail - trying to do text operations on a map
   expect_snapshot(error = TRUE, {
@@ -127,7 +129,8 @@ test_that("Operations on invalid object types", {
   doc <- am_create()
 
   # Create a text object
-  text_obj <- am_put(doc, AM_ROOT, "text", am_text("content"))
+  am_put(doc, AM_ROOT, "text", am_text("content"))
+  text_obj <- am_get(doc, AM_ROOT, "text")
 
   # Try to use am_keys on text (should work or error gracefully)
   # Text objects don't have "keys" in the map sense

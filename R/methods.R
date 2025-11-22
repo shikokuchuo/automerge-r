@@ -169,7 +169,8 @@ as.list.am_doc <- function(x, ...) {
 #' @export
 #' @examples
 #' doc <- am_create()
-#' user <- am_put(doc, AM_ROOT, "user", list(name = "Bob", age = 25L))
+#' am_put(doc, AM_ROOT, "user", list(name = "Bob", age = 25L))
+#' user <- am_get(doc, AM_ROOT, "user")
 #'
 #' user[["name"]]  # "Bob"
 #' user$age        # 25L
@@ -200,7 +201,8 @@ as.list.am_doc <- function(x, ...) {
 #' @export
 #' @examples
 #' doc <- am_create()
-#' user <- am_put(doc, AM_ROOT, "user", list(name = "Bob", age = 25L))
+#' am_put(doc, AM_ROOT, "user", list(name = "Bob", age = 25L))
+#' user <- am_get(doc, AM_ROOT, "user")
 #'
 #' user[["name"]] <- "Alice"
 #' user$age <- 30L

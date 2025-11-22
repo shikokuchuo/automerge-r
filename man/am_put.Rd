@@ -27,9 +27,7 @@ for the document root}
 }}
 }
 \value{
-When creating a nested object (value is \verb{AM_OBJ_TYPE_*}),
-returns an \code{am_object} representing the new object. Otherwise,
-returns the document \code{doc} (invisibly).
+The document \code{doc} (invisibly).
 }
 \description{
 Inserts or updates a value in an Automerge map or list. The function
@@ -44,6 +42,7 @@ am_put(doc, AM_ROOT, "name", "Alice")
 am_put(doc, AM_ROOT, "age", 30L)
 am_put(doc, AM_ROOT, "active", TRUE)
 
-# Create nested list (returns am_object)
-items <- am_put(doc, AM_ROOT, "items", AM_OBJ_TYPE_LIST)
+# Create nested list and retrieve it
+am_put(doc, AM_ROOT, "items", AM_OBJ_TYPE_LIST)
+items <- am_get(doc, AM_ROOT, "items")
 }

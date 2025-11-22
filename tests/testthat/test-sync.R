@@ -262,13 +262,15 @@ test_that("sync works with nested objects", {
   doc2 <- am_create()
 
   # Create nested structure in doc1
-  map <- am_put(doc1, AM_ROOT, "config", AM_OBJ_TYPE_MAP)
+  am_put(doc1, AM_ROOT, "config", AM_OBJ_TYPE_MAP)
+  map <- am_get(doc1, AM_ROOT, "config")
   am_put(doc1, map, "host", "localhost")
   am_put(doc1, map, "port", 8080)
   am_commit(doc1, "Add config")
 
   # Create different structure in doc2
-  list <- am_put(doc2, AM_ROOT, "items", AM_OBJ_TYPE_LIST)
+  am_put(doc2, AM_ROOT, "items", AM_OBJ_TYPE_LIST)
+  list <- am_get(doc2, AM_ROOT, "items")
   am_insert(doc2, list, 1, "first")
   am_insert(doc2, list, 2, "second")
   am_commit(doc2, "Add items")
@@ -343,12 +345,14 @@ test_that("sync works with text objects", {
   doc2 <- am_create()
 
   # Create text in doc1
-  text1 <- am_put(doc1, AM_ROOT, "notes", AM_OBJ_TYPE_TEXT)
+  am_put(doc1, AM_ROOT, "notes", AM_OBJ_TYPE_TEXT)
+  text1 <- am_get(doc1, AM_ROOT, "notes")
   am_text_splice(text1, 0, 0, "Hello from doc1")
   am_commit(doc1)
 
   # Create text in doc2
-  text2 <- am_put(doc2, AM_ROOT, "greet", AM_OBJ_TYPE_TEXT)
+  am_put(doc2, AM_ROOT, "greet", AM_OBJ_TYPE_TEXT)
+  text2 <- am_get(doc2, AM_ROOT, "greet")
   am_text_splice(text2, 0, 0, "Hi from doc2")
   am_commit(doc2)
 

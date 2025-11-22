@@ -26,7 +26,7 @@ at that position, while \code{am_insert()} shifts elements to make room.
 }
 \examples{
 doc <- am_create()
-# Create a list
+# Create a list and get it
 am_put(doc, AM_ROOT, "items", AM_OBJ_TYPE_LIST)
 items <- am_get(doc, AM_ROOT, "items")
 

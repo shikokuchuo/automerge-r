@@ -172,7 +172,8 @@ test_that("as.list() recursively converts nested structures", {
 
 test_that("[[ and $ extract from am_object (maps)", {
   doc <- am_create()
-  user <- am_put(doc, AM_ROOT, "user", list(name = "David", age = 40L))
+  am_put(doc, AM_ROOT, "user", list(name = "David", age = 40L))
+  user <- am_get(doc, AM_ROOT, "user")
 
   # [[ operator
   expect_equal(user[["name"]], "David")
@@ -185,7 +186,8 @@ test_that("[[ and $ extract from am_object (maps)", {
 
 test_that("[[ extracts from am_object (lists)", {
   doc <- am_create()
-  items <- am_put(doc, AM_ROOT, "items", am_list("a", "b", "c"))
+  am_put(doc, AM_ROOT, "items", am_list("a", "b", "c"))
+  items <- am_get(doc, AM_ROOT, "items")
 
   # [[ operator with integer index (1-based)
   expect_equal(items[[1]], "a")
@@ -195,7 +197,8 @@ test_that("[[ extracts from am_object (lists)", {
 
 test_that("[[ and $ return NULL for missing keys in am_object", {
   doc <- am_create()
-  obj <- am_put(doc, AM_ROOT, "obj", list(key = "value"))
+  am_put(doc, AM_ROOT, "obj", list(key = "value"))
+  obj <- am_get(doc, AM_ROOT, "obj")
 
   expect_null(obj[["missing"]])
   expect_null(obj$missing)
@@ -218,7 +221,8 @@ test_that("[[<- and $<- assign to am_object (maps)", {
 
 test_that("[[<- assigns to am_object (lists)", {
   doc <- am_create()
-  items <- am_put(doc, AM_ROOT, "items", am_list("a", "b", "c"))
+  am_put(doc, AM_ROOT, "items", am_list("a", "b", "c"))
+  items <- am_get(doc, AM_ROOT, "items")
 
   # Replace element
   items[[2]] <- "modified"
@@ -228,7 +232,8 @@ test_that("[[<- assigns to am_object (lists)", {
 
 test_that("[[<- and $<- modify the underlying document", {
   doc <- am_create()
-  user <- am_put(doc, AM_ROOT, "user", list(name = "Original"))
+  am_put(doc, AM_ROOT, "user", list(name = "Original"))
+  user <- am_get(doc, AM_ROOT, "user")
 
   user$name <- "Updated"
 
@@ -244,7 +249,8 @@ test_that("[[<- and $<- modify the underlying document", {
 
 test_that("length() works on am_object (maps)", {
   doc <- am_create()
-  obj <- am_put(doc, AM_ROOT, "obj", list(a = 1, b = 2, c = 3))
+  am_put(doc, AM_ROOT, "obj", list(a = 1, b = 2, c = 3))
+  obj <- am_get(doc, AM_ROOT, "obj")
 
   expect_equal(length(obj), 3L)
 
@@ -254,14 +260,16 @@ test_that("length() works on am_object (maps)", {
 
 test_that("length() works on am_object (lists)", {
   doc <- am_create()
-  items <- am_put(doc, AM_ROOT, "items", am_list("x", "y", "z"))
+  am_put(doc, AM_ROOT, "items", am_list("x", "y", "z"))
+  items <- am_get(doc, AM_ROOT, "items")
 
   expect_equal(length(items), 3L)
 })
 
 test_that("names() returns keys for am_object (maps)", {
   doc <- am_create()
-  obj <- am_put(doc, AM_ROOT, "obj", list(alpha = 1, beta = 2, gamma = 3))
+  am_put(doc, AM_ROOT, "obj", list(alpha = 1, beta = 2, gamma = 3))
+  obj <- am_get(doc, AM_ROOT, "obj")
 
   obj_names <- names(obj)
   expect_type(obj_names, "character")
@@ -271,7 +279,8 @@ test_that("names() returns keys for am_object (maps)", {
 
 test_that("names() returns NULL or element IDs for am_object (lists)", {
   doc <- am_create()
-  items <- am_put(doc, AM_ROOT, "items", am_list("a", "b", "c"))
+  am_put(doc, AM_ROOT, "items", am_list("a", "b", "c"))
+  items <- am_get(doc, AM_ROOT, "items")
 
   # Lists may return element IDs or NULL
   # This is implementation-specific
@@ -281,7 +290,8 @@ test_that("names() returns NULL or element IDs for am_object (lists)", {
 
 test_that("print() displays am_object info (map)", {
   doc <- am_create()
-  user <- am_put(doc, AM_ROOT, "user", list(name = "Test", age = 25L))
+  am_put(doc, AM_ROOT, "user", list(name = "Test", age = 25L))
+  user <- am_get(doc, AM_ROOT, "user")
 
   output <- capture.output(print(user))
   expect_true(any(grepl("Automerge Map", output)))
@@ -291,7 +301,8 @@ test_that("print() displays am_object info (map)", {
 
 test_that("print() displays am_object info (list)", {
   doc <- am_create()
-  items <- am_put(doc, AM_ROOT, "items", am_list("a", "b", "c"))
+  am_put(doc, AM_ROOT, "items", am_list("a", "b", "c"))
+  items <- am_get(doc, AM_ROOT, "items")
 
   output <- capture.output(print(items))
   expect_true(any(grepl("Automerge List", output)))
@@ -301,7 +312,8 @@ test_that("print() displays am_object info (list)", {
 
 test_that("print() displays am_object info (text)", {
   doc <- am_create()
-  text_obj <- am_put(doc, AM_ROOT, "text", am_text("Hello, world!"))
+  am_put(doc, AM_ROOT, "text", am_text("Hello, world!"))
+  text_obj <- am_get(doc, AM_ROOT, "text")
 
   output <- capture.output(print(text_obj))
   expect_true(any(grepl("Automerge Text", output)))
@@ -313,7 +325,8 @@ test_that("print() displays am_object info (text)", {
 test_that("print() handles very long text with truncation", {
   doc <- am_create()
   long_text <- paste(rep("a", 100), collapse = "")
-  text_obj <- am_put(doc, AM_ROOT, "text", am_text(long_text))
+  am_put(doc, AM_ROOT, "text", am_text(long_text))
+  text_obj <- am_get(doc, AM_ROOT, "text")
 
   output <- capture.output(print(text_obj))
   expect_true(any(grepl("Automerge Text", output)))
@@ -324,7 +337,8 @@ test_that("print() handles very long text with truncation", {
 test_that("print() displays map with many keys truncated", {
   doc <- am_create()
   map_data <- list(a = 1, b = 2, c = 3, d = 4, e = 5, f = 6, g = 7)
-  map_obj <- am_put(doc, AM_ROOT, "map", map_data)
+  am_put(doc, AM_ROOT, "map", map_data)
+  map_obj <- am_get(doc, AM_ROOT, "map")
 
   output <- capture.output(print(map_obj))
   expect_true(any(grepl("Automerge Map", output)))
@@ -334,7 +348,7 @@ test_that("print() displays map with many keys truncated", {
 
 test_that("as.list() converts am_object to R list", {
   doc <- am_create()
-  user <- am_put(
+  am_put(
     doc,
     AM_ROOT,
     "user",
@@ -344,6 +358,7 @@ test_that("as.list() converts am_object to R list", {
       tags = am_list("dev", "ops")
     )
   )
+  user <- am_get(doc, AM_ROOT, "user")
 
   result <- as.list(user)
   expect_type(result, "list")
@@ -489,7 +504,8 @@ test_that("as.list() handles empty document", {
 
 test_that("as.list() handles empty am_object map", {
   doc <- am_create()
-  empty_map <- am_put(doc, AM_ROOT, "map", am_map())
+  am_put(doc, AM_ROOT, "map", am_map())
+  empty_map <- am_get(doc, AM_ROOT, "map")
 
   result <- as.list(empty_map)
   expect_type(result, "list")
@@ -498,7 +514,8 @@ test_that("as.list() handles empty am_object map", {
 
 test_that("as.list() handles empty am_object list", {
   doc <- am_create()
-  empty_list <- am_put(doc, AM_ROOT, "list", am_list())
+  am_put(doc, AM_ROOT, "list", am_list())
+  empty_list <- am_get(doc, AM_ROOT, "list")
 
   result <- as.list(empty_list)
   expect_type(result, "list")
@@ -523,7 +540,8 @@ test_that("as.list() handles very deeply nested structures", {
 
 test_that("[[ handles out-of-bounds list index", {
   doc <- am_create()
-  items <- am_put(doc, AM_ROOT, "items", am_list("a", "b"))
+  am_put(doc, AM_ROOT, "items", am_list("a", "b"))
+  items <- am_get(doc, AM_ROOT, "items")
 
   expect_null(items[[0]])
   expect_null(items[[99]])
@@ -612,7 +630,8 @@ test_that("print.am_counter displays counter value", {
 
 test_that("print.am_object displays generic object message", {
   doc <- am_create()
-  obj <- am_put(doc, AM_ROOT, "obj", AM_OBJ_TYPE_MAP)
+  am_put(doc, AM_ROOT, "obj", AM_OBJ_TYPE_MAP)
+  obj <- am_get(doc, AM_ROOT, "obj")
 
   # Remove specific class to trigger generic print
   class_backup <- class(obj)
@@ -627,7 +646,8 @@ test_that("print.am_object displays generic object message", {
 
 test_that("as.list.am_text returns text content as string", {
   doc <- am_create()
-  text_obj <- am_put(doc, AM_ROOT, "text", am_text("Hello world"))
+  am_put(doc, AM_ROOT, "text", am_text("Hello world"))
+  text_obj <- am_get(doc, AM_ROOT, "text")
 
   result <- as.list(text_obj)
   expect_type(result, "character")
