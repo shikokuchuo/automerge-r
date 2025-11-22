@@ -76,7 +76,24 @@ if [ ${AUTOMERGE_FOUND} -eq 0 ]; then
     export TMPDIR="${PWD}/automerge-build/tmp"
     mkdir -p "$TMPDIR"
 
-    # Force GNU target to match MinGW toolchain from Rtools
+    # Verify x86_64-pc-windows-gnu target is installed
+    echo "Verifying x86_64-pc-windows-gnu Rust target..."
+    if ! rustup target list --installed | grep -q "x86_64-pc-windows-gnu"; then
+        echo "ERROR: x86_64-pc-windows-gnu Rust target not installed"
+        echo ""
+        echo "This target is required to build with Rtools' MinGW toolchain"
+        echo ""
+        echo "Please install it with:"
+        echo "  rustup target add x86_64-pc-windows-gnu"
+        echo ""
+        echo "Or install the full stable GNU toolchain with:"
+        echo "  rustup toolchain install stable-x86_64-pc-windows-gnu"
+        echo ""
+        exit 1
+    fi
+    echo "x86_64-pc-windows-gnu target verified"
+
+    # Force GNU toolchain to match MinGW toolchain from Rtools
     export RUSTUP_TOOLCHAIN="stable-x86_64-pc-windows-gnu"
 
     # UTF-32 code point indexing for natural R character semantics
