@@ -25,7 +25,7 @@ R Bindings for the Automerge CRDT Library
 
 ## Overview
 
-`automerge` provides R bindings to the [Automerge](https://automerge.org/) Conflict-free Replicated Data Type (CRDT) library via its C FFI. Automerge enables automatic merging of concurrent changes without conflicts, making it ideal for:
+`automerge` provides R bindings to the [Automerge](https://automerge.org/) Conflict-free Replicated Data Type (CRDT) Rust library via its C FFI. Automerge enables automatic merging of concurrent changes without conflicts, making it ideal for:
 
 - Distributed systems
 - Collaborative applications
