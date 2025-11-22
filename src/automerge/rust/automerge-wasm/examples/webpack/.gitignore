@@ -1,5 +1,0 @@
-yarn.lock
-node_modules
-public/*.wasm
-public/main.js
-dist

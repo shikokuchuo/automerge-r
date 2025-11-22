@@ -2,10 +2,6 @@
 members = [
     "automerge",
     "automerge-c",
-    "automerge-cli",
-    "automerge-test",
-    "automerge-wasm",
-    "edit-trace",
     "hexane",
 ]
 resolver = "2"
