@@ -599,3 +599,37 @@ test_that("methods work with raw bytes", {
   result <- as.list(doc)
   expect_equal(result$bytes, raw_data)
 })
+
+test_that("print.am_counter displays counter value", {
+  doc <- am_create()
+  counter <- am_counter(10)
+  doc$count <- counter
+
+  output <- capture.output(print(counter))
+  expect_true(any(grepl("Automerge Counter", output)))
+  expect_true(any(grepl("10", output)))
+})
+
+test_that("print.am_object displays generic object message", {
+  doc <- am_create()
+  obj <- am_put(doc, AM_ROOT, "obj", AM_OBJ_TYPE_MAP)
+
+  # Remove specific class to trigger generic print
+  class_backup <- class(obj)
+  class(obj) <- "am_object"
+
+  output <- capture.output(print(obj))
+  expect_true(any(grepl("Automerge Object", output)))
+
+  # Restore class
+  class(obj) <- class_backup
+})
+
+test_that("as.list.am_text returns text content as string", {
+  doc <- am_create()
+  text_obj <- am_put(doc, AM_ROOT, "text", am_text("Hello world"))
+
+  result <- as.list(text_obj)
+  expect_type(result, "character")
+  expect_equal(result, "Hello world")
+})

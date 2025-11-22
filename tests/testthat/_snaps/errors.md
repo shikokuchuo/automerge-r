@@ -294,3 +294,195 @@
       Error in `am_load()`:
       ! Automerge error at document.c:127: unable to parse chunk: failed to parse header: Invalid magic bytes
 
+# am_sync_decode validates message type
+
+    Code
+      am_sync_decode(doc, sync_state, "not raw")
+    Condition
+      Error in `am_sync_decode()`:
+      ! message must be a raw vector
+
+---
+
+    Code
+      am_sync_decode(doc, sync_state, 123)
+    Condition
+      Error in `am_sync_decode()`:
+      ! message must be a raw vector
+
+---
+
+    Code
+      am_sync_decode(doc, sync_state, list(1, 2, 3))
+    Condition
+      Error in `am_sync_decode()`:
+      ! message must be a raw vector
+
+---
+
+    Code
+      am_sync_decode(doc, sync_state, NULL)
+    Condition
+      Error in `am_sync_decode()`:
+      ! message must be a raw vector
+
+# am_sync_bidirectional validates doc1 parameter
+
+    Code
+      am_sync_bidirectional("not a doc", doc)
+    Condition
+      Error in `am_sync_bidirectional()`:
+      ! doc1 must be an Automerge document
+
+---
+
+    Code
+      am_sync_bidirectional(123, doc)
+    Condition
+      Error in `am_sync_bidirectional()`:
+      ! doc1 must be an Automerge document
+
+---
+
+    Code
+      am_sync_bidirectional(NULL, doc)
+    Condition
+      Error in `am_sync_bidirectional()`:
+      ! doc1 must be an Automerge document
+
+# am_sync_bidirectional validates doc2 parameter
+
+    Code
+      am_sync_bidirectional(doc, "not a doc")
+    Condition
+      Error in `am_sync_bidirectional()`:
+      ! doc2 must be an Automerge document
+
+---
+
+    Code
+      am_sync_bidirectional(doc, 456)
+    Condition
+      Error in `am_sync_bidirectional()`:
+      ! doc2 must be an Automerge document
+
+---
+
+    Code
+      am_sync_bidirectional(doc, NULL)
+    Condition
+      Error in `am_sync_bidirectional()`:
+      ! doc2 must be an Automerge document
+
+# am_sync_bidirectional validates max_rounds parameter
+
+    Code
+      am_sync_bidirectional(doc1, doc2, max_rounds = "not numeric")
+    Condition
+      Error in `am_sync_bidirectional()`:
+      ! max_rounds must be a positive integer
+
+---
+
+    Code
+      am_sync_bidirectional(doc1, doc2, max_rounds = -1)
+    Condition
+      Error in `am_sync_bidirectional()`:
+      ! max_rounds must be a positive integer
+
+---
+
+    Code
+      am_sync_bidirectional(doc1, doc2, max_rounds = 0)
+    Condition
+      Error in `am_sync_bidirectional()`:
+      ! max_rounds must be a positive integer
+
+---
+
+    Code
+      am_sync_bidirectional(doc1, doc2, max_rounds = c(1, 2))
+    Condition
+      Error in `am_sync_bidirectional()`:
+      ! max_rounds must be a positive integer
+
+# am_get_changes validates heads parameter
+
+    Code
+      am_get_changes(doc, "not a list")
+    Condition
+      Error in `am_get_changes()`:
+      ! heads must be NULL or a list of raw vectors
+
+---
+
+    Code
+      am_get_changes(doc, 123)
+    Condition
+      Error in `am_get_changes()`:
+      ! heads must be NULL or a list of raw vectors
+
+---
+
+    Code
+      am_get_changes(doc, raw(5))
+    Condition
+      Error in `am_get_changes()`:
+      ! heads must be NULL or a list of raw vectors
+
+# am_apply_changes validates changes parameter
+
+    Code
+      am_apply_changes(doc, "not a list")
+    Condition
+      Error in `am_apply_changes()`:
+      ! changes must be a list of raw vectors
+
+---
+
+    Code
+      am_apply_changes(doc, 123)
+    Condition
+      Error in `am_apply_changes()`:
+      ! changes must be a list of raw vectors
+
+---
+
+    Code
+      am_apply_changes(doc, raw(5))
+    Condition
+      Error in `am_apply_changes()`:
+      ! changes must be a list of raw vectors
+
+---
+
+    Code
+      am_apply_changes(doc, NULL)
+    Condition
+      Error in `am_apply_changes()`:
+      ! changes must be a list of raw vectors
+
+# am_put_path validates with non-existent intermediate and no create
+
+    Code
+      am_put_path(doc, c("a", "b", "c"), "value", create_intermediate = FALSE)
+    Condition
+      Error in `am_put_path()`:
+      ! Path component at position 1 does not exist
+
+# am_put_path errors on non-object intermediate path component
+
+    Code
+      am_put_path(doc, c("scalar", "nested"), "value")
+    Condition
+      Error in `am_put_path()`:
+      ! Path component at position 1 is not an object
+
+# am_put_path errors when trying to create intermediate list element
+
+    Code
+      am_put_path(doc, list("items", 99, "nested"), "value")
+    Condition
+      Error in `am_put_path()`:
+      ! Cannot create intermediate list element at index 99
+

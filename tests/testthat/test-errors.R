@@ -306,3 +306,165 @@ test_that("Resource cleanup after errors", {
   am_put(doc, AM_ROOT, "after_errors", "works")
   expect_equal(am_get(doc, AM_ROOT, "after_errors"), "works")
 })
+
+# Sync validation errors ------------------------------------------------------
+
+test_that("am_sync_decode validates message type", {
+  doc <- am_create()
+  sync_state <- am_sync_state_new()
+
+  expect_snapshot(error = TRUE, {
+    am_sync_decode(doc, sync_state, "not raw")
+  })
+
+  expect_snapshot(error = TRUE, {
+    am_sync_decode(doc, sync_state, 123)
+  })
+
+  expect_snapshot(error = TRUE, {
+    am_sync_decode(doc, sync_state, list(1, 2, 3))
+  })
+
+  expect_snapshot(error = TRUE, {
+    am_sync_decode(doc, sync_state, NULL)
+  })
+})
+
+test_that("am_sync_bidirectional validates doc1 parameter", {
+  doc <- am_create()
+
+  expect_snapshot(error = TRUE, {
+    am_sync_bidirectional("not a doc", doc)
+  })
+
+  expect_snapshot(error = TRUE, {
+    am_sync_bidirectional(123, doc)
+  })
+
+  expect_snapshot(error = TRUE, {
+    am_sync_bidirectional(NULL, doc)
+  })
+})
+
+test_that("am_sync_bidirectional validates doc2 parameter", {
+  doc <- am_create()
+
+  expect_snapshot(error = TRUE, {
+    am_sync_bidirectional(doc, "not a doc")
+  })
+
+  expect_snapshot(error = TRUE, {
+    am_sync_bidirectional(doc, 456)
+  })
+
+  expect_snapshot(error = TRUE, {
+    am_sync_bidirectional(doc, NULL)
+  })
+})
+
+test_that("am_sync_bidirectional validates max_rounds parameter", {
+  doc1 <- am_create()
+  doc2 <- am_create()
+
+  expect_snapshot(error = TRUE, {
+    am_sync_bidirectional(doc1, doc2, max_rounds = "not numeric")
+  })
+
+  expect_snapshot(error = TRUE, {
+    am_sync_bidirectional(doc1, doc2, max_rounds = -1)
+  })
+
+  expect_snapshot(error = TRUE, {
+    am_sync_bidirectional(doc1, doc2, max_rounds = 0)
+  })
+
+  expect_snapshot(error = TRUE, {
+    am_sync_bidirectional(doc1, doc2, max_rounds = c(1, 2))
+  })
+})
+
+test_that("am_get_changes validates heads parameter", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "x", 1)
+  am_commit(doc)
+
+  expect_snapshot(error = TRUE, {
+    am_get_changes(doc, "not a list")
+  })
+
+  expect_snapshot(error = TRUE, {
+    am_get_changes(doc, 123)
+  })
+
+  expect_snapshot(error = TRUE, {
+    am_get_changes(doc, raw(5))
+  })
+})
+
+test_that("am_apply_changes validates changes parameter", {
+  doc <- am_create()
+
+  expect_snapshot(error = TRUE, {
+    am_apply_changes(doc, "not a list")
+  })
+
+  expect_snapshot(error = TRUE, {
+    am_apply_changes(doc, 123)
+  })
+
+  expect_snapshot(error = TRUE, {
+    am_apply_changes(doc, raw(5))
+  })
+
+  expect_snapshot(error = TRUE, {
+    am_apply_changes(doc, NULL)
+  })
+})
+
+# Convenience function validation errors --------------------------------------
+
+test_that("am_put_path validates with non-existent intermediate and no create", {
+  doc <- am_create()
+
+  expect_snapshot(error = TRUE, {
+    am_put_path(doc, c("a", "b", "c"), "value", create_intermediate = FALSE)
+  })
+})
+
+test_that("am_put_path errors on non-object intermediate path component", {
+  doc <- am_create()
+  doc$scalar <- "just a string"
+
+  expect_snapshot(error = TRUE, {
+    am_put_path(doc, c("scalar", "nested"), "value")
+  })
+})
+
+test_that("am_put_path errors when trying to create intermediate list element", {
+  doc <- am_create()
+  doc$items <- am_list("a", "b")
+
+  expect_snapshot(error = TRUE, {
+    am_put_path(doc, list("items", 99, "nested"), "value")
+  })
+})
+
+test_that("am_delete_path warns on non-existent intermediate path", {
+  doc <- am_create()
+  doc$user <- am_map(name = "Alice")
+
+  expect_warning(
+    am_delete_path(doc, c("user", "nonexistent", "key")),
+    "Path component at position 2 does not exist"
+  )
+})
+
+test_that("am_delete_path warns on non-object intermediate path component", {
+  doc <- am_create()
+  doc$scalar <- 42
+
+  expect_warning(
+    am_delete_path(doc, c("scalar", "nested")),
+    "Path component at position 1 is not an object"
+  )
+})
