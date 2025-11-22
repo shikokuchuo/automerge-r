@@ -1,18 +1,23 @@
 # Tests for error handling in errors.c
 # These tests aim to exercise the different error paths in check_result_impl()
 
+# Helper to strip line numbers from C error messages to avoid brittle snapshots
+strip_line_numbers <- function(x) {
+  gsub("(\\w+\\.c):[0-9]+:", "\\1:LINE:", x)
+}
+
 test_that("Automerge errors are caught with error messages", {
   # Test AM_STATUS_ERROR with non-empty error message
   # Loading invalid data should trigger an Automerge C error
 
   # Invalid Automerge format
-  expect_snapshot(error = TRUE, {
+  expect_snapshot(error = TRUE, transform = strip_line_numbers, {
     am_load(as.raw(c(0x00, 0x01, 0x02)))
   })
 
   # Random bytes that aren't a valid document
   set.seed(42) # For reproducibility
-  expect_snapshot(error = TRUE, {
+  expect_snapshot(error = TRUE, transform = strip_line_numbers, {
     am_load(as.raw(sample(0:255, 100, replace = TRUE)))
   })
 })
@@ -120,7 +125,7 @@ test_that("Text operations with invalid inputs", {
   map_obj <- am_get(doc, AM_ROOT, "map")
 
   # This should fail - trying to do text operations on a map
-  expect_snapshot(error = TRUE, {
+  expect_snapshot(error = TRUE, transform = strip_line_numbers, {
     am_text_splice(map_obj, 0, 0, "text")
   })
 })
@@ -235,7 +240,7 @@ test_that("Corrupted document state handling", {
     corrupted[5:7] <- as.raw(c(255, 255, 255))
 
     # Try to load corrupted document - should error
-    expect_snapshot(error = TRUE, {
+    expect_snapshot(error = TRUE, transform = strip_line_numbers, {
       am_load(corrupted)
     })
   }
@@ -265,7 +270,7 @@ test_that("Error messages include file and line information", {
   # This helps with debugging
 
   # The error message format is: "Automerge error at document.c:LINE: message"
-  expect_snapshot(error = TRUE, {
+  expect_snapshot(error = TRUE, transform = strip_line_numbers, {
     am_load(as.raw(c(0xFF)))
   })
 })
@@ -274,7 +279,7 @@ test_that("Multiple error conditions in sequence", {
   # Test that error state doesn't persist between calls
 
   # First error
-  expect_snapshot(error = TRUE, {
+  expect_snapshot(error = TRUE, transform = strip_line_numbers, {
     am_load(as.raw(c(0x00)))
   })
 
@@ -283,7 +288,7 @@ test_that("Multiple error conditions in sequence", {
   expect_s3_class(doc, "am_doc")
 
   # Second error
-  expect_snapshot(error = TRUE, {
+  expect_snapshot(error = TRUE, transform = strip_line_numbers, {
     am_load(as.raw(c(0xFF)))
   })
 
@@ -299,7 +304,7 @@ test_that("Resource cleanup after errors", {
   for (i in 1:10) {
     # Trigger errors in a loop
     set.seed(i) # For reproducibility
-    expect_snapshot(error = TRUE, {
+    expect_snapshot(error = TRUE, transform = strip_line_numbers, {
       am_load(as.raw(sample(0:255, 50, replace = TRUE)))
     })
   }

@@ -76,9 +76,6 @@ am_sync_encode <- function(doc, sync_state) {
 #' # message <- ... (received from network)
 #' # am_sync_decode(doc, sync_state, message)
 am_sync_decode <- function(doc, sync_state, message) {
-  if (!is.raw(message)) {
-    stop("message must be a raw vector")
-  }
   invisible(.Call(C_am_sync_decode, doc, sync_state, message))
 }
 
@@ -257,9 +254,6 @@ am_get_changes <- function(doc, heads = NULL) {
 #'
 #' # Now doc2 has the same data as doc1
 am_apply_changes <- function(doc, changes) {
-  if (!is.list(changes)) {
-    stop("changes must be a list of raw vectors")
-  }
   invisible(.Call(C_am_apply_changes, doc, changes))
 }
 

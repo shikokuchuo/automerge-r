@@ -83,9 +83,6 @@ am_save <- function(doc) {
 #' doc <- am_load(readBin("document.automerge", "raw", 1e7))
 #' }
 am_load <- function(data) {
-  if (!is.raw(data)) {
-    stop("data must be a raw vector")
-  }
   .Call(C_am_load, data)
 }
 
@@ -216,12 +213,6 @@ am_set_actor <- function(doc, actor_id) {
 #' # Commit with specific timestamp
 #' am_commit(doc, "Update", Sys.time())
 am_commit <- function(doc, message = NULL, time = NULL) {
-  if (!is.null(message) && (!is.character(message) || length(message) != 1)) {
-    stop("message must be NULL or a single character string")
-  }
-  if (!is.null(time) && (!inherits(time, "POSIXct") || length(time) != 1)) {
-    stop("time must be NULL or a scalar POSIXct object")
-  }
   invisible(.Call(C_am_commit, doc, message, time))
 }
 

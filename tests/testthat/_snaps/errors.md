@@ -4,7 +4,7 @@
       am_load(as.raw(c(0, 1, 2)))
     Condition
       Error in `am_load()`:
-      ! Automerge error at document.c:127: unable to parse chunk: not enough data
+      ! Automerge error at document.c:LINE: unable to parse chunk: not enough data
 
 ---
 
@@ -12,7 +12,7 @@
       am_load(as.raw(sample(0:255, 100, replace = TRUE)))
     Condition
       Error in `am_load()`:
-      ! Automerge error at document.c:127: unable to parse chunk: failed to parse header: Invalid magic bytes
+      ! Automerge error at document.c:LINE: unable to parse chunk: failed to parse header: Invalid magic bytes
 
 # am_load validates input type
 
@@ -148,7 +148,7 @@
       am_text_splice(map_obj, 0, 0, "text")
     Condition
       Error in `am_text_splice()`:
-      ! Automerge error at objects.c:657: invalid op for object of type `map`
+      ! Automerge error at objects.c:LINE: invalid op for object of type `map`
 
 # Fork and merge error handling
 
@@ -188,7 +188,7 @@
       am_load(corrupted)
     Condition
       Error in `am_load()`:
-      ! Automerge error at document.c:127: bad checksum
+      ! Automerge error at document.c:LINE: bad checksum
 
 # Error messages include file and line information
 
@@ -196,7 +196,7 @@
       am_load(as.raw(c(255)))
     Condition
       Error in `am_load()`:
-      ! Automerge error at document.c:127: unable to parse chunk: not enough data
+      ! Automerge error at document.c:LINE: unable to parse chunk: not enough data
 
 # Multiple error conditions in sequence
 
@@ -204,7 +204,7 @@
       am_load(as.raw(c(0)))
     Condition
       Error in `am_load()`:
-      ! Automerge error at document.c:127: unable to parse chunk: not enough data
+      ! Automerge error at document.c:LINE: unable to parse chunk: not enough data
 
 ---
 
@@ -212,7 +212,7 @@
       am_load(as.raw(c(255)))
     Condition
       Error in `am_load()`:
-      ! Automerge error at document.c:127: unable to parse chunk: not enough data
+      ! Automerge error at document.c:LINE: unable to parse chunk: not enough data
 
 # Resource cleanup after errors
 
@@ -220,7 +220,7 @@
       am_load(as.raw(sample(0:255, 50, replace = TRUE)))
     Condition
       Error in `am_load()`:
-      ! Automerge error at document.c:127: unable to parse chunk: failed to parse header: Invalid magic bytes
+      ! Automerge error at document.c:LINE: unable to parse chunk: failed to parse header: Invalid magic bytes
 
 ---
 
@@ -228,7 +228,7 @@
       am_load(as.raw(sample(0:255, 50, replace = TRUE)))
     Condition
       Error in `am_load()`:
-      ! Automerge error at document.c:127: unable to parse chunk: failed to parse header: Invalid magic bytes
+      ! Automerge error at document.c:LINE: unable to parse chunk: failed to parse header: Invalid magic bytes
 
 ---
 
@@ -236,7 +236,7 @@
       am_load(as.raw(sample(0:255, 50, replace = TRUE)))
     Condition
       Error in `am_load()`:
-      ! Automerge error at document.c:127: unable to parse chunk: failed to parse header: Invalid magic bytes
+      ! Automerge error at document.c:LINE: unable to parse chunk: failed to parse header: Invalid magic bytes
 
 ---
 
@@ -244,7 +244,7 @@
       am_load(as.raw(sample(0:255, 50, replace = TRUE)))
     Condition
       Error in `am_load()`:
-      ! Automerge error at document.c:127: unable to parse chunk: failed to parse header: Invalid magic bytes
+      ! Automerge error at document.c:LINE: unable to parse chunk: failed to parse header: Invalid magic bytes
 
 ---
 
@@ -252,7 +252,7 @@
       am_load(as.raw(sample(0:255, 50, replace = TRUE)))
     Condition
       Error in `am_load()`:
-      ! Automerge error at document.c:127: unable to parse chunk: failed to parse header: Invalid magic bytes
+      ! Automerge error at document.c:LINE: unable to parse chunk: failed to parse header: Invalid magic bytes
 
 ---
 
@@ -260,7 +260,7 @@
       am_load(as.raw(sample(0:255, 50, replace = TRUE)))
     Condition
       Error in `am_load()`:
-      ! Automerge error at document.c:127: unable to parse chunk: failed to parse header: Invalid magic bytes
+      ! Automerge error at document.c:LINE: unable to parse chunk: failed to parse header: Invalid magic bytes
 
 ---
 
@@ -268,7 +268,7 @@
       am_load(as.raw(sample(0:255, 50, replace = TRUE)))
     Condition
       Error in `am_load()`:
-      ! Automerge error at document.c:127: unable to parse chunk: failed to parse header: Invalid magic bytes
+      ! Automerge error at document.c:LINE: unable to parse chunk: failed to parse header: Invalid magic bytes
 
 ---
 
@@ -276,7 +276,7 @@
       am_load(as.raw(sample(0:255, 50, replace = TRUE)))
     Condition
       Error in `am_load()`:
-      ! Automerge error at document.c:127: unable to parse chunk: failed to parse header: Invalid magic bytes
+      ! Automerge error at document.c:LINE: unable to parse chunk: failed to parse header: Invalid magic bytes
 
 ---
 
@@ -284,7 +284,7 @@
       am_load(as.raw(sample(0:255, 50, replace = TRUE)))
     Condition
       Error in `am_load()`:
-      ! Automerge error at document.c:127: unable to parse chunk: failed to parse header: Invalid magic bytes
+      ! Automerge error at document.c:LINE: unable to parse chunk: failed to parse header: Invalid magic bytes
 
 ---
 
@@ -292,7 +292,7 @@
       am_load(as.raw(sample(0:255, 50, replace = TRUE)))
     Condition
       Error in `am_load()`:
-      ! Automerge error at document.c:127: unable to parse chunk: failed to parse header: Invalid magic bytes
+      ! Automerge error at document.c:LINE: unable to parse chunk: failed to parse header: Invalid magic bytes
 
 # am_sync_decode validates message type
 
