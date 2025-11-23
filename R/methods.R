@@ -52,14 +52,12 @@
 #' doc$age <- 25L
 `[[<-.am_doc` <- function(x, i, value) {
   am_put(x, AM_ROOT, i, value)
-  x
 }
 
 #' @rdname replace-am_doc
 #' @export
 `$<-.am_doc` <- function(x, name, value) {
   am_put(x, AM_ROOT, name, value)
-  x
 }
 
 #' Get length of document root
