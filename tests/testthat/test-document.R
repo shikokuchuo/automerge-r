@@ -122,6 +122,34 @@ test_that("am_set_actor() works with raw bytes", {
   expect_equal(retrieved_actor, new_actor_bytes)
 })
 
+test_that("am_get_actor_hex() returns hex string", {
+  doc <- am_create()
+  actor_hex <- am_get_actor_hex(doc)
+
+  expect_type(actor_hex, "character")
+  expect_equal(length(actor_hex), 1)
+  expect_true(nchar(actor_hex) > 0)
+  expect_match(actor_hex, "^[0-9a-f]+$")
+})
+
+test_that("am_get_actor_hex() matches am_get_actor() conversion", {
+  doc <- am_create()
+  actor_raw <- am_get_actor(doc)
+  actor_hex <- am_get_actor_hex(doc)
+
+  manual_hex <- paste(format(actor_raw, width = 2), collapse = "")
+  expect_equal(actor_hex, manual_hex)
+})
+
+test_that("am_get_actor_hex() works with custom actor ID", {
+  doc <- am_create()
+  custom_hex <- "0123456789abcdef0123456789abcdef"
+  am_set_actor(doc, custom_hex)
+
+  retrieved_hex <- am_get_actor_hex(doc)
+  expect_equal(retrieved_hex, custom_hex)
+})
+
 test_that("am_commit() works with no arguments", {
   doc <- am_create()
   result <- am_commit(doc)

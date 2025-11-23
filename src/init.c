@@ -8,6 +8,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"C_am_fork", (DL_FUNC) &C_am_fork, 2},
     {"C_am_merge", (DL_FUNC) &C_am_merge, 2},
     {"C_am_get_actor", (DL_FUNC) &C_am_get_actor, 1},
+    {"C_am_get_actor_hex", (DL_FUNC) &C_am_get_actor_hex, 1},
     {"C_am_set_actor", (DL_FUNC) &C_am_set_actor, 2},
     {"C_am_commit", (DL_FUNC) &C_am_commit, 3},
     {"C_am_rollback", (DL_FUNC) &C_am_rollback, 1},

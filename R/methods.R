@@ -105,8 +105,7 @@ names.am_doc <- function(x) {
 print.am_doc <- function(x, ...) {
   cat("<Automerge Document>\n")
 
-  actor <- am_get_actor(x)
-  actor_hex <- paste(format(actor, width = 2), collapse = "")
+  actor_hex <- am_get_actor_hex(x)
   cat("Actor:", actor_hex, "\n")
 
   root_length <- am_length(x, AM_ROOT)

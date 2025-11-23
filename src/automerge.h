@@ -42,6 +42,7 @@ SEXP C_am_load(SEXP data);
 SEXP C_am_fork(SEXP doc_ptr, SEXP heads);
 SEXP C_am_merge(SEXP doc_ptr, SEXP other_ptr);
 SEXP C_am_get_actor(SEXP doc_ptr);
+SEXP C_am_get_actor_hex(SEXP doc_ptr);
 SEXP C_am_set_actor(SEXP doc_ptr, SEXP actor_id);
 SEXP C_am_commit(SEXP doc_ptr, SEXP message, SEXP time);
 SEXP C_am_rollback(SEXP doc_ptr);

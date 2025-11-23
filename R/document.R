@@ -143,8 +143,7 @@ am_merge <- function(doc, other) {
 #' The actor ID uniquely identifies the editing session that created
 #' changes in the document.
 #'
-#' To display as a hex string, use:
-#' `paste(format(am_get_actor(doc), width=2), collapse="")`
+#' For a hex string representation, use [am_get_actor_hex()].
 #'
 #' @param doc An Automerge document
 #'
@@ -155,11 +154,30 @@ am_merge <- function(doc, other) {
 #' doc <- am_create()
 #' actor <- am_get_actor(doc)
 #'
-#' # Display as hex
-#' actor_hex <- paste(format(actor, width=2), collapse="")
+#' # Use am_get_actor_hex() for display
+#' actor_hex <- am_get_actor_hex(doc)
 #' cat("Actor ID:", actor_hex, "\n")
 am_get_actor <- function(doc) {
   .Call(C_am_get_actor, doc)
+}
+
+#' Get the actor ID as a hex string
+#'
+#' Returns the actor ID of an Automerge document as a hex-encoded string.
+#' This is more efficient than converting the raw bytes returned by
+#' [am_get_actor()] using R-level string operations.
+#'
+#' @param doc An Automerge document
+#'
+#' @return A character string containing the hex-encoded actor ID
+#'
+#' @export
+#' @examples
+#' doc <- am_create()
+#' actor_hex <- am_get_actor_hex(doc)
+#' cat("Actor ID:", actor_hex, "\n")
+am_get_actor_hex <- function(doc) {
+  .Call(C_am_get_actor_hex, doc)
 }
 
 #' Set the actor ID of a document

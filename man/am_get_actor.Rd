@@ -18,14 +18,13 @@ The actor ID uniquely identifies the editing session that created
 changes in the document.
 }
 \details{
-To display as a hex string, use:
-\code{paste(format(am_get_actor(doc), width=2), collapse="")}
+For a hex string representation, use \code{\link[=am_get_actor_hex]{am_get_actor_hex()}}.
 }
 \examples{
 doc <- am_create()
 actor <- am_get_actor(doc)
 
-# Display as hex
-actor_hex <- paste(format(actor, width=2), collapse="")
+# Use am_get_actor_hex() for display
+actor_hex <- am_get_actor_hex(doc)
 cat("Actor ID:", actor_hex, "\n")
 }

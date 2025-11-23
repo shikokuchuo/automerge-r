@@ -267,6 +267,35 @@ SEXP C_am_get_actor(SEXP doc_ptr) {
 }
 
 /**
+ * Get the actor ID as hex string.
+ *
+ * @param doc_ptr External pointer to am_doc
+ * @return Character string containing hex-encoded actor ID
+ */
+SEXP C_am_get_actor_hex(SEXP doc_ptr) {
+    AMdoc *doc = get_doc(doc_ptr);
+
+    AMresult *result = AMgetActorId(doc);
+    CHECK_RESULT(result, AM_VAL_TYPE_ACTOR_ID);
+
+    AMitem *item = AMresultItem(result);
+    AMactorId const *actor_id = NULL;
+    if (!AMitemToActorId(item, &actor_id)) {
+        AMresultFree(result);
+        Rf_error("Failed to extract actor ID from result");
+    }
+
+    AMbyteSpan hex_str = AMactorIdStr(actor_id);
+
+    SEXP r_str = PROTECT(Rf_allocVector(STRSXP, 1));
+    SET_STRING_ELT(r_str, 0, Rf_mkCharLenCE((const char*) hex_str.src, hex_str.count, CE_UTF8));
+
+    AMresultFree(result);
+    UNPROTECT(1);
+    return r_str;
+}
+
+/**
  * Set the actor ID of a document.
  *
  * @param doc_ptr External pointer to am_doc
