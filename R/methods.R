@@ -1,8 +1,5 @@
 # S3 Methods for Automerge Objects
 
-#' @importFrom utils head
-NULL
-
 # S3 Methods for am_doc ------------------------------------------------------
 
 #' @name extract-am_doc
@@ -280,7 +277,7 @@ print.am_map <- function(x, ...) {
 
   if (obj_len > 0) {
     keys <- am_keys(doc, x)
-    cat("Keys:", paste(head(keys, 5), collapse = ", "))
+    cat("Keys:", paste(keys[seq_len(min(5, length(keys)))], collapse = ", "))
     if (obj_len > 5) {
       cat(", ...")
     }
