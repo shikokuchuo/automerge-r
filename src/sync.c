@@ -38,11 +38,10 @@ SEXP C_am_sync_state_new(void) {
     R_RegisterCFinalizer(ext_ptr, am_syncstate_finalizer);
 
     // Set class attribute
-    SEXP class = PROTECT(Rf_allocVector(STRSXP, 1));
-    SET_STRING_ELT(class, 0, Rf_mkChar("am_syncstate"));
+    SEXP class = Rf_mkString("am_syncstate");
     Rf_classgets(ext_ptr, class);
 
-    UNPROTECT(2);
+    UNPROTECT(1);
     return ext_ptr;
 }
 

@@ -287,11 +287,9 @@ SEXP C_am_get_actor_hex(SEXP doc_ptr) {
 
     AMbyteSpan hex_str = AMactorIdStr(actor_id);
 
-    SEXP r_str = PROTECT(Rf_allocVector(STRSXP, 1));
-    SET_STRING_ELT(r_str, 0, Rf_mkCharLenCE((const char*) hex_str.src, hex_str.count, CE_UTF8));
+    SEXP r_str = Rf_ScalarString(Rf_mkCharLenCE((const char*) hex_str.src, hex_str.count, CE_UTF8));
 
     AMresultFree(result);
-    UNPROTECT(1);
     return r_str;
 }
 

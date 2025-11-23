@@ -219,8 +219,7 @@ static void populate_object_from_r_list(AMdoc *doc, const AMobjId *obj_id,
         if (is_map) {
             // Map: use names as keys
             // Create a temporary key SEXP for the call
-            SEXP key_sexp = PROTECT(Rf_allocVector(STRSXP, 1));
-            SET_STRING_ELT(key_sexp, 0, STRING_ELT(names, i));
+            SEXP key_sexp = PROTECT(Rf_ScalarString(STRING_ELT(names, i)));
 
             AMresult *result = am_put_value(doc, obj_id, key_sexp, true, elem, false);
             if (result) {
@@ -306,9 +305,7 @@ static SEXP am_item_to_r(AMitem *item, SEXP parent_doc_sexp, SEXP parent_result_
             if (!AMitemToStr(item, &val)) {
                 Rf_error("Failed to extract string value");
             }
-            result = PROTECT(Rf_allocVector(STRSXP, 1));
-            SET_STRING_ELT(result, 0, Rf_mkCharLen((const char *) val.src, val.count));
-            UNPROTECT(1);
+            result = Rf_ScalarString(Rf_mkCharLen((const char *) val.src, val.count));
             break;
         }
 
@@ -684,11 +681,9 @@ SEXP C_am_text_get(SEXP text_ptr) {
         Rf_error("Failed to extract text string");
     }
 
-    SEXP text_sexp = PROTECT(Rf_allocVector(STRSXP, 1));
-    SET_STRING_ELT(text_sexp, 0, Rf_mkCharLen((const char *) text_span.src, text_span.count));
+    SEXP text_sexp = Rf_ScalarString(Rf_mkCharLen((const char *) text_span.src, text_span.count));
 
     AMresultFree(result);
-    UNPROTECT(1);
     return text_sexp;
 }
 
