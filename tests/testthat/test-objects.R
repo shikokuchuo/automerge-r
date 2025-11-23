@@ -610,6 +610,130 @@ test_that("am_counter() coerces to integer", {
   expect_equal(as.integer(counter), 3L)
 })
 
+# Counter Increment Tests -----------------------------------------------------
+
+test_that("am_counter_increment() increments counter in map", {
+  doc <- am_create()
+  doc$score <- am_counter(0)
+
+  am_counter_increment(doc, AM_ROOT, "score", 10)
+  expect_equal(doc$score, 10)
+
+  am_counter_increment(doc, AM_ROOT, "score", 5)
+  expect_equal(doc$score, 15)
+})
+
+test_that("am_counter_increment() accepts negative delta", {
+  doc <- am_create()
+  doc$score <- am_counter(100)
+
+  am_counter_increment(doc, AM_ROOT, "score", -30)
+  expect_equal(doc$score, 70)
+
+  am_counter_increment(doc, AM_ROOT, "score", -70)
+  expect_equal(doc$score, 0)
+})
+
+test_that("am_counter_increment() works in nested map", {
+  doc <- am_create()
+  doc$stats <- am_map(views = am_counter(0), likes = am_counter(0))
+  stats_obj <- doc$stats
+
+  am_counter_increment(doc, stats_obj, "views", 100)
+  am_counter_increment(doc, stats_obj, "likes", 5)
+
+  expect_equal(am_get(doc, stats_obj, "views"), 100)
+  expect_equal(am_get(doc, stats_obj, "likes"), 5)
+})
+
+test_that("am_counter_increment() works in list (1-based indexing)", {
+  doc <- am_create()
+  doc$counters <- list(am_counter(0), am_counter(10), am_counter(20))
+  counters_obj <- doc$counters
+
+  am_counter_increment(doc, counters_obj, 1, 5)
+  am_counter_increment(doc, counters_obj, 2, 3)
+  am_counter_increment(doc, counters_obj, 3, 1)
+
+  expect_equal(am_get(doc, counters_obj, 1), 5)
+  expect_equal(am_get(doc, counters_obj, 2), 13)
+  expect_equal(am_get(doc, counters_obj, 3), 21)
+})
+
+test_that("am_counter_increment() multiple increments accumulate", {
+  doc <- am_create()
+  doc$count <- am_counter(0)
+
+  for (i in 1:10) {
+    am_counter_increment(doc, AM_ROOT, "count", 1)
+  }
+
+  expect_equal(doc$count, 10)
+})
+
+test_that("am_counter_increment() returns doc invisibly", {
+  doc <- am_create()
+  doc$score <- am_counter(0)
+
+  result <- withVisible(am_counter_increment(doc, AM_ROOT, "score", 5))
+
+  expect_identical(result$value, doc)
+  expect_false(result$visible)
+})
+
+test_that("am_counter_increment() coerces numeric to integer", {
+  doc <- am_create()
+  doc$score <- am_counter(0)
+
+  am_counter_increment(doc, AM_ROOT, "score", 10.7)
+  expect_equal(doc$score, 10)
+})
+
+test_that("am_counter_increment() persists after save/load", {
+  doc1 <- am_create()
+  doc1$score <- am_counter(5)
+  am_counter_increment(doc1, AM_ROOT, "score", 10)
+  am_commit(doc1, "Increment counter")
+
+  bytes <- am_save(doc1)
+  doc2 <- am_load(bytes)
+
+  expect_equal(doc2$score, 15)
+
+  am_counter_increment(doc2, AM_ROOT, "score", 3)
+  expect_equal(doc2$score, 18)
+})
+
+test_that("am_counter_increment() concurrent increments merge correctly", {
+  doc1 <- am_create()
+  doc1$counter <- am_counter(0)
+  am_commit(doc1, "Create counter")
+
+  bytes <- am_save(doc1)
+  doc2 <- am_load(bytes)
+
+  am_counter_increment(doc1, AM_ROOT, "counter", 5)
+  am_commit(doc1, "Doc1 increments by 5")
+
+  am_counter_increment(doc2, AM_ROOT, "counter", 10)
+  am_commit(doc2, "Doc2 increments by 10")
+
+  am_merge(doc1, doc2)
+
+  expect_equal(doc1$counter, 15)
+})
+
+test_that("am_counter_increment() errors on wrong object type", {
+  doc <- am_create()
+  doc$text <- am_text("hello")
+  text_obj <- doc$text
+
+  expect_error(
+    am_counter_increment(doc, text_obj, 1, 5),
+    "Cannot increment counter in text object"
+  )
+})
+
 test_that("am_list() creates empty list", {
   result <- am_list()
 

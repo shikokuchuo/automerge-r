@@ -69,10 +69,10 @@ static AMresult *am_put_value(AMdoc *doc, const AMobjId *obj_id,
                        AMlistPutTimestamp(doc, obj_id, pos, insert, milliseconds);
     } else if (Rf_inherits(value, "am_counter")) {
         // Counter type (must check before INTSXP)
-        if (Rf_xlength(value) != 1) {
-            Rf_error("Counter must be scalar");
+        if (TYPEOF(value) != INTSXP || XLENGTH(value) != 1) {
+            Rf_error("Counter must be a scalar integer");
         }
-        int64_t val = (int64_t) Rf_asInteger(value);
+        int64_t val = (int64_t) INTEGER(value)[0];
         return is_map ? AMmapPutCounter(doc, obj_id, key, val) :
                        AMlistPutCounter(doc, obj_id, pos, insert, val);
     } else if (Rf_inherits(value, "am_text_type")) {
@@ -770,4 +770,66 @@ SEXP C_am_values(SEXP doc_ptr, SEXP obj_ptr) {
 
     UNPROTECT(1);
     return values;
+}
+
+/**
+ * Increment a counter value
+ *
+ * @param doc_ptr External pointer to AMdoc
+ * @param obj_ptr External pointer to AMobjId (or R_NilValue for AM_ROOT)
+ * @param key_or_pos Character string (map) or integer position (list, 1-based)
+ * @param delta Integer value to increment by (can be negative)
+ * @return The document (invisibly)
+ */
+SEXP C_am_counter_increment(SEXP doc_ptr, SEXP obj_ptr, SEXP key_or_pos, SEXP delta) {
+    AMdoc *doc = get_doc(doc_ptr);
+    const AMobjId *obj_id = get_objid(obj_ptr);
+    if (TYPEOF(delta) != INTSXP && TYPEOF(delta) != REALSXP) {
+        Rf_error("Delta must be numeric");
+    }
+    if (XLENGTH(delta) != 1) {
+        Rf_error("Delta must be scalar");
+    }
+    int64_t delta_val = (int64_t) Rf_asInteger(delta);
+
+    AMobjType obj_type = obj_id ? AMobjObjType(doc, obj_id) : AM_OBJ_TYPE_MAP;
+    bool is_map = (obj_type == AM_OBJ_TYPE_MAP);
+
+    AMresult *result = NULL;
+
+    if (is_map) {
+        // Map: key must be character string
+        if (TYPEOF(key_or_pos) != STRSXP || XLENGTH(key_or_pos) != 1) {
+            Rf_error("Map key must be a single character string");
+        }
+        const char *key_str = CHAR(STRING_ELT(key_or_pos, 0));
+        AMbyteSpan key = {.src = (uint8_t const *)key_str, .count = strlen(key_str)};
+
+        result = AMmapIncrement(doc, obj_id, key, delta_val);
+    } else if (obj_type == AM_OBJ_TYPE_LIST) {
+        // List: position must be numeric (1-based)
+        if (TYPEOF(key_or_pos) != INTSXP && TYPEOF(key_or_pos) != REALSXP) {
+            Rf_error("List position must be numeric");
+        }
+        if (XLENGTH(key_or_pos) != 1) {
+            Rf_error("List position must be scalar");
+        }
+
+        // Convert from R's 1-based indexing to C's 0-based
+        int r_pos = Rf_asInteger(key_or_pos);
+        if (r_pos < 1) {
+            Rf_error("List position must be >= 1 (R uses 1-based indexing)");
+        }
+        size_t pos = (size_t)(r_pos - 1);
+
+        result = AMlistIncrement(doc, obj_id, pos, delta_val);
+    } else {
+        Rf_error("Cannot increment counter in text object");
+    }
+
+    CHECK_RESULT(result, AM_VAL_TYPE_VOID);
+    AMresultFree(result);
+
+    // Return document invisibly for chaining
+    return doc_ptr;
 }

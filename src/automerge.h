@@ -56,6 +56,7 @@ SEXP C_am_insert(SEXP doc_ptr, SEXP obj_ptr, SEXP pos, SEXP value);
 SEXP C_am_text_splice(SEXP text_ptr, SEXP pos, SEXP del_count, SEXP text);
 SEXP C_am_text_get(SEXP text_ptr);
 SEXP C_am_values(SEXP doc_ptr, SEXP obj_ptr);
+SEXP C_am_counter_increment(SEXP doc_ptr, SEXP obj_ptr, SEXP key_or_pos, SEXP delta);
 
 // Synchronization operations (sync.c)
 SEXP C_am_sync_state_new(void);

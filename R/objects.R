@@ -323,3 +323,48 @@ am_text_get <- function(text_obj) {
 am_values <- function(doc, obj) {
   .Call(C_am_values, doc, obj)
 }
+
+#' Increment a counter value
+#'
+#' Increments an Automerge counter by the specified delta. Counters are CRDT types
+#' that support concurrent increments from multiple actors. Unlike regular integers,
+#' counter increments are commutative and do not conflict when merged.
+#'
+#' The delta can be negative to decrement the counter.
+#'
+#' @param doc An Automerge document
+#' @param obj An Automerge object ID (map or list), or `AM_ROOT` for the document root
+#' @param key For maps: a character string key. For lists: an integer position (1-based)
+#' @param delta Integer value to add to the counter (can be negative)
+#' @return The document (invisibly), allowing for chaining with pipes
+#' @export
+#' @examples
+#' # Counter in document root (map)
+#' doc <- am_create()
+#' doc$score <- am_counter(0)
+#' am_counter_increment(doc, AM_ROOT, "score", 10)
+#' doc$score  # 10
+#'
+#' am_counter_increment(doc, AM_ROOT, "score", 5)
+#' doc$score  # 15
+#'
+#' # Decrement with negative delta
+#' am_counter_increment(doc, AM_ROOT, "score", -3)
+#' doc$score  # 12
+#'
+#' # Counter in a nested map
+#' doc$stats <- am_map(views = am_counter(0))
+#' stats_obj <- doc$stats
+#' am_counter_increment(doc, stats_obj, "views", 100)
+#'
+#' # Counter in a list (1-based indexing)
+#' doc$counters <- list(am_counter(0), am_counter(5))
+#' counters_obj <- doc$counters
+#' am_counter_increment(doc, counters_obj, 1, 1)  # Increment first counter
+#' am_counter_increment(doc, counters_obj, 2, 2)  # Increment second counter
+am_counter_increment <- function(doc, obj, key, delta) {
+  if (!is.integer(delta)) {
+    delta <- as.integer(delta)
+  }
+  invisible(.Call(C_am_counter_increment, doc, obj, key, delta))
+}
