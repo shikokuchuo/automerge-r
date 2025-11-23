@@ -325,3 +325,43 @@ test_that("Empty nested structures work", {
   items <- am_get(doc, container, "items")
   expect_equal(am_length(doc, items), 0L)
 })
+
+test_that("Extremely deep nesting (150 levels) works without stack overflow", {
+  doc <- am_create()
+
+  # Build a deeply nested structure programmatically (150 levels)
+  # This exceeds the old MAX_RECURSION_DEPTH=100 limit
+  depth <- 150
+
+  # Build nested list structure
+  build_nested <- function(n) {
+    if (n == 0) {
+      return("bottom value")
+    }
+    list(child = build_nested(n - 1))
+  }
+
+  nested_data <- build_nested(depth - 1)
+
+  # This should not crash - test that recursive conversion handles it
+  expect_error(
+    am_put(doc, AM_ROOT, "deep", nested_data),
+    NA  # NA means we expect NO error
+  )
+
+  # Navigate down to verify the structure was created
+  current <- am_get(doc, AM_ROOT, "deep")
+  expect_s3_class(current, "am_object")
+
+  # Navigate several levels down (not all 150, that would be tedious)
+  for (i in 1:10) {
+    current <- am_get(doc, current, "child")
+    if (i < 10) {
+      expect_s3_class(current, "am_object")
+    }
+  }
+
+  # Verify we can commit and save without issues
+  expect_error(am_commit(doc, "Deep structure test"), NA)
+  expect_error(am_save(doc), NA)
+})

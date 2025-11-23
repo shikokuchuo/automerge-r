@@ -3,7 +3,7 @@
 // Forward declarations --------------------------------------------------------
 
 static void populate_object_from_r_list(AMdoc *doc, const AMobjId *obj_id,
-                                         SEXP r_list, int depth, AMresult *parent_result);
+                                         SEXP r_list, AMresult *parent_result);
 
 // Type Conversion Helpers -----------------------------------------------------
 
@@ -156,7 +156,7 @@ static AMresult *am_put_value(AMdoc *doc, const AMobjId *obj_id,
         // Recursively populate nested object from R list
         AMitem *obj_item = AMresultItem(obj_result);
         const AMobjId *nested_obj = AMitemObjId(obj_item);
-        populate_object_from_r_list(doc, nested_obj, value, 0, obj_result);
+        populate_object_from_r_list(doc, nested_obj, value, obj_result);
 
         return obj_result;
     } else if (TYPEOF(value) == STRSXP && XLENGTH(value) == 1) {
@@ -198,16 +198,10 @@ static AMresult *am_put_value(AMdoc *doc, const AMobjId *obj_id,
  * @param doc The Automerge document
  * @param obj_id The object to populate (must be a list or map)
  * @param r_list The R list with content
- * @param depth Current recursion depth (for stack overflow protection)
  * @param parent_result The AMresult* that owns this object (freed on error)
  */
 static void populate_object_from_r_list(AMdoc *doc, const AMobjId *obj_id,
-                                         SEXP r_list, int depth, AMresult *parent_result) {
-    if (depth > MAX_RECURSION_DEPTH) {
-        if (parent_result) AMresultFree(parent_result);
-        Rf_error("Maximum nesting depth (%d) exceeded", MAX_RECURSION_DEPTH);
-    }
-
+                                         SEXP r_list, AMresult *parent_result) {
     if (TYPEOF(r_list) != VECSXP) {
         if (parent_result) AMresultFree(parent_result);
         Rf_error("Expected R list for nested object population");

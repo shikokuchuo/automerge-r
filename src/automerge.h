@@ -17,9 +17,6 @@
 // Protect against malicious input causing stack overflow
 #define MAX_ERROR_MSG_SIZE 8192
 
-// Protect against malicious deeply nested structures causing stack overflow
-#define MAX_RECURSION_DEPTH 100
-
 // Memory Management Structures ------------------------------------------------
 
 // Document wrapper

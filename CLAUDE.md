@@ -88,7 +88,7 @@ devtools::install()
 - `automerge.h`: Main header defining data structures and function declarations
   - Memory-safe wrappers: `am_doc`, `am_syncstate` (track ownership)
   - Finalizers for external pointers
-  - Safety limits: `MAX_ERROR_MSG_SIZE=8192`, `MAX_RECURSION_DEPTH=100`
+  - Safety limits: `MAX_ERROR_MSG_SIZE=8192`
   - Includes `<automerge-c/automerge.h>` from system or bundled build
 
 - `init.c`: R package registration
