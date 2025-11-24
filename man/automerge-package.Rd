@@ -11,8 +11,9 @@ Provides R bindings to the Automerge Conflict-free Replicated Data Type (CRDT) l
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/posit-dev/automerge-r}
-  \item Report bugs at \url{https://github.com/posit-dev/automerge-r/issues}
+  \item \url{https://github.com/shikokuchuo/automerge-r}
+  \item \url{http://shikokuchuo.net/automerge-r/}
+  \item Report bugs at \url{https://github.com/shikokuchuo/automerge-r/issues}
 }
 
 }

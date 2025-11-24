@@ -13,3 +13,4 @@ automerge-build
 automerge-install
 /.quarto/
 **/*.quarto_ipynb
+docs

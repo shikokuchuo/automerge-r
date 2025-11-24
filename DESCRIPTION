@@ -17,8 +17,8 @@ Description: Provides R bindings to the Automerge Conflict-free Replicated
     synchronization protocols for seamless interoperability with
     JavaScript and other Automerge implementations.
 License: MIT + file LICENSE
-URL: https://github.com/posit-dev/automerge-r
-BugReports: https://github.com/posit-dev/automerge-r/issues
+URL: https://github.com/shikokuchuo/automerge-r, http://shikokuchuo.net/automerge-r/
+BugReports: https://github.com/shikokuchuo/automerge-r/issues
 Depends:
     R (>= 4.2)
 Suggests:
@@ -34,3 +34,4 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 SystemRequirements: 'automerge-c', or the Rust toolchain (>= 1.89.0) and
     CMake (>= 3.25) to build from package sources.
+Config/Needs/website: tidyverse/tidytemplate
