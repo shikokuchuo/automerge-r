@@ -653,3 +653,20 @@ test_that("as.list.am_text returns text content as string", {
   expect_type(result, "character")
   expect_equal(result, "Hello world")
 })
+
+test_that("print.am_cursor displays cursor info", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "text", am_text("Hello World"))
+  text_obj <- am_get(doc, AM_ROOT, "text")
+  cursor <- am_cursor(doc, text_obj, 5)
+
+  output <- capture.output(print(cursor))
+  expect_true(any(grepl("Automerge Cursor", output)))
+})
+
+test_that("print.am_syncstate displays sync state info", {
+  sync_state <- am_sync_state_new()
+
+  output <- capture.output(print(sync_state))
+  expect_true(any(grepl("Automerge Sync State", output)))
+})

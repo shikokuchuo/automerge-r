@@ -382,3 +382,25 @@ as.list.am_list <- function(x, doc = NULL, ...) {
 as.list.am_text <- function(x, doc = NULL, ...) {
   am_text_get(x)
 }
+
+#' Print Automerge cursor
+#'
+#' @param x An Automerge cursor
+#' @param ... Additional arguments (unused)
+#' @return The cursor (invisibly)
+#' @export
+print.am_cursor <- function(x, ...) {
+  cat("<Automerge Cursor>\n")
+  invisible(x)
+}
+
+#' Print Automerge sync state
+#'
+#' @param x An Automerge sync state
+#' @param ... Additional arguments (unused)
+#' @return The sync state (invisibly)
+#' @export
+print.am_syncstate <- function(x, ...) {
+  cat("<Automerge Sync State>\n")
+  invisible(x)
+}
