@@ -151,25 +151,65 @@ R CMD check automerge_*.tar.gz
 
 ## Important Notes
 
+- **Indexing Conventions**: The package uses different indexing
+  conventions for different operations:
+
+  **1-based indexing (element indices):**
+
+  - List operations:
+    [`am_get()`](http://shikokuchuo.net/automerge-r/reference/am_get.md),
+    [`am_put()`](http://shikokuchuo.net/automerge-r/reference/am_put.md),
+    [`am_delete()`](http://shikokuchuo.net/automerge-r/reference/am_delete.md),
+    [`am_insert()`](http://shikokuchuo.net/automerge-r/reference/am_insert.md)
+  - List indices work like R vectors: first element is at index 1
+  - Counter operations in lists:
+    [`am_counter_increment()`](http://shikokuchuo.net/automerge-r/reference/am_counter_increment.md)
+    with list objects
+
+  **0-based indexing (inter-character positions):**
+
+  - Text operations:
+    [`am_text_splice()`](http://shikokuchuo.net/automerge-r/reference/am_text_splice.md)
+  - Cursor operations:
+    [`am_cursor()`](http://shikokuchuo.net/automerge-r/reference/am_cursor.md),
+    [`am_cursor_position()`](http://shikokuchuo.net/automerge-r/reference/am_cursor_position.md)
+  - Mark operations:
+    [`am_mark_create()`](http://shikokuchuo.net/automerge-r/reference/am_mark_create.md),
+    [`am_marks()`](http://shikokuchuo.net/automerge-r/reference/am_marks.md)
+  - Positions specify locations **between** characters, not the
+    characters themselves
+  - Position 0 = before first character, position 1 = between 1st and
+    2nd character
+  - This distinction is necessary because you cannot represent “before
+    the first character” with 1-based indexing
+
+  Example for text “Hello”:
+
+        H e l l o
+       0 1 2 3 4 5  <- positions (0-based, between characters)
+
 - **UTF-32 Character Indexing**: CMake build uses UTF-32 code point
   indexing (matches R’s character semantics)
-  - Text positions work like R’s
-    [`substr()`](https://rdrr.io/r/base/substr.html) and
-    [`nchar()`](https://rdrr.io/r/base/nchar.html) - counting
-    characters, not bytes
-  - Example: In “Hello😀”, the emoji is at character position 6, not
-    byte offset 5-8
-  - This provides natural R behavior: `nchar("😀")` returns 1, and text
-    operations use the same indexing
+
+  - Both text positions and character counts use Unicode code points,
+    not bytes
+  - Example: In “Hello😀”, the emoji counts as 1 character at position 5
+  - This matches R’s [`nchar()`](https://rdrr.io/r/base/nchar.html)
+    behavior: `nchar("😀")` returns 1
   - JavaScript Note: JS uses UTF-16, so positions may differ for emoji
     and some Unicode characters
+
 - **Security Considerations**:
+
   - Input validation limits defined in `automerge.h`
   - Ownership tracking prevents double-free vulnerabilities
   - Dynamic symbols disabled in registration
+
 - **Dependencies**:
+
   - Zero R package dependencies (only base R)
   - System requirements: Rust \>= 1.89.0, CMake \>= 3.25 (if building
     from source)
+
 - **Licensing**: MIT license with bundled automerge-c (also MIT) - see
   LICENSE.note

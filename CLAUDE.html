@@ -179,26 +179,46 @@
 <div class="section level2">
 <h2 id="important-notes">Important Notes<a class="anchor" aria-label="anchor" href="#important-notes"></a></h2>
 <ul><li>
-<strong>UTF-32 Character Indexing</strong>: CMake build uses UTF-32 code point indexing (matches R’s character semantics)
-<ul><li>Text positions work like R’s <code><a href="https://rdrr.io/r/base/substr.html" class="external-link">substr()</a></code> and <code><a href="https://rdrr.io/r/base/nchar.html" class="external-link">nchar()</a></code> - counting characters, not bytes</li>
-<li>Example: In “Hello😀”, the emoji is at character position 6, not byte offset 5-8</li>
-<li>This provides natural R behavior: <code>nchar("😀")</code> returns 1, and text operations use the same indexing</li>
+<p><strong>Indexing Conventions</strong>: The package uses different indexing conventions for different operations:</p>
+<p><strong>1-based indexing (element indices):</strong></p>
+<ul><li>List operations: <code><a href="reference/am_get.html">am_get()</a></code>, <code><a href="reference/am_put.html">am_put()</a></code>, <code><a href="reference/am_delete.html">am_delete()</a></code>, <code><a href="reference/am_insert.html">am_insert()</a></code>
+</li>
+<li>List indices work like R vectors: first element is at index 1</li>
+<li>Counter operations in lists: <code><a href="reference/am_counter_increment.html">am_counter_increment()</a></code> with list objects</li>
+</ul><p><strong>0-based indexing (inter-character positions):</strong></p>
+<ul><li>Text operations: <code><a href="reference/am_text_splice.html">am_text_splice()</a></code>
+</li>
+<li>Cursor operations: <code><a href="reference/am_cursor.html">am_cursor()</a></code>, <code><a href="reference/am_cursor_position.html">am_cursor_position()</a></code>
+</li>
+<li>Mark operations: <code><a href="reference/am_mark_create.html">am_mark_create()</a></code>, <code><a href="reference/am_marks.html">am_marks()</a></code>
+</li>
+<li>Positions specify locations <strong>between</strong> characters, not the characters themselves</li>
+<li>Position 0 = before first character, position 1 = between 1st and 2nd character</li>
+<li>This distinction is necessary because you cannot represent “before the first character” with 1-based indexing</li>
+</ul><p>Example for text “Hello”:</p>
+<pre><code>  H e l l o
+ 0 1 2 3 4 5  &lt;- positions (0-based, between characters)</code></pre>
+</li>
+<li>
+<p><strong>UTF-32 Character Indexing</strong>: CMake build uses UTF-32 code point indexing (matches R’s character semantics)</p>
+<ul><li>Both text positions and character counts use Unicode code points, not bytes</li>
+<li>Example: In “Hello😀”, the emoji counts as 1 character at position 5</li>
+<li>This matches R’s <code><a href="https://rdrr.io/r/base/nchar.html" class="external-link">nchar()</a></code> behavior: <code>nchar("😀")</code> returns 1</li>
 <li>JavaScript Note: JS uses UTF-16, so positions may differ for emoji and some Unicode characters</li>
 </ul></li>
 <li>
-<strong>Security Considerations</strong>:
+<p><strong>Security Considerations</strong>:</p>
 <ul><li>Input validation limits defined in <code>automerge.h</code>
 </li>
 <li>Ownership tracking prevents double-free vulnerabilities</li>
 <li>Dynamic symbols disabled in registration</li>
 </ul></li>
 <li>
-<strong>Dependencies</strong>:
+<p><strong>Dependencies</strong>:</p>
 <ul><li>Zero R package dependencies (only base R)</li>
 <li>System requirements: Rust &gt;= 1.89.0, CMake &gt;= 3.25 (if building from source)</li>
 </ul></li>
-<li>
-<strong>Licensing</strong>: MIT license with bundled automerge-c (also MIT) - see LICENSE.note</li>
+<li><p><strong>Licensing</strong>: MIT license with bundled automerge-c (also MIT) - see LICENSE.note</p></li>
 </ul></div>
 </div>
 
