@@ -5,15 +5,15 @@
 /**
  * Create a cursor at a position in a text object.
  *
- * R signature: am_cursor(doc, obj, position)
+ * R signature: am_cursor(obj, position)
  *
- * @param doc_ptr External pointer to am_doc
  * @param obj_ptr External pointer to AMobjId (must be text object)
  * @param position R integer (0-based position)
  * @return External pointer to AMcursor wrapped as am_cursor S3 class
  */
-SEXP C_am_cursor(SEXP doc_ptr, SEXP obj_ptr, SEXP position) {
-    // Get document
+SEXP C_am_cursor(SEXP obj_ptr, SEXP position) {
+    // Get document from object ID
+    SEXP doc_ptr = get_doc_from_objid(obj_ptr);
     AMdoc *doc = get_doc(doc_ptr);
     if (!doc) {
         Rf_error("Invalid document pointer");
@@ -76,15 +76,15 @@ SEXP C_am_cursor(SEXP doc_ptr, SEXP obj_ptr, SEXP position) {
 /**
  * Get the position of a cursor in a text object.
  *
- * R signature: am_cursor_position(doc, obj, cursor)
+ * R signature: am_cursor_position(obj, cursor)
  *
- * @param doc_ptr External pointer to am_doc
  * @param obj_ptr External pointer to AMobjId (must be text object)
  * @param cursor_ptr External pointer to AMresult containing cursor
  * @return R integer (0-based position)
  */
-SEXP C_am_cursor_position(SEXP doc_ptr, SEXP obj_ptr, SEXP cursor_ptr) {
-    // Get document
+SEXP C_am_cursor_position(SEXP obj_ptr, SEXP cursor_ptr) {
+    // Get document from object ID
+    SEXP doc_ptr = get_doc_from_objid(obj_ptr);
     AMdoc *doc = get_doc(doc_ptr);
     if (!doc) {
         Rf_error("Invalid document pointer");
@@ -322,20 +322,20 @@ static SEXP amitem_to_r_value(AMitem *item) {
 /**
  * Create a mark on a text range.
  *
- * R signature: am_mark_create(doc, obj, start, end, name, value, expand = "none")
+ * R signature: am_mark_create(obj, start, end, name, value, expand = "none")
  *
- * @param doc_ptr External pointer to am_doc
  * @param obj_ptr External pointer to AMobjId (must be text object)
  * @param start R integer (1-based start position, inclusive)
  * @param end R integer (1-based end position, exclusive)
  * @param name R character string (mark name)
  * @param value R value (mark value - various types supported)
  * @param expand R character string (expand mode: "none", "before", "after", "both")
- * @return The document (invisibly)
+ * @return The text object (invisibly)
  */
-SEXP C_am_mark_create(SEXP doc_ptr, SEXP obj_ptr, SEXP start, SEXP end,
+SEXP C_am_mark_create(SEXP obj_ptr, SEXP start, SEXP end,
                       SEXP name, SEXP value, SEXP expand) {
-    // Get document
+    // Get document from object ID
+    SEXP doc_ptr = get_doc_from_objid(obj_ptr);
     AMdoc *doc = get_doc(doc_ptr);
     if (!doc) {
         Rf_error("Invalid document pointer");
@@ -410,20 +410,20 @@ SEXP C_am_mark_create(SEXP doc_ptr, SEXP obj_ptr, SEXP start, SEXP end,
     CHECK_RESULT(result, AM_VAL_TYPE_VOID);
     AMresultFree(result);
 
-    return doc_ptr;
+    return obj_ptr;
 }
 
 /**
  * Get all marks in a text object.
  *
- * R signature: am_marks(doc, obj)
+ * R signature: am_marks(obj)
  *
- * @param doc_ptr External pointer to am_doc
  * @param obj_ptr External pointer to AMobjId (must be text object)
  * @return R list of marks, each mark is a list with: name, value, start, end
  */
-SEXP C_am_marks(SEXP doc_ptr, SEXP obj_ptr) {
-    // Get document
+SEXP C_am_marks(SEXP obj_ptr) {
+    // Get document from object ID
+    SEXP doc_ptr = get_doc_from_objid(obj_ptr);
     AMdoc *doc = get_doc(doc_ptr);
     if (!doc) {
         Rf_error("Invalid document pointer");

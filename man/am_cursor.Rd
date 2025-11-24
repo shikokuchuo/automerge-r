@@ -4,11 +4,9 @@
 \alias{am_cursor}
 \title{Create a cursor at a position in a text object}
 \usage{
-am_cursor(doc, obj, position)
+am_cursor(obj, position)
 }
 \arguments{
-\item{doc}{An Automerge document}
-
 \item{obj}{An Automerge object ID (must be a text object)}
 
 \item{position}{Integer position in the text (0-based indexing, consistent
@@ -39,12 +37,12 @@ am_put(doc, AM_ROOT, "text", am_text("Hello World"))
 text_obj <- am_get(doc, AM_ROOT, "text")
 
 # Create cursor at position 5 (after "Hello", before " ")
-cursor <- am_cursor(doc, text_obj, 5)
+cursor <- am_cursor(text_obj, 5)
 
 # Modify text before cursor
 am_text_splice(text_obj, 0, 0, "Hi ")
 
 # Cursor position automatically adjusts
-new_pos <- am_cursor_position(doc, text_obj, cursor)
+new_pos <- am_cursor_position(text_obj, cursor)
 print(new_pos)  # 8 (cursor moved by 3 characters)
 }

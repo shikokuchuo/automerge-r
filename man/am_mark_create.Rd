@@ -4,11 +4,9 @@
 \alias{am_mark_create}
 \title{Create a mark on a text range}
 \usage{
-am_mark_create(doc, obj, start, end, name, value, expand = AM_MARK_EXPAND_NONE)
+am_mark_create(obj, start, end, name, value, expand = AM_MARK_EXPAND_NONE)
 }
 \arguments{
-\item{doc}{An Automerge document}
-
 \item{obj}{An Automerge object ID (must be a text object)}
 
 \item{start}{Integer start position (0-based, inclusive)}
@@ -32,7 +30,7 @@ Use the constants \link{AM_MARK_EXPAND_NONE}, \link{AM_MARK_EXPAND_BEFORE},
 \link{AM_MARK_EXPAND_AFTER}, or \link{AM_MARK_EXPAND_BOTH}.}
 }
 \value{
-The document \code{doc} (invisibly)
+The text object \code{obj} (invisibly)
 }
 \description{
 Marks attach metadata or formatting information to a range of text.
@@ -65,13 +63,13 @@ am_put(doc, AM_ROOT, "text", am_text("Hello World"))
 text_obj <- am_get(doc, AM_ROOT, "text")
 
 # Mark "Hello" as bold (positions 0-4, characters 0-4)
-am_mark_create(doc, text_obj, 0, 5, "bold", TRUE)
+am_mark_create(text_obj, 0, 5, "bold", TRUE)
 
 # Mark "World" as italic with expansion
-am_mark_create(doc, text_obj, 6, 11, "italic", TRUE,
+am_mark_create(text_obj, 6, 11, "italic", TRUE,
                expand = AM_MARK_EXPAND_BOTH)
 
 # Get all marks
-marks <- am_marks(doc, text_obj)
+marks <- am_marks(text_obj)
 print(marks)
 }

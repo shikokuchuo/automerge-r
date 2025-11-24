@@ -4,11 +4,9 @@
 \alias{am_marks_at}
 \title{Get marks at a specific position}
 \usage{
-am_marks_at(doc, obj, position)
+am_marks_at(obj, position)
 }
 \arguments{
-\item{doc}{An Automerge document}
-
 \item{obj}{An Automerge object ID (must be a text object)}
 
 \item{position}{Integer position (0-based) to query}
@@ -25,11 +23,11 @@ doc <- am_create()
 am_put(doc, AM_ROOT, "text", am_text("Hello World"))
 text_obj <- am_get(doc, AM_ROOT, "text")
 
-am_mark_create(doc, text_obj, 0, 5, "bold", TRUE)
-am_mark_create(doc, text_obj, 2, 7, "underline", TRUE)
+am_mark_create(text_obj, 0, 5, "bold", TRUE)
+am_mark_create(text_obj, 2, 7, "underline", TRUE)
 
 # Get marks at position 3 (inside "Hello")
-marks_at_3 <- am_marks_at(doc, text_obj, 3)
+marks_at_3 <- am_marks_at(text_obj, 3)
 print(marks_at_3)
 # List of 2 marks (both "bold" and "underline" include position 3)
 }

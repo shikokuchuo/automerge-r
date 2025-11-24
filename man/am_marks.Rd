@@ -4,11 +4,9 @@
 \alias{am_marks}
 \title{Get all marks in a text object}
 \usage{
-am_marks(doc, obj)
+am_marks(obj)
 }
 \arguments{
-\item{doc}{An Automerge document}
-
 \item{obj}{An Automerge object ID (must be a text object)}
 }
 \value{
@@ -35,10 +33,10 @@ doc <- am_create()
 am_put(doc, AM_ROOT, "text", am_text("Hello World"))
 text_obj <- am_get(doc, AM_ROOT, "text")
 
-am_mark_create(doc, text_obj, 0, 5, "bold", TRUE)
-am_mark_create(doc, text_obj, 6, 11, "italic", TRUE)
+am_mark_create(text_obj, 0, 5, "bold", TRUE)
+am_mark_create(text_obj, 6, 11, "italic", TRUE)
 
-marks <- am_marks(doc, text_obj)
+marks <- am_marks(text_obj)
 print(marks)
 # List of 2 marks with name, value, start, end
 }

@@ -145,13 +145,13 @@ doc$text <- am_text("hello world")
 text_obj <- doc$text
 
 # Create cursor at position 6 (before "world")
-cursor <- am_cursor(doc, text_obj, 6)
+cursor <- am_cursor(text_obj, 6)
 
 # Insert text before the cursor
 am_text_splice(text_obj, 0, 0, "XX")
 
 # Cursor automatically adjusts
-am_cursor_position(doc, text_obj, cursor)
+am_cursor_position(text_obj, cursor)
 am_text_get(text_obj)
 ```
 
@@ -165,16 +165,16 @@ doc$text <- am_text("hello world")
 text_obj <- doc$text
 
 # Mark "hello" as bold
-am_mark_create(doc, text_obj, 0, 5, "bold", TRUE)
+am_mark_create(text_obj, 0, 5, "bold", TRUE)
 
 # Mark "world" with custom metadata
-am_mark_create(doc, text_obj, 6, 11, "comment", "review this")
+am_mark_create(text_obj, 6, 11, "comment", "review this")
 
 # Get all marks
-am_marks(doc, text_obj)
+am_marks(text_obj)
 
 # Get marks at specific position
-am_marks_at(doc, text_obj, 2)
+am_marks_at(text_obj, 2)
 ```
 
 Marks support expansion modes that control behavior at boundaries:
@@ -182,7 +182,6 @@ Marks support expansion modes that control behavior at boundaries:
 ```{r}
 # Create mark with expansion
 am_mark_create(
-  doc,
   text_obj,
   0,
   5,
@@ -193,6 +192,7 @@ am_mark_create(
 ```
 
 Expansion modes:
+
 - `AM_MARK_EXPAND_NONE`: Mark doesn't expand (default)
 - `AM_MARK_EXPAND_BEFORE`: Expands to include text inserted before start
 - `AM_MARK_EXPAND_AFTER`: Expands to include text inserted after end

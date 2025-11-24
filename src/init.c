@@ -35,10 +35,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"C_am_get_change_by_hash", (DL_FUNC) &C_am_get_change_by_hash, 2},
     {"C_am_get_changes_added", (DL_FUNC) &C_am_get_changes_added, 2},
     // Cursor and mark operations
-    {"C_am_cursor", (DL_FUNC) &C_am_cursor, 3},
-    {"C_am_cursor_position", (DL_FUNC) &C_am_cursor_position, 3},
-    {"C_am_mark_create", (DL_FUNC) &C_am_mark_create, 7},
-    {"C_am_marks", (DL_FUNC) &C_am_marks, 2},
+    {"C_am_cursor", (DL_FUNC) &C_am_cursor, 2},
+    {"C_am_cursor_position", (DL_FUNC) &C_am_cursor_position, 2},
+    {"C_am_mark_create", (DL_FUNC) &C_am_mark_create, 6},
+    {"C_am_marks", (DL_FUNC) &C_am_marks, 1},
     // Helper functions
     {"C_get_doc_from_objid", (DL_FUNC) &C_get_doc_from_objid, 1},
     {NULL, NULL, 0}

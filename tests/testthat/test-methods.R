@@ -658,7 +658,7 @@ test_that("print.am_cursor displays cursor info", {
   doc <- am_create()
   am_put(doc, AM_ROOT, "text", am_text("Hello World"))
   text_obj <- am_get(doc, AM_ROOT, "text")
-  cursor <- am_cursor(doc, text_obj, 5)
+  cursor <- am_cursor(text_obj, 5)
 
   output <- capture.output(print(cursor))
   expect_true(any(grepl("Automerge Cursor", output)))
