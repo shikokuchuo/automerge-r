@@ -238,13 +238,51 @@ SEXP C_am_get_heads(SEXP doc_ptr) {
 SEXP C_am_get_changes(SEXP doc_ptr, SEXP heads) {
     AMdoc *doc = get_doc(doc_ptr);
 
-    // Get changes - for now only support NULL heads (all changes)
-    // TODO Phase 5+: Support getting changes since specific heads
-    if (heads != R_NilValue) {
-        Rf_error("Getting changes since specific heads not yet implemented (use NULL for all changes)");
-    }
+    AMresult *result = NULL;
 
-    AMresult *result = AMgetChanges(doc, NULL);
+    if (heads == R_NilValue) {
+        // Get all changes (NULL heads)
+        result = AMgetChanges(doc, NULL);
+    } else {
+        // Validate heads is a list
+        if (TYPEOF(heads) != VECSXP) {
+            Rf_error("heads must be NULL or a list of raw vectors");
+        }
+
+        R_xlen_t heads_count = Rf_xlength(heads);
+        if (heads_count == 0) {
+            // Empty list treated same as NULL
+            result = AMgetChanges(doc, NULL);
+        } else if (heads_count == 1) {
+            // Single head case
+            SEXP r_hash = VECTOR_ELT(heads, 0);
+            if (TYPEOF(r_hash) != RAWSXP) {
+                Rf_error("Each head must be a raw vector");
+            }
+
+            AMbyteSpan hash_span = {
+                .src = RAW(r_hash),
+                .count = (size_t)Rf_xlength(r_hash)
+            };
+
+            // Convert to change hash item
+            AMresult *heads_result = AMitemFromChangeHash(hash_span);
+            if (!heads_result || AMresultStatus(heads_result) != AM_STATUS_OK) {
+                if (heads_result) AMresultFree(heads_result);
+                Rf_error("Invalid change hash");
+            }
+
+            // Get AMitems from result and call AMgetChanges
+            AMitems heads_items = AMresultItems(heads_result);
+            result = AMgetChanges(doc, &heads_items);
+
+            // Free heads result
+            AMresultFree(heads_result);
+        } else {
+            // Multiple heads - not yet implemented
+            Rf_error("Getting changes since multiple specific heads not yet implemented (use single head or NULL)");
+        }
+    }
 
     // Check result status
     if (AMresultStatus(result) != AM_STATUS_OK) {

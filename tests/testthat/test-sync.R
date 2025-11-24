@@ -371,3 +371,64 @@ test_that("sync works with text objects", {
   expect_equal(am_text_get(notes2), "Hello from doc1")
   expect_equal(am_text_get(greet2), "Hi from doc2")
 })
+
+test_that("am_sync_bidirectional fails with insufficient max_rounds", {
+  doc1 <- am_create()
+  doc2 <- am_create()
+
+  # Create documents with changes that will require multiple rounds
+  am_put(doc1, AM_ROOT, "a", 1)
+  am_commit(doc1)
+
+  am_put(doc2, AM_ROOT, "b", 2)
+  am_commit(doc2)
+
+  # Try to sync with max_rounds = 1, which is too small
+  expect_error(
+    am_sync_bidirectional(doc1, doc2, max_rounds = 1),
+    "Failed to synchronize within 1 rounds"
+  )
+})
+
+test_that("am_get_changes with specific heads", {
+  doc <- am_create()
+
+  # Make first change
+  am_put(doc, AM_ROOT, "x", 1)
+  am_commit(doc, "First")
+  heads1 <- am_get_heads(doc)
+
+  # Make second change
+  am_put(doc, AM_ROOT, "y", 2)
+  am_commit(doc, "Second")
+
+  # Make third change
+  am_put(doc, AM_ROOT, "z", 3)
+  am_commit(doc, "Third")
+
+  # Get changes since heads1 (should get changes 2 and 3)
+  changes_since <- am_get_changes(doc, heads1)
+  expect_type(changes_since, "list")
+  expect_equal(length(changes_since), 2)
+})
+
+test_that("am_get_changes_added returns added changes", {
+  doc1 <- am_create()
+  am_put(doc1, AM_ROOT, "x", 1)
+  am_commit(doc1)
+
+  # Fork and make independent changes
+  doc2 <- am_fork(doc1)
+
+  am_put(doc2, AM_ROOT, "y", 2)
+  am_commit(doc2)
+
+  am_put(doc2, AM_ROOT, "z", 3)
+  am_commit(doc2)
+
+  # Get what was added to doc2 since the fork
+  # am_get_changes_added(doc1, doc2) returns changes in doc2 not in doc1
+  added <- am_get_changes_added(doc1, doc2)
+  expect_type(added, "list")
+  expect_equal(length(added), 2) # Two commits in doc2
+})

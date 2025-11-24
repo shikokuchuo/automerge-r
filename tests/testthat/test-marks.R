@@ -273,3 +273,118 @@ test_that("marks work across document commits", {
   marks <- am_marks(doc, text_obj)
   expect_length(marks, 2)
 })
+
+test_that("marks support raw bytes values", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "text", am_text("hello world"))
+  text_obj <- am_get(doc, AM_ROOT, "text")
+
+  # Create mark with raw bytes
+  raw_data <- as.raw(c(0x48, 0x65, 0x6c, 0x6c, 0x6f))
+  am_mark_create(doc, text_obj, 0, 5, "data", raw_data)
+
+  # Retrieve and verify
+  marks <- am_marks(doc, text_obj)
+  expect_length(marks, 1)
+  expect_equal(marks[[1]]$name, "data")
+  expect_type(marks[[1]]$value, "raw")
+  expect_equal(marks[[1]]$value, raw_data)
+})
+
+test_that("mark values reject non-scalar POSIXct", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "text", am_text("hello world"))
+  text_obj <- am_get(doc, AM_ROOT, "text")
+
+  # Vector POSIXct should fail
+  timestamps <- as.POSIXct(c("2025-01-01 12:00:00", "2025-01-02 12:00:00"), tz = "UTC")
+  expect_error(
+    am_mark_create(doc, text_obj, 0, 5, "timestamp", timestamps),
+    "Mark value must be scalar"
+  )
+})
+
+test_that("mark values reject non-scalar counters", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "text", am_text("hello world"))
+  text_obj <- am_get(doc, AM_ROOT, "text")
+
+  # Vector counter should fail
+  counters <- structure(c(1L, 2L), class = "am_counter")
+  expect_error(
+    am_mark_create(doc, text_obj, 0, 5, "counter", counters),
+    "Counter must be a scalar integer"
+  )
+})
+
+test_that("mark values reject unsupported types", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "text", am_text("hello world"))
+  text_obj <- am_get(doc, AM_ROOT, "text")
+
+  # List should fail
+  expect_error(
+    am_mark_create(doc, text_obj, 0, 5, "test", list(a = 1)),
+    "Unsupported mark value type"
+  )
+
+  # Function should fail
+  expect_error(
+    am_mark_create(doc, text_obj, 0, 5, "test", function() {}),
+    "Unsupported mark value type"
+  )
+})
+
+test_that("mark expand mode 'after' expands correctly", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "text", am_text("hello world"))
+  text_obj <- am_get(doc, AM_ROOT, "text")
+
+  # Mark "hello" with expand = "after"
+  am_mark_create(doc, text_obj, 0, 5, "bold", TRUE, expand = AM_MARK_EXPAND_AFTER)
+
+  # Insert text at end boundary (position 5, after "hello")
+  am_text_splice(text_obj, 5, 0, "X")
+
+  # Mark should expand to include "X"
+  marks <- am_marks(doc, text_obj)
+  expect_equal(marks[[1]]$end, 6)
+})
+
+test_that("mark expand mode 'before' expands correctly", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "text", am_text("hello world"))
+  text_obj <- am_get(doc, AM_ROOT, "text")
+
+  # Mark "hello" with expand = "before"
+  am_mark_create(doc, text_obj, 0, 5, "bold", TRUE, expand = AM_MARK_EXPAND_BEFORE)
+
+  # Insert text at start boundary (position 0, before "hello")
+  am_text_splice(text_obj, 0, 0, "X")
+
+  # Mark should expand to include "X"
+  marks <- am_marks(doc, text_obj)
+  expect_equal(marks[[1]]$start, 0)
+  expect_equal(marks[[1]]$end, 6)
+})
+
+test_that("mark expand mode 'both' expands in both directions", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "text", am_text("hello world"))
+  text_obj <- am_get(doc, AM_ROOT, "text")
+
+  # Mark "hello" with expand = "both"
+  am_mark_create(doc, text_obj, 0, 5, "bold", TRUE, expand = AM_MARK_EXPAND_BOTH)
+
+  # Insert text at start
+  am_text_splice(text_obj, 0, 0, "X")
+  marks <- am_marks(doc, text_obj)
+  expect_equal(marks[[1]]$start, 0)
+  expect_equal(marks[[1]]$end, 6)
+
+  # Insert text at end
+  am_text_splice(text_obj, 6, 0, "Y")
+  marks <- am_marks(doc, text_obj)
+  expect_equal(marks[[1]]$start, 0)
+  expect_equal(marks[[1]]$end, 7)
+})
