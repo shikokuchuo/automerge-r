@@ -9,10 +9,12 @@ am_marks_at(obj, position)
 \arguments{
 \item{obj}{An Automerge object ID (must be a text object)}
 
-\item{position}{Integer position (0-based) to query}
+\item{position}{Integer position (0-based inter-character position) to query.
+See \code{\link[=am_mark_create]{am_mark_create()}} for indexing details.}
 }
 \value{
-A list of marks that include the specified position
+A list of marks that include the specified position. Returns an empty
+list if no marks cover that position.
 }
 \description{
 Convenience function to retrieve marks that include a specific position.

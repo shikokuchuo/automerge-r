@@ -11,7 +11,7 @@ am_counter_increment(doc, obj, key, delta)
 
 \item{obj}{An Automerge object ID (map or list), or \code{AM_ROOT} for the document root}
 
-\item{key}{For maps: a character string key. For lists: an integer position (1-based)}
+\item{key}{For maps: a character string key. For lists: an integer index (1-based)}
 
 \item{delta}{Integer value to add to the counter (can be negative)}
 }

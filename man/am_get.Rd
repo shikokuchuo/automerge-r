@@ -12,7 +12,7 @@ am_get(doc, obj, key)
 \item{obj}{An Automerge object ID (from nested object), or \code{AM_ROOT}
 for the document root}
 
-\item{key}{For maps: character string key. For lists: numeric position
+\item{key}{For maps: character string key. For lists: numeric index
 (1-based). Returns \code{NULL} for indices \verb{<= 0} or beyond list length.}
 }
 \value{
@@ -21,7 +21,7 @@ Nested objects are returned as \code{am_object} instances.
 }
 \description{
 Retrieves a value from an Automerge map or list. Returns \code{NULL}
-if the key or position doesn't exist.
+if the key or index doesn't exist.
 }
 \examples{
 doc <- am_create()

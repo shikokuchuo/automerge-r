@@ -9,7 +9,7 @@ am_text_splice(text_obj, pos, del_count, text)
 \arguments{
 \item{text_obj}{An Automerge text object ID}
 
-\item{pos}{Character position to start splice (0-based, counts Unicode code points)}
+\item{pos}{Character position to start splice (0-based inter-character position)}
 
 \item{del_count}{Number of characters to delete (counts Unicode code points)}
 
@@ -22,14 +22,27 @@ The text object \code{text_obj} (invisibly)
 Insert or delete characters in a text object. This is the primary way to
 edit text CRDT objects.
 }
-\details{
-Text positions use character (Unicode code point) indexing, matching R's
-\code{substr()} and \code{nchar()} behavior. For example, in "Hello😀", the emoji
-is at position 5 (as a single character), not byte offset 5-8.
+\section{Indexing Convention}{
 
-This means \code{nchar("😀")} returns 1, and you can use that directly in
-text operations without needing to calculate byte offsets.
+\strong{Text positions use 0-based indexing} (unlike list indices which are
+1-based). This is because positions specify locations \strong{between} characters,
+not the characters themselves:
+\itemize{
+\item Position 0 = before the first character
+\item Position 1 = between 1st and 2nd characters
+\item Position 5 = after the 5th character
 }
+
+For the text "Hello":
+\preformatted{
+  H e l l o
+ 0 1 2 3 4 5  <- positions (0-based, between characters)
+}
+
+Positions count Unicode code points (characters), not bytes. The emoji "😀"
+counts as 1 character, matching R's \code{nchar()} behavior.
+}
+
 \examples{
 doc <- am_create()
 am_put(doc, AM_ROOT, "doc", am_text("Hello"))

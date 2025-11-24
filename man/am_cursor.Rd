@@ -9,9 +9,7 @@ am_cursor(obj, position)
 \arguments{
 \item{obj}{An Automerge object ID (must be a text object)}
 
-\item{position}{Integer position in the text (0-based indexing, consistent
-with \code{am_text_splice()}). Position 0 is before the first character,
-position 1 is before the second character, etc.}
+\item{position}{Integer position in the text (0-based inter-character position)}
 }
 \value{
 An \code{am_cursor} object (external pointer) that can be used with
@@ -23,12 +21,25 @@ automatically adjust as the text is edited. This enables features like
 maintaining selection positions across concurrent edits in collaborative
 editing scenarios.
 }
-\section{Character Indexing}{
+\section{Indexing Convention}{
 
-Positions use 0-based indexing (like C and \code{am_text_splice()}) and count
-Unicode code points (characters), not bytes. For example, in the text
-"Hello😀", the emoji is at position 5, and each character (including emoji)
-counts as 1 position.
+\strong{Cursor positions use 0-based indexing} (unlike list indices which are
+1-based). This is because positions specify locations \strong{between} characters,
+not the characters themselves:
+\itemize{
+\item Position 0 = before the first character
+\item Position 1 = between 1st and 2nd characters
+\item Position 5 = after the 5th character
+}
+
+For the text "Hello":
+\preformatted{
+  H e l l o
+ 0 1 2 3 4 5  <- positions (0-based, between characters)
+}
+
+This matches \code{am_text_splice()} behavior. Positions count Unicode code points
+(characters), not bytes.
 }
 
 \examples{

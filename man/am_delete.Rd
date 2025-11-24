@@ -2,7 +2,7 @@
 % Please edit documentation in R/objects.R
 \name{am_delete}
 \alias{am_delete}
-\title{Delete a key from a map or position from a list}
+\title{Delete a key from a map or element from a list}
 \usage{
 am_delete(doc, obj, key)
 }
@@ -13,7 +13,7 @@ am_delete(doc, obj, key)
 for the document root}
 
 \item{key}{For maps: character string key to delete. For lists: numeric
-position (1-based) to delete}
+index (1-based, like R vectors) to delete}
 }
 \value{
 The document \code{doc} (invisibly)

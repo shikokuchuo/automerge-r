@@ -9,9 +9,9 @@ am_mark_create(obj, start, end, name, value, expand = AM_MARK_EXPAND_NONE)
 \arguments{
 \item{obj}{An Automerge object ID (must be a text object)}
 
-\item{start}{Integer start position (0-based, inclusive)}
+\item{start}{Integer start position (0-based inter-character position, inclusive)}
 
-\item{end}{Integer end position (0-based, exclusive)}
+\item{end}{Integer end position (0-based inter-character position, exclusive)}
 
 \item{name}{Character string identifying the mark (e.g., "bold", "comment")}
 
@@ -37,12 +37,20 @@ Marks attach metadata or formatting information to a range of text.
 Unlike simple annotations, marks are CRDT-aware and merge correctly
 across concurrent edits.
 }
-\section{Character Indexing}{
+\section{Indexing Convention}{
 
-Positions use 0-based indexing (like C and \code{am_text_splice()}) and count
-Unicode code points (characters), not bytes. The range [start, end) includes
-\code{start} but excludes \code{end}. For example, marking positions 0 to 5 marks
-the first 5 characters (positions 0, 1, 2, 3, 4).
+\strong{Mark positions use 0-based indexing} (unlike list indices which are
+1-based). Positions specify locations \strong{between} characters. The range
+\verb{[start, end)} includes \code{start} but excludes \code{end}.
+
+For the text "Hello":
+\preformatted{
+  H e l l o
+ 0 1 2 3 4 5  <- positions (0-based, between characters)
+}
+
+Marking positions 0 to 5 marks all 5 characters. Marking 0 to 3 marks "Hel".
+Positions count Unicode code points (characters), not bytes.
 }
 
 \section{Expand Behavior}{

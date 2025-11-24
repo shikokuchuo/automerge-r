@@ -9,7 +9,7 @@
 #' @param doc An Automerge document
 #' @param obj An Automerge object ID (from nested object), or `AM_ROOT`
 #'   for the document root
-#' @param key For maps: character string key. For lists: numeric position
+#' @param key For maps: character string key. For lists: numeric index
 #'   (1-based) or `"end"` to append
 #' @param value The value to store. Supported types:
 #'   \itemize{
@@ -43,12 +43,12 @@ am_put <- function(doc, obj, key, value) {
 #' Get a value from an Automerge map or list
 #'
 #' Retrieves a value from an Automerge map or list. Returns `NULL`
-#' if the key or position doesn't exist.
+#' if the key or index doesn't exist.
 #'
 #' @param doc An Automerge document
 #' @param obj An Automerge object ID (from nested object), or `AM_ROOT`
 #'   for the document root
-#' @param key For maps: character string key. For lists: numeric position
+#' @param key For maps: character string key. For lists: numeric index
 #'   (1-based). Returns `NULL` for indices `<= 0` or beyond list length.
 #'
 #' @return The value at the specified key/position, or `NULL` if not found.
@@ -65,7 +65,7 @@ am_get <- function(doc, obj, key) {
   .Call(C_am_get, doc, obj, key)
 }
 
-#' Delete a key from a map or position from a list
+#' Delete a key from a map or element from a list
 #'
 #' Removes a key-value pair from a map or an element from a list.
 #'
@@ -73,7 +73,7 @@ am_get <- function(doc, obj, key) {
 #' @param obj An Automerge object ID (from nested object), or `AM_ROOT`
 #'   for the document root
 #' @param key For maps: character string key to delete. For lists: numeric
-#'   position (1-based) to delete
+#'   index (1-based, like R vectors) to delete
 #'
 #' @return The document `doc` (invisibly)
 #'
@@ -132,12 +132,12 @@ am_length <- function(doc, obj) {
 #' Insert a value into an Automerge list
 #'
 #' This is an alias for `am_put()` with insert semantics for lists.
-#' For lists, `am_put()` with a numeric position replaces the element
-#' at that position, while `am_insert()` shifts elements to make room.
+#' For lists, `am_put()` with a numeric index replaces the element
+#' at that index, while `am_insert()` shifts elements to make room.
 #'
 #' @param doc An Automerge document
 #' @param obj An Automerge object ID (must be a list)
-#' @param pos Numeric position (1-based) where to insert, or `"end"`
+#' @param pos Numeric index (1-based, like R vectors) where to insert, or `"end"`
 #'   to append
 #' @param value The value to insert
 #'
@@ -244,18 +244,29 @@ am_text <- function(initial = "") {
 #' edit text CRDT objects.
 #'
 #' @param text_obj An Automerge text object ID
-#' @param pos Character position to start splice (0-based, counts Unicode code points)
+#' @param pos Character position to start splice (0-based inter-character position)
 #' @param del_count Number of characters to delete (counts Unicode code points)
 #' @param text Text to insert
 #' @return The text object `text_obj` (invisibly)
 #'
-#' @details
-#' Text positions use character (Unicode code point) indexing, matching R's
-#' `substr()` and `nchar()` behavior. For example, in "Hello😀", the emoji
-#' is at position 5 (as a single character), not byte offset 5-8.
+#' @section Indexing Convention:
+#' **Text positions use 0-based indexing** (unlike list indices which are
+#' 1-based). This is because positions specify locations **between** characters,
+#' not the characters themselves:
+#' \itemize{
+#'   \item Position 0 = before the first character
+#'   \item Position 1 = between 1st and 2nd characters
+#'   \item Position 5 = after the 5th character
+#' }
 #'
-#' This means `nchar("😀")` returns 1, and you can use that directly in
-#' text operations without needing to calculate byte offsets.
+#' For the text "Hello":
+#' \preformatted{
+#'   H e l l o
+#'  0 1 2 3 4 5  <- positions (0-based, between characters)
+#' }
+#'
+#' Positions count Unicode code points (characters), not bytes. The emoji "😀"
+#' counts as 1 character, matching R's `nchar()` behavior.
 #'
 #' @export
 #' @examples
@@ -334,7 +345,7 @@ am_values <- function(doc, obj) {
 #'
 #' @param doc An Automerge document
 #' @param obj An Automerge object ID (map or list), or `AM_ROOT` for the document root
-#' @param key For maps: a character string key. For lists: an integer position (1-based)
+#' @param key For maps: a character string key. For lists: an integer index (1-based)
 #' @param delta Integer value to add to the counter (can be negative)
 #' @return The document (invisibly), allowing for chaining with pipes
 #' @export

@@ -11,7 +11,7 @@ am_insert(doc, obj, pos, value)
 
 \item{obj}{An Automerge object ID (must be a list)}
 
-\item{pos}{Numeric position (1-based) where to insert, or \code{"end"}
+\item{pos}{Numeric index (1-based, like R vectors) where to insert, or \code{"end"}
 to append}
 
 \item{value}{The value to insert}
@@ -21,8 +21,8 @@ The document \code{doc} (invisibly)
 }
 \description{
 This is an alias for \code{am_put()} with insert semantics for lists.
-For lists, \code{am_put()} with a numeric position replaces the element
-at that position, while \code{am_insert()} shifts elements to make room.
+For lists, \code{am_put()} with a numeric index replaces the element
+at that index, while \code{am_insert()} shifts elements to make room.
 }
 \examples{
 doc <- am_create()

@@ -12,7 +12,7 @@ am_put(doc, obj, key, value)
 \item{obj}{An Automerge object ID (from nested object), or \code{AM_ROOT}
 for the document root}
 
-\item{key}{For maps: character string key. For lists: numeric position
+\item{key}{For maps: character string key. For lists: numeric index
 (1-based) or \code{"end"} to append}
 
 \item{value}{The value to store. Supported types:

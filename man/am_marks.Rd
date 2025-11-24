@@ -14,20 +14,16 @@ A list of marks, where each mark is a list with fields:
 \describe{
 \item{name}{Character string identifying the mark}
 \item{value}{The mark's value (various types supported)}
-\item{start}{Integer start position (0-based, inclusive)}
-\item{end}{Integer end position (0-based, exclusive)}
+\item{start}{Integer start position (0-based inter-character position, inclusive)}
+\item{end}{Integer end position (0-based inter-character position, exclusive)}
 }
+Returns an empty list if no marks are present. See \code{\link[=am_mark_create]{am_mark_create()}} for
+indexing details.
 }
 \description{
 Retrieves all marks (formatting/metadata annotations) present in a text
 object at a specific document state.
 }
-\section{Character Indexing}{
-
-Mark positions use 0-based indexing (like C and \code{am_text_splice()}) and
-count Unicode code points (characters), not bytes.
-}
-
 \examples{
 doc <- am_create()
 am_put(doc, AM_ROOT, "text", am_text("Hello World"))

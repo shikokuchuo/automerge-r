@@ -8,18 +8,29 @@
 #' editing scenarios.
 #'
 #' @param obj An Automerge object ID (must be a text object)
-#' @param position Integer position in the text (0-based indexing, consistent
-#'   with `am_text_splice()`). Position 0 is before the first character,
-#'   position 1 is before the second character, etc.
+#' @param position Integer position in the text (0-based inter-character position)
 #'
 #' @return An `am_cursor` object (external pointer) that can be used with
 #'   [am_cursor_position()] to retrieve the current position
 #'
-#' @section Character Indexing:
-#' Positions use 0-based indexing (like C and `am_text_splice()`) and count
-#' Unicode code points (characters), not bytes. For example, in the text
-#' "Hello😀", the emoji is at position 5, and each character (including emoji)
-#' counts as 1 position.
+#' @section Indexing Convention:
+#' **Cursor positions use 0-based indexing** (unlike list indices which are
+#' 1-based). This is because positions specify locations **between** characters,
+#' not the characters themselves:
+#' \itemize{
+#'   \item Position 0 = before the first character
+#'   \item Position 1 = between 1st and 2nd characters
+#'   \item Position 5 = after the 5th character
+#' }
+#'
+#' For the text "Hello":
+#' \preformatted{
+#'   H e l l o
+#'  0 1 2 3 4 5  <- positions (0-based, between characters)
+#' }
+#'
+#' This matches `am_text_splice()` behavior. Positions count Unicode code points
+#' (characters), not bytes.
 #'
 #' @export
 #' @examples
@@ -49,11 +60,8 @@ am_cursor <- function(obj, position) {
 #' @param obj An Automerge object ID (must be a text object)
 #' @param cursor An `am_cursor` object created by [am_cursor()]
 #'
-#' @return Integer position (0-based) where the cursor currently points
-#'
-#' @section Character Indexing:
-#' Positions use 0-based indexing (like C and `am_text_splice()`) and count
-#' Unicode code points (characters), not bytes.
+#' @return Integer position (0-based inter-character position) where the cursor
+#'   currently points. See [am_cursor()] for indexing details.
 #'
 #' @export
 #' @examples
@@ -78,8 +86,8 @@ am_cursor_position <- function(obj, cursor) {
 #' across concurrent edits.
 #'
 #' @param obj An Automerge object ID (must be a text object)
-#' @param start Integer start position (0-based, inclusive)
-#' @param end Integer end position (0-based, exclusive)
+#' @param start Integer start position (0-based inter-character position, inclusive)
+#' @param end Integer end position (0-based inter-character position, exclusive)
 #' @param name Character string identifying the mark (e.g., "bold", "comment")
 #' @param value The mark's value (any Automerge-compatible type: NULL, logical,
 #'   integer, numeric, character, raw, POSIXct, or am_counter)
@@ -96,11 +104,19 @@ am_cursor_position <- function(obj, cursor) {
 #'
 #' @return The text object `obj` (invisibly)
 #'
-#' @section Character Indexing:
-#' Positions use 0-based indexing (like C and `am_text_splice()`) and count
-#' Unicode code points (characters), not bytes. The range [start, end) includes
-#' `start` but excludes `end`. For example, marking positions 0 to 5 marks
-#' the first 5 characters (positions 0, 1, 2, 3, 4).
+#' @section Indexing Convention:
+#' **Mark positions use 0-based indexing** (unlike list indices which are
+#' 1-based). Positions specify locations **between** characters. The range
+#' `[start, end)` includes `start` but excludes `end`.
+#'
+#' For the text "Hello":
+#' \preformatted{
+#'   H e l l o
+#'  0 1 2 3 4 5  <- positions (0-based, between characters)
+#' }
+#'
+#' Marking positions 0 to 5 marks all 5 characters. Marking 0 to 3 marks "Hel".
+#' Positions count Unicode code points (characters), not bytes.
 #'
 #' @section Expand Behavior:
 #' The `expand` parameter controls what happens when text is inserted exactly
@@ -144,13 +160,11 @@ am_mark_create <- function(obj, start, end, name, value,
 #'   \describe{
 #'     \item{name}{Character string identifying the mark}
 #'     \item{value}{The mark's value (various types supported)}
-#'     \item{start}{Integer start position (0-based, inclusive)}
-#'     \item{end}{Integer end position (0-based, exclusive)}
+#'     \item{start}{Integer start position (0-based inter-character position, inclusive)}
+#'     \item{end}{Integer end position (0-based inter-character position, exclusive)}
 #'   }
-#'
-#' @section Character Indexing:
-#' Mark positions use 0-based indexing (like C and `am_text_splice()`) and
-#' count Unicode code points (characters), not bytes.
+#'   Returns an empty list if no marks are present. See [am_mark_create()] for
+#'   indexing details.
 #'
 #' @export
 #' @examples
@@ -174,9 +188,11 @@ am_marks <- function(obj) {
 #' This is equivalent to calling [am_marks()] and filtering the results.
 #'
 #' @param obj An Automerge object ID (must be a text object)
-#' @param position Integer position (0-based) to query
+#' @param position Integer position (0-based inter-character position) to query.
+#'   See [am_mark_create()] for indexing details.
 #'
-#' @return A list of marks that include the specified position
+#' @return A list of marks that include the specified position. Returns an empty
+#'   list if no marks cover that position.
 #'
 #' @export
 #' @examples

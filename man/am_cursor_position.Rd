@@ -12,19 +12,14 @@ am_cursor_position(obj, cursor)
 \item{cursor}{An \code{am_cursor} object created by \code{\link[=am_cursor]{am_cursor()}}}
 }
 \value{
-Integer position (0-based) where the cursor currently points
+Integer position (0-based inter-character position) where the cursor
+currently points. See \code{\link[=am_cursor]{am_cursor()}} for indexing details.
 }
 \description{
 Retrieves the current position of a cursor within a text object. The
 position automatically adjusts as text is inserted or deleted before
 the cursor's original position.
 }
-\section{Character Indexing}{
-
-Positions use 0-based indexing (like C and \code{am_text_splice()}) and count
-Unicode code points (characters), not bytes.
-}
-
 \examples{
 doc <- am_create()
 am_put(doc, AM_ROOT, "text", am_text("Hello World"))
