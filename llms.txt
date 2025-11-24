@@ -1,0 +1,748 @@
+# automerge
+
+R Bindings for the Automerge CRDT Library
+
+## Overview
+
+`automerge` provides R bindings to the
+[Automerge](https://automerge.org/) Conflict-free Replicated Data Type
+(CRDT) Rust library via its C FFI. Automerge enables automatic merging
+of concurrent changes without conflicts, making it ideal for:
+
+- Distributed systems
+- Collaborative applications
+- Offline-first architectures
+- Cross-platform data synchronization
+
+## Features
+
+- Full support for Automerge data types: maps, lists, text, counters
+- Cursors for stable position tracking in collaborative text editing
+- Marks for attaching metadata and formatting to text ranges
+- Intuitive functional API with S3 methods
+- Low-level and high-level synchronization protocols
+- Seamless interoperability with JavaScript and other Automerge
+  implementations
+- Zero runtime dependencies (only base R)
+
+## Installation
+
+### Development Version
+
+``` r
+install.packages("automerge", repos = "https://shikokuchuo.r-universe.dev")
+```
+
+### System Requirements
+
+To build from source, you need:
+
+- Rust toolchain \>= 1.89.0 - Install from <https://rustup.rs/>
+- CMake \>= 3.25 - Included in Rtools43+ on Windows
+
+Alternatively, install `automerge-c` (with UTF-32 character indexing
+enabled) system-wide to skip the source build.
+
+## Status
+
+🚧 **Under Active Development** 🚧
+
+This package is currently in the initial development phase. Some
+functionality is yet to be implemented, and any existing functionality
+is subject to change at any time.
+
+## Example Usage
+
+### Creating and Modifying Documents
+
+Use familiar R syntax to work with Automerge documents:
+
+``` r
+library(automerge)
+
+doc <- am_create()
+doc$name <- "Alice"
+doc$age <- 20L
+doc[["active"]] <- TRUE
+doc
+#> <Automerge Document>
+#> Actor: f73b168ef41899ffa482d7fa85bcdabf 
+#> Root keys: 3 
+#> Keys: active, age, name
+```
+
+### Reading Values
+
+Access values just like a regular R list:
+
+``` r
+doc$name
+#> [1] "Alice"
+doc[["age"]]
+#> [1] 20
+```
+
+### Nested Structures
+
+Create complex nested objects in a single call:
+
+``` r
+doc$user <- list(
+  name = "Bob",
+  age = 25L,
+  address = list(city = "NYC", zip = 10001L)
+)
+```
+
+Nested objects work independently:
+
+``` r
+user <- doc$user
+user$email <- "bob@example.com"
+user
+#> <Automerge Map>
+#> Length: 4 
+#> Keys: address, age, email, name
+```
+
+### Advanced Types
+
+Automerge supports specialized CRDT types:
+
+``` r
+doc$created <- Sys.time() # POSIXct timestamp
+doc$score <- am_counter(0) # Counter
+doc$notes <- am_text("世界") # Text object with CRDT semantics
+```
+
+### Working with Text
+
+Text objects support fine-grained editing:
+
+``` r
+text_obj <- doc$notes
+text_obj
+#> <Automerge Text>
+#> Length: 2 characters
+#> Content: "世界"
+am_text_splice(text_obj, 2, 0, "🌍")
+am_text_get(text_obj)
+#> [1] "世界🌍"
+```
+
+### Cursors and Marks
+
+Cursors provide stable position tracking across edits, while marks
+attach metadata to text ranges. These features are essential for
+collaborative text editing applications.
+
+#### Cursors
+
+Cursors maintain their position as text is edited:
+
+``` r
+doc <- am_create()
+doc$text <- am_text("hello world")
+text_obj <- doc$text
+
+# Create cursor at position 6 (before "world")
+cursor <- am_cursor(text_obj, 6)
+
+# Insert text before the cursor
+am_text_splice(text_obj, 0, 0, "XX")
+
+# Cursor automatically adjusts
+am_cursor_position(text_obj, cursor)
+#> [1] 8
+am_text_get(text_obj)
+#> [1] "XXhello world"
+```
+
+#### Marks
+
+Marks attach formatting or metadata to text ranges:
+
+``` r
+doc <- am_create()
+doc$text <- am_text("hello world")
+text_obj <- doc$text
+
+# Mark "hello" as bold
+am_mark_create(text_obj, 0, 5, "bold", TRUE)
+
+# Mark "world" with custom metadata
+am_mark_create(text_obj, 6, 11, "comment", "review this")
+
+# Get all marks
+am_marks(text_obj)
+#> [[1]]
+#> [[1]]$name
+#> [1] "bold"
+#> 
+#> [[1]]$value
+#> [1] TRUE
+#> 
+#> [[1]]$start
+#> [1] 0
+#> 
+#> [[1]]$end
+#> [1] 5
+#> 
+#> 
+#> [[2]]
+#> [[2]]$name
+#> [1] "comment"
+#> 
+#> [[2]]$value
+#> [1] "review this"
+#> 
+#> [[2]]$start
+#> [1] 6
+#> 
+#> [[2]]$end
+#> [1] 11
+
+# Get marks at specific position
+am_marks_at(text_obj, 2)
+#> [[1]]
+#> [[1]]$name
+#> [1] "bold"
+#> 
+#> [[1]]$value
+#> [1] TRUE
+#> 
+#> [[1]]$start
+#> [1] 0
+#> 
+#> [[1]]$end
+#> [1] 5
+```
+
+Marks support expansion modes that control behavior at boundaries:
+
+``` r
+# Create mark with expansion
+am_mark_create(
+  text_obj,
+  0,
+  5,
+  "highlight",
+  TRUE,
+  expand = AM_MARK_EXPAND_BOTH
+)
+```
+
+Expansion modes:
+
+- `AM_MARK_EXPAND_NONE`: Mark doesn’t expand (default)
+- `AM_MARK_EXPAND_BEFORE`: Expands to include text inserted before start
+- `AM_MARK_EXPAND_AFTER`: Expands to include text inserted after end
+- `AM_MARK_EXPAND_BOTH`: Expands in both directions
+
+### Utility Methods
+
+Standard R operations work as expected:
+
+``` r
+length(doc) # Number of keys
+#> [1] 1
+names(doc) # Key names
+#> [1] "text"
+as.list(doc) # Convert to R list
+#> $text
+#> [1] "hello world"
+```
+
+### Saving and Loading
+
+Persist documents to disk or transfer over network:
+
+``` r
+doc |> am_commit("Initial data")
+bytes <- am_save(doc)
+str(bytes)
+#>  raw [1:283] 85 6f 4a 83 ...
+
+doc2 <- am_load(bytes)
+doc2
+#> <Automerge Document>
+#> Actor: 6a57e5109d631ff8286c13400f04f6c4 
+#> Root keys: 1 
+#> Keys: text
+```
+
+### Forking and Merging
+
+Create independent copies and merge changes automatically:
+
+``` r
+doc3 <- am_fork(doc)
+doc3$name <- "Charlie"
+
+am_merge(doc, doc3)
+doc$name
+#> [1] "Charlie"
+```
+
+### Low-Level API
+
+For fine-grained control, use the functional API:
+
+``` r
+doc <- am_create()
+am_put(doc, AM_ROOT, "name", "Alice")
+am_put(doc, AM_ROOT, "age", 20L)
+doc
+#> <Automerge Document>
+#> Actor: bf0a9a5446f5fbe1ab99fce32cbfa725 
+#> Root keys: 2 
+#> Keys: age, name
+```
+
+## Synchronization
+
+Automerge’s core strength is automatic synchronization of concurrent
+changes across multiple documents. The package provides both low-level
+sync protocol access and high-level convenience functions.
+
+### Basic Synchronization
+
+The simplest way to sync two documents:
+
+``` r
+# Create two documents with different changes
+doc1 <- am_create()
+doc1$x <- 1
+doc1$y <- 2
+am_commit(doc1, "Add x and y")
+
+doc2 <- am_create()
+doc2$a <- "hello"
+doc2$b <- "world"
+am_commit(doc2, "Add a and b")
+
+# Synchronize them automatically
+result <- am_sync_bidirectional(doc1, doc2)
+cat("Synced in", result$rounds, "rounds\n")
+#> Synced in 4 rounds
+
+# Both documents now have all keys
+doc1
+#> <Automerge Document>
+#> Actor: 95a9f094a9b2465b68b23e01cbb9fea4 
+#> Root keys: 4 
+#> Keys: a, b, x, y
+doc2
+#> <Automerge Document>
+#> Actor: 428aa23eed432f48e9ca3752a2a8e3f1 
+#> Root keys: 4 
+#> Keys: a, b, x, y
+```
+
+### Concurrent Edits
+
+Automerge automatically resolves conflicts from concurrent edits:
+
+``` r
+# Start with a synchronized document
+doc1 <- am_create()
+doc1$counter <- 0
+am_commit(doc1)
+
+# Fork to create independent copy
+doc2 <- am_fork(doc1)
+
+# Make different changes in each document
+doc1$counter <- 10
+doc1$edited_by <- "Alice"
+am_commit(doc1, "Alice's changes")
+
+doc2$counter <- 20
+doc2$edited_by <- "Bob"
+am_commit(doc2, "Bob's changes")
+
+# Sync automatically resolves conflicts
+am_sync_bidirectional(doc1, doc2)
+#> $doc1
+#> <Automerge Document>
+#> Actor: f638fa0fb9ab2e97013196f53ad5a3e3 
+#> Root keys: 2 
+#> Keys: counter, edited_by 
+#> 
+#> $doc2
+#> <Automerge Document>
+#> Actor: 2831b64c7713f956fb792f0daf5f1d51 
+#> Root keys: 2 
+#> Keys: counter, edited_by 
+#> 
+#> $rounds
+#> [1] 4
+#> 
+#> $converged
+#> [1] TRUE
+
+# Both documents converge to the same state
+# The counter value is deterministically chosen (CRDT semantics)
+doc1$counter == doc2$counter
+#> [1] TRUE
+doc1$edited_by == doc2$edited_by
+#> [1] TRUE
+```
+
+### Manual Change Management
+
+For custom sync workflows, use the low-level change tracking API:
+
+``` r
+# Track document history
+doc <- am_create()
+doc$version <- 1
+am_commit(doc, "v1")
+
+doc$version <- 2
+am_commit(doc, "v2")
+
+# Get all changes
+changes <- am_get_changes(doc, NULL)
+cat("Number of changes:", length(changes), "\n")
+#> Number of changes: 2
+
+# Apply changes to another document
+doc_replica <- am_create()
+am_apply_changes(doc_replica, changes)
+
+doc_replica$version
+#> [1] 2
+```
+
+### Low-Level Sync Protocol
+
+For network synchronization or custom protocols:
+
+``` r
+# Create two documents with different data
+doc1 <- am_create()
+doc1$from_doc1 <- "Alice's data"
+doc1$priority <- 1L
+am_commit(doc1)
+
+doc2 <- am_create()
+doc2$from_doc2 <- "Bob's data"
+doc2$priority <- 2L
+am_commit(doc2)
+
+# Create sync states (one per peer)
+sync1 <- am_sync_state_new()
+sync2 <- am_sync_state_new()
+
+# Generate sync message from doc1
+msg <- am_sync_encode(doc1, sync1)
+
+# Receive and apply on doc2
+am_sync_decode(doc2, sync2, msg)
+
+# Generate response from doc2
+response <- am_sync_encode(doc2, sync2)
+
+# Continue until both return NULL (converged)
+while (!is.null(response)) {
+  am_sync_decode(doc1, sync1, response)
+  response <- am_sync_encode(doc1, sync1)
+  if (!is.null(response)) {
+    am_sync_decode(doc2, sync2, response)
+    response <- am_sync_encode(doc2, sync2)
+  }
+}
+
+# Documents after sync
+doc1
+#> <Automerge Document>
+#> Actor: 3466ec58947670110392124661b7ebb2 
+#> Root keys: 3 
+#> Keys: from_doc1, from_doc2, priority
+doc2
+#> <Automerge Document>
+#> Actor: ed8cc28291f783693f80262d21b3c3e8 
+#> Root keys: 3 
+#> Keys: from_doc1, from_doc2, priority
+```
+
+### Document Heads
+
+Track document state with change hashes:
+
+``` r
+doc <- am_create()
+doc$data <- "initial"
+am_commit(doc)
+
+# Get current heads (change hashes)
+heads <- am_get_heads(doc)
+cat("Number of heads:", length(heads), "\n")
+#> Number of heads: 1
+
+# Make more changes
+doc$data <- "updated"
+am_commit(doc)
+
+# Heads have changed
+new_heads <- am_get_heads(doc)
+identical(heads, new_heads)
+#> [1] FALSE
+```
+
+### Use Cases
+
+**Distributed Systems**: Sync R sessions across multiple machines
+
+``` r
+# On machine 1
+doc1 <- am_create()
+doc1$results <- list(mean = 42, sd = 5)
+am_commit(doc1)
+temp_file <- tempfile(fileext = ".rds")
+saveRDS(am_save(doc1), temp_file)
+
+# On machine 2
+doc2 <- am_load(readRDS(temp_file))
+doc2$additional_analysis <- list(median = 41, iqr = 8)
+am_commit(doc2)
+doc2
+#> <Automerge Document>
+#> Actor: 4eba1d6075a94f8f88e03193b3da8009 
+#> Root keys: 2 
+#> Keys: additional_analysis, results
+```
+
+**Collaborative Analysis**: Multiple analysts working on the same
+dataset
+
+``` r
+# Analyst A adds model results
+doc_a <- am_create()
+doc_a$model_a <- list(accuracy = 0.95, f1 = 0.93)
+am_commit(doc_a, "Model A results")
+
+# Analyst B adds different model (concurrent)
+doc_b <- am_create()
+doc_b$model_b <- list(accuracy = 0.97, f1 = 0.94)
+am_commit(doc_b, "Model B results")
+
+# Sync merges both contributions automatically
+am_sync_bidirectional(doc_a, doc_b)
+#> $doc1
+#> <Automerge Document>
+#> Actor: 6d6155f75703ba05a95868ab24ab20cc 
+#> Root keys: 2 
+#> Keys: model_a, model_b 
+#> 
+#> $doc2
+#> <Automerge Document>
+#> Actor: afdeabdf6923c1c3c82f8189913fa62b 
+#> Root keys: 2 
+#> Keys: model_a, model_b 
+#> 
+#> $rounds
+#> [1] 4
+#> 
+#> $converged
+#> [1] TRUE
+
+# Both documents now have all models
+names(doc_a)
+#> [1] "model_a" "model_b"
+names(doc_b)
+#> [1] "model_a" "model_b"
+```
+
+**Offline-First Workflows**: Make changes offline, sync when connected
+
+``` r
+# Work offline
+offline_doc <- am_create()
+offline_doc$field_data <- list(
+  temp = 23.5,
+  humidity = 65,
+  timestamp = Sys.time()
+)
+am_commit(offline_doc, "Offline data collection")
+
+# Central repository has other data
+central_doc <- am_create()
+central_doc$processed_data <- list(status = "ready", samples = 100L)
+am_commit(central_doc, "Central data")
+
+# Later, sync with central repository
+am_sync_bidirectional(offline_doc, central_doc)
+#> $doc1
+#> <Automerge Document>
+#> Actor: 4b2b2e1597d9a9f9247feea91256ba6f 
+#> Root keys: 2 
+#> Keys: field_data, processed_data 
+#> 
+#> $doc2
+#> <Automerge Document>
+#> Actor: be100cddf3387b05fa833516de4f53fb 
+#> Root keys: 2 
+#> Keys: field_data, processed_data 
+#> 
+#> $rounds
+#> [1] 4
+#> 
+#> $converged
+#> [1] TRUE
+
+# Both documents have all data
+names(offline_doc)
+#> [1] "field_data"     "processed_data"
+names(central_doc)
+#> [1] "field_data"     "processed_data"
+```
+
+## Resources
+
+- [Automerge Website](https://automerge.org/)
+- [Automerge GitHub](https://github.com/automerge/automerge)
+
+# Package index
+
+## All functions
+
+- [`am_apply_changes()`](http://shikokuchuo.net/automerge-r/reference/am_apply_changes.md)
+  : Apply changes to a document
+- [`am_commit()`](http://shikokuchuo.net/automerge-r/reference/am_commit.md)
+  : Commit pending changes
+- [`am_counter()`](http://shikokuchuo.net/automerge-r/reference/am_counter.md)
+  : Create an Automerge counter
+- [`am_counter_increment()`](http://shikokuchuo.net/automerge-r/reference/am_counter_increment.md)
+  : Increment a counter value
+- [`am_create()`](http://shikokuchuo.net/automerge-r/reference/am_create.md)
+  : Create a new Automerge document
+- [`am_cursor()`](http://shikokuchuo.net/automerge-r/reference/am_cursor.md)
+  : Create a cursor at a position in a text object
+- [`am_cursor_position()`](http://shikokuchuo.net/automerge-r/reference/am_cursor_position.md)
+  : Get the current position of a cursor
+- [`am_delete()`](http://shikokuchuo.net/automerge-r/reference/am_delete.md)
+  : Delete a key from a map or position from a list
+- [`am_delete_path()`](http://shikokuchuo.net/automerge-r/reference/am_delete_path.md)
+  : Delete value at path
+- [`am_fork()`](http://shikokuchuo.net/automerge-r/reference/am_fork.md)
+  : Fork an Automerge document
+- [`am_get()`](http://shikokuchuo.net/automerge-r/reference/am_get.md) :
+  Get a value from an Automerge map or list
+- [`am_get_actor()`](http://shikokuchuo.net/automerge-r/reference/am_get_actor.md)
+  : Get the actor ID of a document
+- [`am_get_actor_hex()`](http://shikokuchuo.net/automerge-r/reference/am_get_actor_hex.md)
+  : Get the actor ID as a hex string
+- [`am_get_change_by_hash()`](http://shikokuchuo.net/automerge-r/reference/am_get_change_by_hash.md)
+  : Get a specific change by its hash
+- [`am_get_changes()`](http://shikokuchuo.net/automerge-r/reference/am_get_changes.md)
+  : Get changes since specified heads
+- [`am_get_changes_added()`](http://shikokuchuo.net/automerge-r/reference/am_get_changes_added.md)
+  : Get changes in one document that are not in another
+- [`am_get_heads()`](http://shikokuchuo.net/automerge-r/reference/am_get_heads.md)
+  : Get the current heads of a document
+- [`am_get_history()`](http://shikokuchuo.net/automerge-r/reference/am_get_history.md)
+  : Get document history
+- [`am_get_last_local_change()`](http://shikokuchuo.net/automerge-r/reference/am_get_last_local_change.md)
+  : Get the last change made by the local actor
+- [`am_get_path()`](http://shikokuchuo.net/automerge-r/reference/am_get_path.md)
+  : Navigate deep structures with path
+- [`am_insert()`](http://shikokuchuo.net/automerge-r/reference/am_insert.md)
+  : Insert a value into an Automerge list
+- [`am_keys()`](http://shikokuchuo.net/automerge-r/reference/am_keys.md)
+  : Get all keys from an Automerge map
+- [`am_length()`](http://shikokuchuo.net/automerge-r/reference/am_length.md)
+  : Get the length of an Automerge map or list
+- [`am_list()`](http://shikokuchuo.net/automerge-r/reference/am_list.md)
+  : Create an Automerge list
+- [`am_load()`](http://shikokuchuo.net/automerge-r/reference/am_load.md)
+  : Load an Automerge document from binary format
+- [`am_map()`](http://shikokuchuo.net/automerge-r/reference/am_map.md) :
+  Create an Automerge map
+- [`am_mark_create()`](http://shikokuchuo.net/automerge-r/reference/am_mark_create.md)
+  : Create a mark on a text range
+- [`am_marks()`](http://shikokuchuo.net/automerge-r/reference/am_marks.md)
+  : Get all marks in a text object
+- [`am_marks_at()`](http://shikokuchuo.net/automerge-r/reference/am_marks_at.md)
+  : Get marks at a specific position
+- [`am_merge()`](http://shikokuchuo.net/automerge-r/reference/am_merge.md)
+  : Merge changes from another document
+- [`am_put()`](http://shikokuchuo.net/automerge-r/reference/am_put.md) :
+  Put a value into an Automerge map or list
+- [`am_put_path()`](http://shikokuchuo.net/automerge-r/reference/am_put_path.md)
+  : Set value at path
+- [`am_rollback()`](http://shikokuchuo.net/automerge-r/reference/am_rollback.md)
+  : Roll back pending operations
+- [`am_save()`](http://shikokuchuo.net/automerge-r/reference/am_save.md)
+  : Save an Automerge document to binary format
+- [`am_set_actor()`](http://shikokuchuo.net/automerge-r/reference/am_set_actor.md)
+  : Set the actor ID of a document
+- [`am_sync_bidirectional()`](http://shikokuchuo.net/automerge-r/reference/am_sync_bidirectional.md)
+  : Bidirectional synchronization
+- [`am_sync_decode()`](http://shikokuchuo.net/automerge-r/reference/am_sync_decode.md)
+  : Receive and apply a sync message
+- [`am_sync_encode()`](http://shikokuchuo.net/automerge-r/reference/am_sync_encode.md)
+  : Generate a sync message
+- [`am_sync_state_new()`](http://shikokuchuo.net/automerge-r/reference/am_sync_state_new.md)
+  : Create a new sync state
+- [`am_text()`](http://shikokuchuo.net/automerge-r/reference/am_text.md)
+  : Create an Automerge text object
+- [`am_text_get()`](http://shikokuchuo.net/automerge-r/reference/am_text_get.md)
+  : Get text from a text object
+- [`am_text_splice()`](http://shikokuchuo.net/automerge-r/reference/am_text_splice.md)
+  : Splice text in a text object
+- [`am_values()`](http://shikokuchuo.net/automerge-r/reference/am_values.md)
+  : Get all values from a map or list
+- [`as.list(`*`<am_doc>`*`)`](http://shikokuchuo.net/automerge-r/reference/as.list.am_doc.md)
+  : Convert document root to R list
+- [`as_automerge()`](http://shikokuchuo.net/automerge-r/reference/as_automerge.md)
+  : Convert R list to Automerge document
+- [`AM_ROOT`](http://shikokuchuo.net/automerge-r/reference/automerge-constants.md)
+  [`AM_OBJ_TYPE_LIST`](http://shikokuchuo.net/automerge-r/reference/automerge-constants.md)
+  [`AM_OBJ_TYPE_MAP`](http://shikokuchuo.net/automerge-r/reference/automerge-constants.md)
+  [`AM_OBJ_TYPE_TEXT`](http://shikokuchuo.net/automerge-r/reference/automerge-constants.md)
+  [`AM_MARK_EXPAND_NONE`](http://shikokuchuo.net/automerge-r/reference/automerge-constants.md)
+  [`AM_MARK_EXPAND_BEFORE`](http://shikokuchuo.net/automerge-r/reference/automerge-constants.md)
+  [`AM_MARK_EXPAND_AFTER`](http://shikokuchuo.net/automerge-r/reference/automerge-constants.md)
+  [`AM_MARK_EXPAND_BOTH`](http://shikokuchuo.net/automerge-r/reference/automerge-constants.md)
+  : Automerge Constants
+- [`` `[[`( ``*`<am_doc>`*`)`](http://shikokuchuo.net/automerge-r/reference/extract-am_doc.md)
+  [`` `$`( ``*`<am_doc>`*`)`](http://shikokuchuo.net/automerge-r/reference/extract-am_doc.md)
+  : Extract from Automerge document root
+- [`` `[[`( ``*`<am_object>`*`)`](http://shikokuchuo.net/automerge-r/reference/extract-am_object.md)
+  [`` `$`( ``*`<am_object>`*`)`](http://shikokuchuo.net/automerge-r/reference/extract-am_object.md)
+  : Extract from Automerge object
+- [`from_automerge()`](http://shikokuchuo.net/automerge-r/reference/from_automerge.md)
+  : Convert Automerge document to R list
+- [`length(`*`<am_doc>`*`)`](http://shikokuchuo.net/automerge-r/reference/length.am_doc.md)
+  : Get length of document root
+- [`length(`*`<am_object>`*`)`](http://shikokuchuo.net/automerge-r/reference/length.am_object.md)
+  : Get length of Automerge object
+- [`names(`*`<am_doc>`*`)`](http://shikokuchuo.net/automerge-r/reference/names.am_doc.md)
+  : Get names from document root
+- [`names(`*`<am_map>`*`)`](http://shikokuchuo.net/automerge-r/reference/names.am_map.md)
+  : Get names from Automerge map object
+- [`print(`*`<am_counter>`*`)`](http://shikokuchuo.net/automerge-r/reference/print.am_counter.md)
+  : Print Automerge counter
+- [`print(`*`<am_cursor>`*`)`](http://shikokuchuo.net/automerge-r/reference/print.am_cursor.md)
+  : Print Automerge cursor
+- [`print(`*`<am_doc>`*`)`](http://shikokuchuo.net/automerge-r/reference/print.am_doc.md)
+  : Print Automerge document
+- [`print(`*`<am_list>`*`)`](http://shikokuchuo.net/automerge-r/reference/print.am_list.md)
+  : Print Automerge list object
+- [`print(`*`<am_map>`*`)`](http://shikokuchuo.net/automerge-r/reference/print.am_map.md)
+  : Print Automerge map object
+- [`print(`*`<am_object>`*`)`](http://shikokuchuo.net/automerge-r/reference/print.am_object.md)
+  : Print Automerge object (fallback for unknown types)
+- [`print(`*`<am_syncstate>`*`)`](http://shikokuchuo.net/automerge-r/reference/print.am_syncstate.md)
+  : Print Automerge sync state
+- [`print(`*`<am_text>`*`)`](http://shikokuchuo.net/automerge-r/reference/print.am_text.md)
+  : Print Automerge text object
+- [`` `[[<-`( ``*`<am_doc>`*`)`](http://shikokuchuo.net/automerge-r/reference/replace-am_doc.md)
+  [`` `$<-`( ``*`<am_doc>`*`)`](http://shikokuchuo.net/automerge-r/reference/replace-am_doc.md)
+  : Replace in Automerge document root
+- [`` `[[<-`( ``*`<am_object>`*`)`](http://shikokuchuo.net/automerge-r/reference/replace-am_object.md)
+  [`` `$<-`( ``*`<am_object>`*`)`](http://shikokuchuo.net/automerge-r/reference/replace-am_object.md)
+  : Replace in Automerge object
+
