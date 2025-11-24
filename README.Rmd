@@ -35,6 +35,8 @@ R Bindings for the Automerge CRDT Library
 ## Features
 
 - Full support for Automerge data types: maps, lists, text, counters
+- Cursors for stable position tracking in collaborative text editing
+- Marks for attaching metadata and formatting to text ranges
 - Intuitive functional API with S3 methods
 - Low-level and high-level synchronization protocols
 - Seamless interoperability with JavaScript and other Automerge implementations
@@ -128,6 +130,73 @@ text_obj
 am_text_splice(text_obj, 2, 0, "🌍")
 am_text_get(text_obj)
 ```
+
+### Cursors and Marks
+
+Cursors provide stable position tracking across edits, while marks attach metadata to text ranges. These features are essential for collaborative text editing applications.
+
+#### Cursors
+
+Cursors maintain their position as text is edited:
+
+```{r}
+doc <- am_create()
+doc$text <- am_text("hello world")
+text_obj <- doc$text
+
+# Create cursor at position 6 (before "world")
+cursor <- am_cursor(doc, text_obj, 6)
+
+# Insert text before the cursor
+am_text_splice(text_obj, 0, 0, "XX")
+
+# Cursor automatically adjusts
+am_cursor_position(doc, text_obj, cursor)
+am_text_get(text_obj)
+```
+
+#### Marks
+
+Marks attach formatting or metadata to text ranges:
+
+```{r}
+doc <- am_create()
+doc$text <- am_text("hello world")
+text_obj <- doc$text
+
+# Mark "hello" as bold
+am_mark_create(doc, text_obj, 0, 5, "bold", TRUE)
+
+# Mark "world" with custom metadata
+am_mark_create(doc, text_obj, 6, 11, "comment", "review this")
+
+# Get all marks
+am_marks(doc, text_obj)
+
+# Get marks at specific position
+am_marks_at(doc, text_obj, 2)
+```
+
+Marks support expansion modes that control behavior at boundaries:
+
+```{r}
+# Create mark with expansion
+am_mark_create(
+  doc,
+  text_obj,
+  0,
+  5,
+  "highlight",
+  TRUE,
+  expand = AM_MARK_EXPAND_BOTH
+)
+```
+
+Expansion modes:
+- `AM_MARK_EXPAND_NONE`: Mark doesn't expand (default)
+- `AM_MARK_EXPAND_BEFORE`: Expands to include text inserted before start
+- `AM_MARK_EXPAND_AFTER`: Expands to include text inserted after end
+- `AM_MARK_EXPAND_BOTH`: Expands in both directions
 
 ### Utility Methods
 

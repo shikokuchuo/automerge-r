@@ -447,3 +447,174 @@ test_that("documents with different actors can merge", {
 
   expect_true(am_get(doc1, AM_ROOT, "from") %in% c("doc1", "doc2"))
 })
+
+# Historical Query Tests (Phase 6) --------------------------------------------
+
+test_that("am_get_last_local_change() returns NULL for new document", {
+  doc <- am_create()
+  change <- am_get_last_local_change(doc)
+  expect_null(change)
+})
+
+test_that("am_get_last_local_change() returns change after commit", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "key", "value")
+  am_commit(doc, "Add key")
+
+  change <- am_get_last_local_change(doc)
+  expect_type(change, "raw")
+  expect_true(length(change) > 0)
+})
+
+test_that("am_get_last_local_change() returns most recent change", {
+  doc <- am_create()
+
+  am_put(doc, AM_ROOT, "key1", "value1")
+  am_commit(doc, "First commit")
+  change1 <- am_get_last_local_change(doc)
+
+  am_put(doc, AM_ROOT, "key2", "value2")
+  am_commit(doc, "Second commit")
+  change2 <- am_get_last_local_change(doc)
+
+  expect_false(identical(change1, change2))
+  expect_type(change2, "raw")
+})
+
+test_that("am_get_change_by_hash() retrieves existing change", {
+  doc <- am_create()
+  doc$key <- "value"
+  am_commit(doc, "Add key")
+
+  heads <- am_get_heads(doc)
+  expect_length(heads, 1)
+
+  change <- am_get_change_by_hash(doc, heads[[1]])
+  expect_type(change, "raw")
+  expect_true(length(change) > 0)
+})
+
+test_that("am_get_change_by_hash() returns NULL for non-existent hash", {
+  doc <- am_create()
+  doc$key <- "value"
+  am_commit(doc)
+
+  fake_hash <- as.raw(rep(0xFF, 32))
+  change <- am_get_change_by_hash(doc, fake_hash)
+  expect_null(change)
+})
+
+test_that("am_get_change_by_hash() errors on invalid hash length", {
+  doc <- am_create()
+  doc$key <- "value"
+  am_commit(doc)
+
+  expect_error(
+    am_get_change_by_hash(doc, as.raw(1:10)),
+    "Change hash must be exactly 32 bytes"
+  )
+})
+
+test_that("am_get_change_by_hash() errors on non-raw hash", {
+  doc <- am_create()
+  expect_error(
+    am_get_change_by_hash(doc, "not a raw vector"),
+    "hash must be a raw vector"
+  )
+})
+
+test_that("am_get_changes_added() returns empty list for identical documents", {
+  doc1 <- am_create()
+  doc1$key <- "value"
+  am_commit(doc1)
+
+  doc2 <- am_fork(doc1)
+
+  changes <- am_get_changes_added(doc1, doc2)
+  expect_type(changes, "list")
+  expect_length(changes, 0)
+})
+
+test_that("am_get_changes_added() finds new changes in doc2", {
+  doc1 <- am_create()
+  doc1$x <- 1
+  am_commit(doc1, "Add x")
+
+  doc2 <- am_create()
+  doc2$y <- 2
+  am_commit(doc2, "Add y")
+
+  changes <- am_get_changes_added(doc1, doc2)
+  expect_type(changes, "list")
+  expect_length(changes, 1)
+  expect_type(changes[[1]], "raw")
+})
+
+test_that("am_get_changes_added() can sync documents", {
+  doc1 <- am_create()
+  doc1$from_doc1 <- "value1"
+  am_commit(doc1)
+
+  doc2 <- am_create()
+  doc2$from_doc2 <- "value2"
+  am_commit(doc2)
+
+  changes <- am_get_changes_added(doc1, doc2)
+  am_apply_changes(doc1, changes)
+
+  expect_equal(am_get(doc1, AM_ROOT, "from_doc1"), "value1")
+  expect_equal(am_get(doc1, AM_ROOT, "from_doc2"), "value2")
+})
+
+test_that("am_get_changes_added() works with forked documents", {
+  base <- am_create()
+  base$initial <- "value"
+  am_commit(base)
+
+  fork1 <- am_fork(base)
+  fork1$fork1_data <- "data1"
+  am_commit(fork1)
+
+  fork2 <- am_fork(base)
+  fork2$fork2_data <- "data2"
+  am_commit(fork2)
+
+  changes <- am_get_changes_added(fork1, fork2)
+  expect_length(changes, 1)
+
+  am_apply_changes(fork1, changes)
+  expect_equal(am_get(fork1, AM_ROOT, "fork2_data"), "data2")
+})
+
+test_that("am_fork() at specific head (single) works", {
+  doc <- am_create()
+  doc$v1 <- "first"
+  am_commit(doc, "v1")
+
+  heads_v1 <- am_get_heads(doc)
+
+  doc$v2 <- "second"
+  am_commit(doc, "v2")
+
+  # Fork at v1 heads
+  fork_at_v1 <- am_fork(doc, heads_v1)
+  expect_s3_class(fork_at_v1, "am_doc")
+
+  # Forked document should only have v1 data
+  expect_equal(am_get(fork_at_v1, AM_ROOT, "v1"), "first")
+  expect_null(am_get(fork_at_v1, AM_ROOT, "v2"))
+})
+
+test_that("am_fork() with empty list works like NULL", {
+  doc <- am_create()
+  doc$key <- "value"
+  am_commit(doc)
+
+  fork_current <- am_fork(doc, NULL)
+  fork_empty <- am_fork(doc, list())
+
+  expect_equal(
+    am_get(fork_current, AM_ROOT, "key"),
+    am_get(fork_empty, AM_ROOT, "key")
+  )
+})

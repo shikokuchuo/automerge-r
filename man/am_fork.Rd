@@ -9,9 +9,9 @@ am_fork(doc, heads = NULL)
 \arguments{
 \item{doc}{An Automerge document}
 
-\item{heads}{Optional list of change hashes to fork at.
-If \code{NULL} (default), forks at current heads.
-Forking at specific heads is not yet implemented (Phase 5).}
+\item{heads}{Optional list of change hashes to fork at a specific point in
+the document's history. If \code{NULL} (default) or an empty list, forks at
+current heads. Each hash should be a raw vector (32 bytes).}
 }
 \value{
 A new Automerge document (fork of the original)

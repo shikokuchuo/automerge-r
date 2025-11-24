@@ -158,24 +158,123 @@ SEXP C_am_load(SEXP data) {
 }
 
 /**
+ * Helper: Convert R list of change hashes to AMitems struct.
+ *
+ * Takes an R list of raw vectors (change hashes) and creates the necessary
+ * AMresult objects, then extracts AMitems for use with C API functions.
+ *
+ * @param heads_list R list of raw vectors (change hashes)
+ * @param results_out Output parameter: array of AMresult pointers to keep alive
+ * @param n_results Output parameter: number of results in array
+ * @return AMresult containing change hash items (must be freed by caller)
+ */
+static AMresult* convert_r_heads_to_amresult(SEXP heads_list, AMresult ***results_out, size_t *n_results) {
+    if (TYPEOF(heads_list) != VECSXP) {
+        Rf_error("heads must be NULL or a list of raw vectors");
+    }
+
+    R_xlen_t n_heads = XLENGTH(heads_list);
+    if (n_heads == 0) {
+        *results_out = NULL;
+        *n_results = 0;
+        return NULL;
+    }
+
+    // Allocate array to hold AMresult pointers (for memory management)
+    AMresult **results = (AMresult **) malloc(n_heads * sizeof(AMresult *));
+    if (!results) {
+        Rf_error("Failed to allocate memory for change hash results");
+    }
+
+    // Convert each R raw vector to AMresult containing a change hash
+    for (R_xlen_t i = 0; i < n_heads; i++) {
+        SEXP r_hash = VECTOR_ELT(heads_list, i);
+        if (TYPEOF(r_hash) != RAWSXP) {
+            for (R_xlen_t j = 0; j < i; j++) {
+                AMresultFree(results[j]);
+            }
+            free(results);
+            Rf_error("All heads must be raw vectors (change hashes)");
+        }
+
+        // Create AMbyteSpan for this hash
+        AMbyteSpan hash_span = {
+            .src = RAW(r_hash),
+            .count = (size_t) XLENGTH(r_hash)
+        };
+
+        // Convert to change hash item
+        results[i] = AMitemFromChangeHash(hash_span);
+        if (!results[i] || AMresultStatus(results[i]) != AM_STATUS_OK) {
+            for (R_xlen_t j = 0; j <= i; j++) {
+                if (results[j]) AMresultFree(results[j]);
+            }
+            free(results);
+            Rf_error("Invalid change hash at index %lld", (long long) i);
+        }
+    }
+
+    *results_out = results;
+    *n_results = (size_t) n_heads;
+
+    // For a single head, return the result directly
+    if (n_heads == 1) {
+        return results[0];
+    }
+
+    // For multiple heads, we need to combine them into a single AMresult
+    // The most straightforward approach is to use the first result and note
+    // that AMfork expects AMitems from a result like AMgetHeads()
+    // Since we don't have a public API to build multi-item AMresults,
+    // we'll use a workaround for now and implement this properly
+    Rf_error("Forking at multiple specific heads not yet fully implemented (use single head or NULL)");
+
+    return NULL;  // Not reached
+}
+
+/**
  * Fork an Automerge document at current or specified heads.
  *
  * @param doc_ptr External pointer to am_doc
- * @param heads R object: NULL for current heads, or list of change hashes
+ * @param heads R object: NULL for current heads, or list of change hashes (raw vectors)
  * @return External pointer to forked am_doc
  */
 SEXP C_am_fork(SEXP doc_ptr, SEXP heads) {
     AMdoc *doc = get_doc(doc_ptr);
 
     AMresult *result = NULL;
+    AMresult **head_results = NULL;
+    size_t n_head_results = 0;
 
-    if (heads == R_NilValue) {
-        // Fork at current heads
+    if (heads == R_NilValue || (TYPEOF(heads) == VECSXP && XLENGTH(heads) == 0)) {
+        // Fork at current heads (NULL or empty list)
         result = AMfork(doc, NULL);
     } else {
-        // Fork at specified heads - implementation deferred to Phase 5
-        // (requires change handling which is in Phase 5)
-        Rf_error("Forking at specific heads not yet implemented (Phase 5)");
+        // Fork at specified heads
+        AMresult *heads_result = convert_r_heads_to_amresult(heads, &head_results, &n_head_results);
+
+        if (n_head_results == 0) {
+            // Empty list case - treat as NULL
+            result = AMfork(doc, NULL);
+        } else if (heads_result && n_head_results == 1) {
+            // Single head case - can handle this
+            AMitems heads_items = AMresultItems(heads_result);
+            result = AMfork(doc, &heads_items);
+
+            // Clean up head result
+            AMresultFree(heads_result);
+            free(head_results);
+        } else {
+            // Multiple heads case - not yet fully implemented
+            // Clean up allocated resources
+            if (head_results) {
+                for (size_t i = 0; i < n_head_results; i++) {
+                    AMresultFree(head_results[i]);
+                }
+                free(head_results);
+            }
+            Rf_error("Forking at multiple specific heads not yet fully implemented");
+        }
     }
 
     CHECK_RESULT(result, AM_VAL_TYPE_DOC);
@@ -404,4 +503,188 @@ SEXP C_am_rollback(SEXP doc_ptr) {
     AMrollback(doc);
 
     return doc_ptr;  // Return document for chaining
+}
+
+// Historical Query and Advanced Fork/Merge Functions (Phase 6) ---------------
+
+/**
+ * Get the last change made by the local actor.
+ *
+ * Returns the most recent change created by this document's actor,
+ * or NULL if no local changes have been made.
+ *
+ * @param doc_ptr External pointer to am_doc
+ * @return Raw vector containing the serialized change, or NULL if none
+ */
+SEXP C_am_get_last_local_change(SEXP doc_ptr) {
+    AMdoc *doc = get_doc(doc_ptr);
+
+    AMresult *result = AMgetLastLocalChange(doc);
+
+    // Check result status
+    AMstatus status = AMresultStatus(result);
+    if (status != AM_STATUS_OK) {
+        AMresultFree(result);
+        return R_NilValue;
+    }
+
+    // Check if there are any items
+    AMitems items = AMresultItems(result);
+    size_t count = AMitemsSize(&items);
+
+    if (count == 0) {
+        // No local changes
+        AMresultFree(result);
+        return R_NilValue;
+    }
+
+    // Extract the first item
+    AMitem *item = AMitemsNext(&items, 1);
+    if (!item) {
+        AMresultFree(result);
+        return R_NilValue;
+    }
+
+    // Check if it's actually a change (not void)
+    AMchange *change = NULL;
+    if (!AMitemToChange(item, &change) || !change) {
+        AMresultFree(result);
+        return R_NilValue;
+    }
+
+    // Serialize change to bytes
+    AMbyteSpan bytes = AMchangeRawBytes(change);
+
+    // Copy to R raw vector
+    SEXP r_bytes = PROTECT(Rf_allocVector(RAWSXP, bytes.count));
+    memcpy(RAW(r_bytes), bytes.src, bytes.count);
+
+    AMresultFree(result);
+    UNPROTECT(1);
+    return r_bytes;
+}
+
+/**
+ * Get a specific change by its hash.
+ *
+ * @param doc_ptr External pointer to am_doc
+ * @param hash Raw vector containing the change hash (32 bytes)
+ * @return Raw vector containing the serialized change, or NULL if not found
+ */
+SEXP C_am_get_change_by_hash(SEXP doc_ptr, SEXP hash) {
+    AMdoc *doc = get_doc(doc_ptr);
+
+    // Validate hash parameter
+    if (TYPEOF(hash) != RAWSXP) {
+        Rf_error("hash must be a raw vector");
+    }
+
+    size_t hash_len = (size_t) XLENGTH(hash);
+    if (hash_len != 32) {  // AM_CHANGE_HASH_SIZE
+        Rf_error("Change hash must be exactly 32 bytes");
+    }
+
+    // Get change by hash
+    AMresult *result = AMgetChangeByHash(doc, RAW(hash), hash_len);
+
+    // Check status
+    AMstatus status = AMresultStatus(result);
+    if (status != AM_STATUS_OK) {
+        AMresultFree(result);
+        return R_NilValue;  // Change not found
+    }
+
+    // Extract the change
+    AMitems items = AMresultItems(result);
+    size_t count = AMitemsSize(&items);
+
+    if (count == 0) {
+        AMresultFree(result);
+        return R_NilValue;
+    }
+
+    AMitem *item = AMitemsNext(&items, 1);
+    if (!item) {
+        AMresultFree(result);
+        return R_NilValue;
+    }
+
+    // Check if it's actually a change
+    AMchange *change = NULL;
+    if (!AMitemToChange(item, &change) || !change) {
+        AMresultFree(result);
+        return R_NilValue;  // Change not found
+    }
+
+    // Serialize change to bytes
+    AMbyteSpan bytes = AMchangeRawBytes(change);
+
+    // Copy to R raw vector
+    SEXP r_bytes = PROTECT(Rf_allocVector(RAWSXP, bytes.count));
+    memcpy(RAW(r_bytes), bytes.src, bytes.count);
+
+    AMresultFree(result);
+    UNPROTECT(1);
+    return r_bytes;
+}
+
+/**
+ * Get changes in doc2 that are not in doc1.
+ *
+ * Compares two documents and returns the changes that exist in doc2
+ * but not in doc1. Useful for determining what changes need to be
+ * applied to bring doc1 up to date with doc2.
+ *
+ * @param doc1_ptr External pointer to am_doc (base document)
+ * @param doc2_ptr External pointer to am_doc (comparison document)
+ * @return List of raw vectors (serialized changes)
+ */
+SEXP C_am_get_changes_added(SEXP doc1_ptr, SEXP doc2_ptr) {
+    AMdoc *doc1 = get_doc(doc1_ptr);
+    AMdoc *doc2 = get_doc(doc2_ptr);
+
+    AMresult *result = AMgetChangesAdded(doc1, doc2);
+
+    // Check result status
+    if (AMresultStatus(result) != AM_STATUS_OK) {
+        CHECK_RESULT(result, AM_VAL_TYPE_CHANGE);  // Will error and free
+    }
+
+    // Count change items
+    AMitems items = AMresultItems(result);
+    size_t count = AMitemsSize(&items);
+
+    // If no changes, return empty list
+    if (count == 0) {
+        AMresultFree(result);
+        return Rf_allocVector(VECSXP, 0);
+    }
+
+    // Create R list to hold serialized changes
+    SEXP changes_list = PROTECT(Rf_allocVector(VECSXP, count));
+
+    // Iterate and serialize each change
+    for (size_t i = 0; i < count; i++) {
+        AMitem *item = AMitemsNext(&items, 1);
+        if (!item) break;
+
+        AMchange *change = NULL;
+        if (!AMitemToChange(item, &change)) {
+            AMresultFree(result);
+            UNPROTECT(1);
+            Rf_error("Failed to extract change at index %zu", i);
+        }
+
+        // Serialize change to bytes
+        AMbyteSpan bytes = AMchangeRawBytes(change);
+
+        // Copy to R raw vector
+        SEXP r_bytes = Rf_allocVector(RAWSXP, bytes.count);
+        memcpy(RAW(r_bytes), bytes.src, bytes.count);
+        SET_VECTOR_ELT(changes_list, i, r_bytes);
+    }
+
+    AMresultFree(result);
+    UNPROTECT(1);
+    return changes_list;
 }

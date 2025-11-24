@@ -29,6 +29,8 @@ of concurrent changes without conflicts, making it ideal for:
 ## Features
 
 - Full support for Automerge data types: maps, lists, text, counters
+- Cursors for stable position tracking in collaborative text editing
+- Marks for attaching metadata and formatting to text ranges
 - Intuitive functional API with S3 methods
 - Low-level and high-level synchronization protocols
 - Seamless interoperability with JavaScript and other Automerge
@@ -76,7 +78,7 @@ doc$age <- 20L
 doc[["active"]] <- TRUE
 doc
 #> <Automerge Document>
-#> Actor: 9610956b6fd2e9760854e8bcb0f89637 
+#> Actor: c6c7b742813db4bbe29b699f6627d7e6 
 #> Root keys: 3 
 #> Keys: active, age, name
 ```
@@ -140,51 +142,126 @@ am_text_get(text_obj)
 #> [1] "世界🌍"
 ```
 
+### Cursors and Marks
+
+Cursors provide stable position tracking across edits, while marks
+attach metadata to text ranges. These features are essential for
+collaborative text editing applications.
+
+#### Cursors
+
+Cursors maintain their position as text is edited:
+
+``` r
+doc <- am_create()
+doc$text <- am_text("hello world")
+text_obj <- doc$text
+
+# Create cursor at position 6 (before "world")
+cursor <- am_cursor(doc, text_obj, 6)
+
+# Insert text before the cursor
+am_text_splice(text_obj, 0, 0, "XX")
+
+# Cursor automatically adjusts
+am_cursor_position(doc, text_obj, cursor)
+#> [1] 8
+am_text_get(text_obj)
+#> [1] "XXhello world"
+```
+
+#### Marks
+
+Marks attach formatting or metadata to text ranges:
+
+``` r
+doc <- am_create()
+doc$text <- am_text("hello world")
+text_obj <- doc$text
+
+# Mark "hello" as bold
+am_mark_create(doc, text_obj, 0, 5, "bold", TRUE)
+
+# Mark "world" with custom metadata
+am_mark_create(doc, text_obj, 6, 11, "comment", "review this")
+
+# Get all marks
+am_marks(doc, text_obj)
+#> [[1]]
+#> [[1]]$name
+#> [1] "bold"
+#> 
+#> [[1]]$value
+#> [1] TRUE
+#> 
+#> [[1]]$start
+#> [1] 0
+#> 
+#> [[1]]$end
+#> [1] 5
+#> 
+#> 
+#> [[2]]
+#> [[2]]$name
+#> [1] "comment"
+#> 
+#> [[2]]$value
+#> [1] "review this"
+#> 
+#> [[2]]$start
+#> [1] 6
+#> 
+#> [[2]]$end
+#> [1] 11
+
+# Get marks at specific position
+am_marks_at(doc, text_obj, 2)
+#> [[1]]
+#> [[1]]$name
+#> [1] "bold"
+#> 
+#> [[1]]$value
+#> [1] TRUE
+#> 
+#> [[1]]$start
+#> [1] 0
+#> 
+#> [[1]]$end
+#> [1] 5
+```
+
+Marks support expansion modes that control behavior at boundaries:
+
+``` r
+# Create mark with expansion
+am_mark_create(
+  doc,
+  text_obj,
+  0,
+  5,
+  "highlight",
+  TRUE,
+  expand = AM_MARK_EXPAND_BOTH
+)
+```
+
+Expansion modes: - `AM_MARK_EXPAND_NONE`: Mark doesn’t expand
+(default) - `AM_MARK_EXPAND_BEFORE`: Expands to include text inserted
+before start - `AM_MARK_EXPAND_AFTER`: Expands to include text inserted
+after end - `AM_MARK_EXPAND_BOTH`: Expands in both directions
+
 ### Utility Methods
 
 Standard R operations work as expected:
 
 ``` r
 length(doc) # Number of keys
-#> [1] 7
+#> [1] 1
 names(doc) # Key names
-#> [1] "active"  "age"     "created" "name"    "notes"   "score"   "user"
+#> [1] "text"
 as.list(doc) # Convert to R list
-#> $active
-#> [1] TRUE
-#> 
-#> $age
-#> [1] 20
-#> 
-#> $created
-#> [1] "2025-11-22 23:44:35 GMT"
-#> 
-#> $name
-#> [1] "Alice"
-#> 
-#> $notes
-#> [1] "世界🌍"
-#> 
-#> $score
-#> <Automerge Counter: 0 >
-#> 
-#> $user
-#> $user$address
-#> $user$address$city
-#> [1] "NYC"
-#> 
-#> $user$address$zip
-#> [1] 10001
-#> 
-#> 
-#> $user$age
-#> [1] 25
-#> 
-#> $user$email
-#> [1] "bob@example.com"
-#> 
-#> $user$name
-#> [1] "Bob"
+#> $text
+#> [1] "hello world"
 ```
 
 ### Saving and Loading
@@ -195,14 +272,14 @@ Persist documents to disk or transfer over network:
 doc |> am_commit("Initial data")
 bytes <- am_save(doc)
 str(bytes)
-#>  raw [1:329] 85 6f 4a 83 ...
+#>  raw [1:283] 85 6f 4a 83 ...
 
 doc2 <- am_load(bytes)
 doc2
 #> <Automerge Document>
-#> Actor: 86513149e26d119be1983e6c6d97dd19 
-#> Root keys: 7 
-#> Keys: active, age, created, name, notes, score, user
+#> Actor: d6dab33baa3f2349b66066a20e4ae0cf 
+#> Root keys: 1 
+#> Keys: text
 ```
 
 ### Forking and Merging
@@ -228,7 +305,7 @@ am_put(doc, AM_ROOT, "name", "Alice")
 am_put(doc, AM_ROOT, "age", 20L)
 doc
 #> <Automerge Document>
-#> Actor: 9acc14c34459514cbfad5ad80a44ebd6 
+#> Actor: d1d160257195ee4ccf90bee50e1dc464 
 #> Root keys: 2 
 #> Keys: age, name
 ```
@@ -263,12 +340,12 @@ cat("Synced in", result$rounds, "rounds\n")
 # Both documents now have all keys
 doc1
 #> <Automerge Document>
-#> Actor: 5a6a2deeb337233b95a9068a5e1a3e84 
+#> Actor: 00caa51e8cc4859480193a4731de3555 
 #> Root keys: 4 
 #> Keys: a, b, x, y
 doc2
 #> <Automerge Document>
-#> Actor: 98bd47661ce61d1eb0638902603481e9 
+#> Actor: d61e5910c045bbbc8f3245ebc172a049 
 #> Root keys: 4 
 #> Keys: a, b, x, y
 ```
@@ -299,13 +376,13 @@ am_commit(doc2, "Bob's changes")
 am_sync_bidirectional(doc1, doc2)
 #> $doc1
 #> <Automerge Document>
-#> Actor: 0c6abd5b77e59f8aeb1d7babd4ac1744 
+#> Actor: b6a63788177661af4bf5afef37c59528 
 #> Root keys: 2 
 #> Keys: counter, edited_by 
 #> 
 #> $doc2
 #> <Automerge Document>
-#> Actor: 296918dae2c0613d126732bfe8b7b666 
+#> Actor: b6f457c0080bd7f3a3e9127d164e0176 
 #> Root keys: 2 
 #> Keys: counter, edited_by 
 #> 
@@ -391,12 +468,12 @@ while (!is.null(response)) {
 # Documents after sync
 doc1
 #> <Automerge Document>
-#> Actor: 24089d15365b9aeb530c92ff2f835ed7 
+#> Actor: 7f02d68a31003d896c84b6bc7e4d9de0 
 #> Root keys: 3 
 #> Keys: from_doc1, from_doc2, priority
 doc2
 #> <Automerge Document>
-#> Actor: e76ce3cc918ef9a81181f2f6315e0256 
+#> Actor: 057e057dac5da546d6eb66c4907b1bdf 
 #> Root keys: 3 
 #> Keys: from_doc1, from_doc2, priority
 ```
@@ -443,7 +520,7 @@ doc2$additional_analysis <- list(median = 41, iqr = 8)
 am_commit(doc2)
 doc2
 #> <Automerge Document>
-#> Actor: 2549ceaa683df3c21a362d20a83e0100 
+#> Actor: 43942a6ba954eda41751b11b5d258244 
 #> Root keys: 2 
 #> Keys: additional_analysis, results
 ```
@@ -466,13 +543,13 @@ am_commit(doc_b, "Model B results")
 am_sync_bidirectional(doc_a, doc_b)
 #> $doc1
 #> <Automerge Document>
-#> Actor: 0107d08803a9a603a8542bbc3f0ee6b7 
+#> Actor: c98b814df0192c03ba362c3f2d90ef90 
 #> Root keys: 2 
 #> Keys: model_a, model_b 
 #> 
 #> $doc2
 #> <Automerge Document>
-#> Actor: 2aa96370307860efea1795ec142d92e9 
+#> Actor: 9aad6aeff5218f5c9b56f596b71e2986 
 #> Root keys: 2 
 #> Keys: model_a, model_b 
 #> 
@@ -510,13 +587,13 @@ am_commit(central_doc, "Central data")
 am_sync_bidirectional(offline_doc, central_doc)
 #> $doc1
 #> <Automerge Document>
-#> Actor: 8f3ad0d1e3037c0c836396f031a6b63c 
+#> Actor: 7fb2b28d57d2763c090c208b090e3663 
 #> Root keys: 2 
 #> Keys: field_data, processed_data 
 #> 
 #> $doc2
 #> <Automerge Document>
-#> Actor: b7c14c142cc6b7ce740a9ad8bdb8668f 
+#> Actor: c8561890071ec2adf423f2f513b09cd7 
 #> Root keys: 2 
 #> Keys: field_data, processed_data 
 #> 

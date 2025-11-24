@@ -93,9 +93,9 @@ am_load <- function(data) {
 #' with the original up to the fork point but can diverge afterwards.
 #'
 #' @param doc An Automerge document
-#' @param heads Optional list of change hashes to fork at.
-#'   If `NULL` (default), forks at current heads.
-#'   Forking at specific heads is not yet implemented (Phase 5).
+#' @param heads Optional list of change hashes to fork at a specific point in
+#'   the document's history. If `NULL` (default) or an empty list, forks at
+#'   current heads. Each hash should be a raw vector (32 bytes).
 #'
 #' @return A new Automerge document (fork of the original)
 #'
@@ -114,7 +114,7 @@ am_fork <- function(doc, heads = NULL) {
 #' Merges all changes from another Automerge document into this one.
 #' This is a one-way merge: changes flow from `other` into `doc`,
 #' but `other` is not modified. For bidirectional synchronization,
-#' use `am_sync_bidirectional()` (Phase 5).
+#' use [am_sync_bidirectional()].
 #'
 #' @param doc Target document (will receive changes)
 #' @param other Source document (provides changes)
@@ -252,4 +252,100 @@ am_commit <- function(doc, message = NULL, time = NULL) {
 #' am_rollback(doc)
 am_rollback <- function(doc) {
   invisible(.Call(C_am_rollback, doc))
+}
+
+# Historical Query and Advanced Fork/Merge Functions (Phase 6) ---------------
+
+#' Get the last change made by the local actor
+#'
+#' Returns the most recent change created by this document's actor.
+#' Useful for tracking local changes or implementing undo/redo functionality.
+#'
+#' @param doc An Automerge document
+#'
+#' @return A raw vector containing the serialized change, or `NULL` if no
+#'   local changes have been made.
+#'
+#' @export
+#' @examples
+#' doc <- am_create()
+#'
+#' # Initially, no local changes
+#' am_get_last_local_change(doc)  # NULL
+#'
+#' # Make a change
+#' doc$key <- "value"
+#' am_commit(doc, "Add key")
+#'
+#' # Now we have a local change
+#' change <- am_get_last_local_change(doc)
+#' str(change)  # Raw vector
+am_get_last_local_change <- function(doc) {
+  .Call(C_am_get_last_local_change, doc)
+}
+
+#' Get a specific change by its hash
+#'
+#' Retrieves a change from the document's history by its unique hash identifier.
+#' The hash is typically obtained from `am_get_heads()` or `am_get_changes()`.
+#'
+#' @param doc An Automerge document
+#' @param hash A raw vector containing the change hash (must be exactly 32 bytes)
+#'
+#' @return A raw vector containing the serialized change, or `NULL` if the
+#'   change hash is not found in the document.
+#'
+#' @export
+#' @examples
+#' doc <- am_create()
+#' doc$key <- "value"
+#' am_commit(doc, "Add key")
+#'
+#' # Get the current heads (change hashes)
+#' heads <- am_get_heads(doc)
+#' head_hash <- heads[[1]]
+#'
+#' # Retrieve the change by its hash
+#' change <- am_get_change_by_hash(doc, head_hash)
+#' str(change)  # Raw vector
+am_get_change_by_hash <- function(doc, hash) {
+  .Call(C_am_get_change_by_hash, doc, hash)
+}
+
+#' Get changes in one document that are not in another
+#'
+#' Compares two documents and returns the changes that exist in `doc2`
+#' but not in `doc1`. This is useful for determining what changes need to be
+#' applied to bring `doc1` up to date with `doc2`, or for implementing
+#' custom synchronization logic.
+#'
+#' @param doc1 An Automerge document (base/reference document)
+#' @param doc2 An Automerge document (comparison document)
+#'
+#' @return A list of raw vectors, where each vector is a serialized change
+#'   that exists in `doc2` but not in `doc1`. Returns an empty list if
+#'   `doc1` already contains all changes from `doc2`.
+#'
+#' @export
+#' @examples
+#' # Create two independent documents
+#' doc1 <- am_create()
+#' doc1$x <- 1
+#' am_commit(doc1, "Add x")
+#'
+#' doc2 <- am_create()
+#' doc2$y <- 2
+#' am_commit(doc2, "Add y")
+#'
+#' # Find changes in doc2 that aren't in doc1
+#' changes <- am_get_changes_added(doc1, doc2)
+#' length(changes)  # 1 change
+#'
+#' # Apply those changes to doc1
+#' am_apply_changes(doc1, changes)
+#'
+#' # Now doc1 has both x and y
+#' names(doc1)  # "x" "y"
+am_get_changes_added <- function(doc1, doc2) {
+  .Call(C_am_get_changes_added, doc1, doc2)
 }

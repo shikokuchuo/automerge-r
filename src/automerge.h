@@ -46,6 +46,9 @@ SEXP C_am_get_actor_hex(SEXP doc_ptr);
 SEXP C_am_set_actor(SEXP doc_ptr, SEXP actor_id);
 SEXP C_am_commit(SEXP doc_ptr, SEXP message, SEXP time);
 SEXP C_am_rollback(SEXP doc_ptr);
+SEXP C_am_get_last_local_change(SEXP doc_ptr);
+SEXP C_am_get_change_by_hash(SEXP doc_ptr, SEXP hash);
+SEXP C_am_get_changes_added(SEXP doc1_ptr, SEXP doc2_ptr);
 
 // Object operations (objects.c)
 SEXP C_am_put(SEXP doc_ptr, SEXP obj_ptr, SEXP key_or_pos, SEXP value);
@@ -66,6 +69,12 @@ SEXP C_am_sync_decode(SEXP doc_ptr, SEXP sync_state_ptr, SEXP message);
 SEXP C_am_get_heads(SEXP doc_ptr);
 SEXP C_am_get_changes(SEXP doc_ptr, SEXP heads);
 SEXP C_am_apply_changes(SEXP doc_ptr, SEXP changes);
+
+// Cursor and mark operations (cursors.c)
+SEXP C_am_cursor(SEXP doc_ptr, SEXP obj_ptr, SEXP position);
+SEXP C_am_cursor_position(SEXP doc_ptr, SEXP obj_ptr, SEXP cursor_ptr);
+SEXP C_am_mark_create(SEXP doc_ptr, SEXP obj_ptr, SEXP start, SEXP end, SEXP name, SEXP value, SEXP expand);
+SEXP C_am_marks(SEXP doc_ptr, SEXP obj_ptr);
 
 // Finalizers (memory.c)
 void am_doc_finalizer(SEXP ext_ptr);

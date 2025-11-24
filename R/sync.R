@@ -263,10 +263,9 @@ am_apply_changes <- function(doc, changes) {
 #' This provides a simpler interface than `am_get_changes()` for examining
 #' document history without needing to work with serialized changes directly.
 #'
-#' **Note**: This Phase 5 implementation returns the raw serialized changes.
-#' Future versions (post-1.0, Section 14.1 of the implementation plan) will
-#' add detailed change introspection functions to extract metadata like
-#' commit messages, timestamps, actor IDs, etc.
+#' **Note**: A future implementation will add detailed change introspection
+#' functions to extract metadata like commit messages, timestamps,
+#' actor IDs, etc.
 #'
 #' @param doc An Automerge document
 #'

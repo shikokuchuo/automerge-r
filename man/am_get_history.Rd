@@ -19,10 +19,9 @@ This provides a simpler interface than \code{am_get_changes()} for examining
 document history without needing to work with serialized changes directly.
 }
 \details{
-\strong{Note}: This Phase 5 implementation returns the raw serialized changes.
-Future versions (post-1.0, Section 14.1 of the implementation plan) will
-add detailed change introspection functions to extract metadata like
-commit messages, timestamps, actor IDs, etc.
+\strong{Note}: A future implementation will add detailed change introspection
+functions to extract metadata like commit messages, timestamps,
+actor IDs, etc.
 }
 \examples{
 doc <- am_create()
