@@ -12,7 +12,7 @@ Provides R bindings to the Automerge Conflict-free Replicated Data Type (CRDT) l
 Useful links:
 \itemize{
   \item \url{https://github.com/shikokuchuo/automerge-r}
-  \item \url{http://shikokuchuo.net/automerge-r/}
+  \item \url{https://shikokuchuo.net/automerge-r}
   \item Report bugs at \url{https://github.com/shikokuchuo/automerge-r/issues}
 }
 

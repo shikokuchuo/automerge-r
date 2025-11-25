@@ -151,8 +151,8 @@ am_length <- function(doc, obj) {
 #' items <- am_get(doc, AM_ROOT, "items")
 #'
 #' # Insert items
-#' # am_insert(doc, items, "end", "first")
-#' # am_insert(doc, items, "end", "second")
+#' am_insert(doc, items, "end", "first")
+#' am_insert(doc, items, "end", "second")
 am_insert <- function(doc, obj, pos, value) {
   invisible(.Call(C_am_insert, doc, obj, pos, value))
 }

@@ -127,8 +127,8 @@ am_fork <- function(doc, heads = NULL) {
 #' doc2 <- am_create()
 #'
 #' # Make changes in each document
-#' # am_put(doc1, AM_ROOT, "x", 1)
-#' # am_put(doc2, AM_ROOT, "y", 2)
+#' am_put(doc1, AM_ROOT, "x", 1)
+#' am_put(doc2, AM_ROOT, "y", 2)
 #'
 #' # Merge doc2's changes into doc1
 #' am_merge(doc1, doc2)
@@ -225,7 +225,7 @@ am_set_actor <- function(doc, actor_id) {
 #' @export
 #' @examples
 #' doc <- am_create()
-#' # am_put(doc, AM_ROOT, "key", "value")
+#' am_put(doc, AM_ROOT, "key", "value")
 #' am_commit(doc, "Add initial data")
 #'
 #' # Commit with specific timestamp
@@ -247,7 +247,7 @@ am_commit <- function(doc, message = NULL, time = NULL) {
 #' @export
 #' @examples
 #' doc <- am_create()
-#' # am_put(doc, AM_ROOT, "key", "value")
+#' am_put(doc, AM_ROOT, "key", "value")
 #' # Changed my mind, discard the put
 #' am_rollback(doc)
 am_rollback <- function(doc) {

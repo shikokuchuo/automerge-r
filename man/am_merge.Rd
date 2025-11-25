@@ -25,8 +25,8 @@ doc1 <- am_create()
 doc2 <- am_create()
 
 # Make changes in each document
-# am_put(doc1, AM_ROOT, "x", 1)
-# am_put(doc2, AM_ROOT, "y", 2)
+am_put(doc1, AM_ROOT, "x", 1)
+am_put(doc2, AM_ROOT, "y", 2)
 
 # Merge doc2's changes into doc1
 am_merge(doc1, doc2)
