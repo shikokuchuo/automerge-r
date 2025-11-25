@@ -17,7 +17,14 @@ object at a specific document state."></head><body>
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/automerge.html">Get started</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/crdt-concepts.html">Understanding CRDTs in Automerge</a></li>
+    <li><a class="dropdown-item" href="../articles/sync-protocol.html">Synchronization Protocol</a></li>
+    <li><a class="dropdown-item" href="../articles/very-quick-reference.html">Quick Reference</a></li>
+  </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -62,19 +69,14 @@ object at a specific document state.</p>
 <dd><p>The mark's value (various types supported)</p></dd>
 
 <dt>start</dt>
-<dd><p>Integer start position (0-based, inclusive)</p></dd>
+<dd><p>Integer start position (0-based inter-character position, inclusive)</p></dd>
 
 <dt>end</dt>
-<dd><p>Integer end position (0-based, exclusive)</p></dd>
+<dd><p>Integer end position (0-based inter-character position, exclusive)</p></dd>
 
 
-</dl></div>
-    <div class="section level2">
-    <h2 id="character-indexing">Character Indexing<a class="anchor" aria-label="anchor" href="#character-indexing"></a></h2>
-
-
-<p>Mark positions use 0-based indexing (like C and <code><a href="am_text_splice.html">am_text_splice()</a></code>) and
-count Unicode code points (characters), not bytes.</p>
+</dl><p>Returns an empty list if no marks are present. See <code><a href="am_mark_create.html">am_mark_create()</a></code> for
+indexing details.</p>
     </div>
 
     <div class="section level2">

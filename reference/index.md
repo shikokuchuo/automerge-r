@@ -17,7 +17,7 @@
 - [`am_cursor_position()`](http://shikokuchuo.net/automerge-r/reference/am_cursor_position.md)
   : Get the current position of a cursor
 - [`am_delete()`](http://shikokuchuo.net/automerge-r/reference/am_delete.md)
-  : Delete a key from a map or position from a list
+  : Delete a key from a map or element from a list
 - [`am_delete_path()`](http://shikokuchuo.net/automerge-r/reference/am_delete_path.md)
   : Delete value at path
 - [`am_fork()`](http://shikokuchuo.net/automerge-r/reference/am_fork.md)

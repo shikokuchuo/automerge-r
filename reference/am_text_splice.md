@@ -17,8 +17,7 @@ am_text_splice(text_obj, pos, del_count, text)
 
 - pos:
 
-  Character position to start splice (0-based, counts Unicode code
-  points)
+  Character position to start splice (0-based inter-character position)
 
 - del_count:
 
@@ -32,16 +31,26 @@ am_text_splice(text_obj, pos, del_count, text)
 
 The text object `text_obj` (invisibly)
 
-## Details
+## Indexing Convention
 
-Text positions use character (Unicode code point) indexing, matching R's
-[`substr()`](https://rdrr.io/r/base/substr.html) and
-[`nchar()`](https://rdrr.io/r/base/nchar.html) behavior. For example, in
-"Hello😀", the emoji is at position 5 (as a single character), not byte
-offset 5-8.
+**Text positions use 0-based indexing** (unlike list indices which are
+1-based). This is because positions specify locations **between**
+characters, not the characters themselves:
 
-This means `nchar("😀")` returns 1, and you can use that directly in
-text operations without needing to calculate byte offsets.
+- Position 0 = before the first character
+
+- Position 1 = between 1st and 2nd characters
+
+- Position 5 = after the 5th character
+
+For the text "Hello":
+
+      H e l l o
+     0 1 2 3 4 5  <- positions (0-based, between characters)
+
+Positions count Unicode code points (characters), not bytes. The emoji
+"😀" counts as 1 character, matching R's
+[`nchar()`](https://rdrr.io/r/base/nchar.html) behavior.
 
 ## Examples
 

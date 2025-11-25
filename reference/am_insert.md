@@ -4,7 +4,7 @@ This is an alias for
 [`am_put()`](http://shikokuchuo.net/automerge-r/reference/am_put.md)
 with insert semantics for lists. For lists,
 [`am_put()`](http://shikokuchuo.net/automerge-r/reference/am_put.md)
-with a numeric position replaces the element at that position, while
+with a numeric index replaces the element at that index, while
 `am_insert()` shifts elements to make room.
 
 ## Usage
@@ -25,7 +25,8 @@ am_insert(doc, obj, pos, value)
 
 - pos:
 
-  Numeric position (1-based) where to insert, or `"end"` to append
+  Numeric index (1-based, like R vectors) where to insert, or `"end"` to
+  append
 
 - value:
 
@@ -44,6 +45,6 @@ am_put(doc, AM_ROOT, "items", AM_OBJ_TYPE_LIST)
 items <- am_get(doc, AM_ROOT, "items")
 
 # Insert items
-# am_insert(doc, items, "end", "first")
-# am_insert(doc, items, "end", "second")
+am_insert(doc, items, "end", "first")
+am_insert(doc, items, "end", "second")
 ```

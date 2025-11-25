@@ -19,10 +19,7 @@ am_cursor(obj, position)
 
 - position:
 
-  Integer position in the text (0-based indexing, consistent with
-  [`am_text_splice()`](http://shikokuchuo.net/automerge-r/reference/am_text_splice.md)).
-  Position 0 is before the first character, position 1 is before the
-  second character, etc.
+  Integer position in the text (0-based inter-character position)
 
 ## Value
 
@@ -30,13 +27,26 @@ An `am_cursor` object (external pointer) that can be used with
 [`am_cursor_position()`](http://shikokuchuo.net/automerge-r/reference/am_cursor_position.md)
 to retrieve the current position
 
-## Character Indexing
+## Indexing Convention
 
-Positions use 0-based indexing (like C and
-[`am_text_splice()`](http://shikokuchuo.net/automerge-r/reference/am_text_splice.md))
-and count Unicode code points (characters), not bytes. For example, in
-the text "Hello😀", the emoji is at position 5, and each character
-(including emoji) counts as 1 position.
+**Cursor positions use 0-based indexing** (unlike list indices which are
+1-based). This is because positions specify locations **between**
+characters, not the characters themselves:
+
+- Position 0 = before the first character
+
+- Position 1 = between 1st and 2nd characters
+
+- Position 5 = after the 5th character
+
+For the text "Hello":
+
+      H e l l o
+     0 1 2 3 4 5  <- positions (0-based, between characters)
+
+This matches
+[`am_text_splice()`](http://shikokuchuo.net/automerge-r/reference/am_text_splice.md)
+behavior. Positions count Unicode code points (characters), not bytes.
 
 ## Examples
 

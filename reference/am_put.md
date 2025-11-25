@@ -23,8 +23,8 @@ am_put(doc, obj, key, value)
 
 - key:
 
-  For maps: character string key. For lists: numeric position (1-based)
-  or `"end"` to append
+  For maps: character string key. For lists: numeric index (1-based) or
+  `"end"` to append
 
 - value:
 

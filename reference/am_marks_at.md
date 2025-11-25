@@ -19,11 +19,14 @@ am_marks_at(obj, position)
 
 - position:
 
-  Integer position (0-based) to query
+  Integer position (0-based inter-character position) to query. See
+  [`am_mark_create()`](http://shikokuchuo.net/automerge-r/reference/am_mark_create.md)
+  for indexing details.
 
 ## Value
 
-A list of marks that include the specified position
+A list of marks that include the specified position. Returns an empty
+list if no marks cover that position.
 
 ## Examples
 

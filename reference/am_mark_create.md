@@ -18,11 +18,11 @@ am_mark_create(obj, start, end, name, value, expand = AM_MARK_EXPAND_NONE)
 
 - start:
 
-  Integer start position (0-based, inclusive)
+  Integer start position (0-based inter-character position, inclusive)
 
 - end:
 
-  Integer end position (0-based, exclusive)
+  Integer end position (0-based inter-character position, exclusive)
 
 - name:
 
@@ -65,13 +65,19 @@ am_mark_create(obj, start, end, name, value, expand = AM_MARK_EXPAND_NONE)
 
 The text object `obj` (invisibly)
 
-## Character Indexing
+## Indexing Convention
 
-Positions use 0-based indexing (like C and
-[`am_text_splice()`](http://shikokuchuo.net/automerge-r/reference/am_text_splice.md))
-and count Unicode code points (characters), not bytes. The range
-\[start, end) includes `start` but excludes `end`. For example, marking
-positions 0 to 5 marks the first 5 characters (positions 0, 1, 2, 3, 4).
+**Mark positions use 0-based indexing** (unlike list indices which are
+1-based). Positions specify locations **between** characters. The range
+`[start, end)` includes `start` but excludes `end`.
+
+For the text "Hello":
+
+      H e l l o
+     0 1 2 3 4 5  <- positions (0-based, between characters)
+
+Marking positions 0 to 5 marks all 5 characters. Marking 0 to 3 marks
+"Hel". Positions count Unicode code points (characters), not bytes.
 
 ## Expand Behavior
 

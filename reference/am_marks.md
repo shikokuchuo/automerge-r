@@ -29,17 +29,15 @@ A list of marks, where each mark is a list with fields:
 
 - start:
 
-  Integer start position (0-based, inclusive)
+  Integer start position (0-based inter-character position, inclusive)
 
 - end:
 
-  Integer end position (0-based, exclusive)
+  Integer end position (0-based inter-character position, exclusive)
 
-## Character Indexing
-
-Mark positions use 0-based indexing (like C and
-[`am_text_splice()`](http://shikokuchuo.net/automerge-r/reference/am_text_splice.md))
-and count Unicode code points (characters), not bytes.
+Returns an empty list if no marks are present. See
+[`am_mark_create()`](http://shikokuchuo.net/automerge-r/reference/am_mark_create.md)
+for indexing details.
 
 ## Examples
 

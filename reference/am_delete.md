@@ -1,4 +1,4 @@
-# Delete a key from a map or position from a list
+# Delete a key from a map or element from a list
 
 Removes a key-value pair from a map or an element from a list.
 
@@ -21,8 +21,8 @@ am_delete(doc, obj, key)
 
 - key:
 
-  For maps: character string key to delete. For lists: numeric position
-  (1-based) to delete
+  For maps: character string key to delete. For lists: numeric index
+  (1-based, like R vectors) to delete
 
 ## Value
 

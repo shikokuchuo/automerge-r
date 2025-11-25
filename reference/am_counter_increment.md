@@ -24,7 +24,7 @@ am_counter_increment(doc, obj, key, delta)
 
 - key:
 
-  For maps: a character string key. For lists: an integer position
+  For maps: a character string key. For lists: an integer index
   (1-based)
 
 - delta:

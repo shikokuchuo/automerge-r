@@ -1,7 +1,7 @@
 # Get a value from an Automerge map or list
 
 Retrieves a value from an Automerge map or list. Returns `NULL` if the
-key or position doesn't exist.
+key or index doesn't exist.
 
 ## Usage
 
@@ -22,7 +22,7 @@ am_get(doc, obj, key)
 
 - key:
 
-  For maps: character string key. For lists: numeric position (1-based).
+  For maps: character string key. For lists: numeric index (1-based).
   Returns `NULL` for indices `<= 0` or beyond list length.
 
 ## Value

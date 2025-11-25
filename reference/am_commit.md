@@ -32,7 +32,7 @@ The document `doc` (invisibly)
 
 ``` r
 doc <- am_create()
-# am_put(doc, AM_ROOT, "key", "value")
+am_put(doc, AM_ROOT, "key", "value")
 am_commit(doc, "Add initial data")
 
 # Commit with specific timestamp

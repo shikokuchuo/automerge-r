@@ -23,13 +23,10 @@ am_cursor_position(obj, cursor)
 
 ## Value
 
-Integer position (0-based) where the cursor currently points
-
-## Character Indexing
-
-Positions use 0-based indexing (like C and
-[`am_text_splice()`](http://shikokuchuo.net/automerge-r/reference/am_text_splice.md))
-and count Unicode code points (characters), not bytes.
+Integer position (0-based inter-character position) where the cursor
+currently points. See
+[`am_cursor()`](http://shikokuchuo.net/automerge-r/reference/am_cursor.md)
+for indexing details.
 
 ## Examples
 

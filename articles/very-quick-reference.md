@@ -1,0 +1,309 @@
+# Quick Reference
+
+## Automerge R Package Quick Reference
+
+One-page reference for the `automerge` package. See full documentation
+with `?function_name`.
+
+### Installation
+
+``` r
+# From R-universe
+install.packages("automerge", repos = "https://shikokuchuo.r-universe.dev")
+
+# From GitHub
+pak::pak("shikokuchuo/automerge-r")
+```
+
+### Document Lifecycle
+
+``` r
+library(automerge)
+
+# Create
+doc <- am_create() # New document
+doc <- am_create("fd3ca50687f13477f1f9ea2b216b958a") # With custom actor ID
+
+# Load/Save
+bytes <- am_save(doc) # Save to bytes
+doc <- am_load(bytes) # Load from bytes
+
+# Actor ID
+actor <- am_get_actor(doc) # Get actor ID (raw bytes)
+actor_hex <- am_get_actor_hex(doc) # Get actor ID as hex string
+am_set_actor(doc, actor_hex) # Set actor ID (raw, hex, or NULL)
+
+# Fork/Merge
+doc2 <- am_fork(doc) # Create independent copy
+am_merge(doc, doc2) # Merge doc2 into doc1
+
+# Transactions
+am_commit(doc, "message") # Commit changes
+am_rollback(doc) # Cancel pending changes
+```
+
+### Basic Access (Maps)
+
+``` r
+# S3 operators
+doc[["key"]] <- "value" # Set value
+value <- doc[["key"]] # Get value
+doc$key <- value # Alternative syntax
+value <- doc$key # Alternative syntax
+
+# Functional API
+am_delete(doc, AM_ROOT, "key") # Delete key
+am_put(doc, AM_ROOT, "key", value) # Set value
+value <- am_get(doc, AM_ROOT, "key") # Get value
+
+# Introspection
+keys <- names(doc) # Get all keys
+keys <- am_keys(doc, AM_ROOT) # Functional version
+n <- length(doc) # Number of keys
+n <- am_length(doc, AM_ROOT) # Functional version
+```
+
+### Nested Objects
+
+``` r
+# Automatic recursive conversion (recommended)
+am_put(
+  doc,
+  AM_ROOT,
+  "user",
+  list(
+    name = "Alice",
+    age = 30L,
+    address = list(city = "NYC", zip = 10001L)
+  )
+)
+
+# Path-based access (simple for deep structures)
+am_put_path(doc, c("user", "address", "city"), "Boston")
+city <- am_get_path(doc, c("user", "address", "city"))
+am_delete_path(doc, c("user", "address"))
+
+# Manual access
+user_obj <- am_get(doc, AM_ROOT, "user")
+am_put(doc, user_obj, "name", "Bob")
+name <- am_get(doc, user_obj, "name")
+```
+
+### Lists
+
+``` r
+# Create list
+am_put(doc, AM_ROOT, "items", AM_OBJ_TYPE_LIST)
+items <- am_get(doc, AM_ROOT, "items")
+
+# Operations (1-based indexing)
+am_insert(doc, items, 1, "first") # Insert at index 1
+am_put(doc, items, 1, "FIRST") # Replace at index 1
+am_put(doc, items, "end", "append") # Append to end
+value <- am_get(doc, items, 1) # Get index 1
+am_delete(doc, items, 1) # Delete index 1
+
+# Introspection
+n <- am_length(doc, items) # List length
+```
+
+### Text Objects
+
+``` r
+# Text objects use 0-based inter-character positions
+# For the text "Hello":
+#  H e l l o
+# 0 1 2 3 4 5  <- positions (0-based, between characters)
+
+# Create text object
+am_put(doc, AM_ROOT, "content", am_text("Hello"))
+text_obj <- am_get(doc, AM_ROOT, "content")
+
+# Operations
+am_text_splice(text_obj, 5, 0, " World") # Insert at position 5
+content <- am_text_get(text_obj) # Get full text
+
+# Cursors (stable positions)
+cursor <- am_cursor(text_obj, 5) # Create cursor at position 5
+pos <- am_cursor_position(text_obj, cursor) # Get current position
+
+# Marks (formatting)
+am_mark_create(text_obj, 0, 5, "bold", TRUE, expand = "none")
+marks <- am_marks(text_obj) # Get all marks
+marks_at <- am_marks_at(text_obj, 2) # Marks at position 2
+```
+
+### Value Types
+
+``` r
+# NULL
+am_put(doc, AM_ROOT, "null", NULL)
+
+# Boolean
+am_put(doc, AM_ROOT, "bool", TRUE)
+
+# Integer
+am_put(doc, AM_ROOT, "int", 42L)
+
+# Double
+am_put(doc, AM_ROOT, "float", 3.14)
+
+# String
+am_put(doc, AM_ROOT, "str", "text")
+
+# Raw bytes
+am_put(doc, AM_ROOT, "bytes", raw(10))
+
+# Timestamp
+am_put(doc, AM_ROOT, "time", Sys.time())
+
+# Counter
+am_put(doc, AM_ROOT, "score", am_counter(0))
+am_counter_increment(doc, AM_ROOT, "score", 10)
+value <- am_get(doc, AM_ROOT, "score")
+
+# Explicit type constructors
+am_put(doc, AM_ROOT, "items", am_list()) # Empty list
+am_put(doc, AM_ROOT, "config", am_map()) # Empty map
+am_put(doc, AM_ROOT, "notes", am_text()) # Text object
+```
+
+### Synchronization (High-Level)
+
+``` r
+# Bidirectional sync (auto-converge)
+result <- am_sync_bidirectional(doc1, doc2)
+doc1 <- result$doc1
+doc2 <- result$doc2
+cat("Converged in", result$rounds, "rounds\n")
+
+# One-way merge
+am_merge(doc1, doc2) # Merge doc2 into doc1
+```
+
+### Synchronization (Low-Level)
+
+``` r
+# Create sync state
+sync_state <- am_sync_state_new()
+
+# Encode/decode messages
+msg <- am_sync_encode(doc, sync_state)
+am_sync_decode(doc, sync_state, msg)
+
+# Manual sync loop
+repeat {
+  msg1 <- am_sync_encode(doc1, sync1)
+  if (is.null(msg1)) {
+    break
+  }
+  am_sync_decode(doc2, sync2, msg1)
+
+  msg2 <- am_sync_encode(doc2, sync2)
+  if (is.null(msg2)) {
+    break
+  }
+  am_sync_decode(doc1, sync1, msg2)
+}
+```
+
+### History & Changes
+
+``` r
+# Get heads
+heads <- am_get_heads(doc)
+
+# Get changes
+changes <- am_get_changes(doc, NULL) # All changes
+changes <- am_get_changes(doc, heads) # Since specific heads
+
+# Apply changes
+am_apply_changes(doc, changes)
+
+# Full history
+history <- am_get_history(doc)
+```
+
+### Conversion
+
+``` r
+# R → Automerge
+doc <- as_automerge(list(name = "Alice", age = 30L))
+
+# Automerge → R
+r_list <- from_automerge(doc)
+r_list <- as.list(doc)
+```
+
+### Pipe-Friendly Style
+
+``` r
+doc <- am_create() |>
+  am_put(AM_ROOT, "name", "Alice") |>
+  am_put(AM_ROOT, "age", 30L) |>
+  am_commit("Initial data")
+```
+
+### File Operations
+
+``` r
+# Save to file
+writeBin(am_save(doc), "document.automerge")
+
+# Load from file
+doc <- am_load(readBin("document.automerge", "raw", 1e6))
+```
+
+### Constants
+
+``` r
+AM_ROOT # Root object (NULL)
+AM_OBJ_TYPE_LIST # "list"
+AM_OBJ_TYPE_MAP # "map"
+AM_OBJ_TYPE_TEXT # "text"
+
+AM_MARK_EXPAND_NONE # "none" (mark doesn't expand at boundaries)
+AM_MARK_EXPAND_BEFORE # "before" (expands when text inserted before start)
+AM_MARK_EXPAND_AFTER # "after" (expands when text inserted after end)
+AM_MARK_EXPAND_BOTH # "both" (expands at both boundaries)
+```
+
+### Getting Help
+
+``` r
+# Function help
+?am_create
+?am_put
+?am_sync_bidirectional
+
+# Package help
+?automerge
+help(package = "automerge")
+
+# Vignettes
+vignette("automerge", "automerge")
+vignette("crdt-concepts", "automerge")
+vignette("sync-protocol", "automerge")
+vignette(package = "automerge") # List all
+```
+
+### System Requirements
+
+- R \>= 4.2
+- For building from source:
+  - Rust \>= 1.89.0 (<https://rustup.rs/>)
+  - CMake \>= 3.25 (included in Rtools43+ on Windows)
+- Or: Install automerge-c (with UTF-32 character indexing) system-wide
+  to skip build
+
+### Resources
+
+- Package site: <https://shikokuchuo.net/automerge-r/>
+- Automerge docs: <https://automerge.org/>
+- Binary format: <https://automerge.org/automerge-binary-format-spec/>
+- CRDT research: <https://crdt.tech/>
+
+------------------------------------------------------------------------
+
+**Note**: This is a quick reference. See full vignettes for detailed
+examples and explanations.

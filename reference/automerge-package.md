@@ -15,7 +15,7 @@ Useful links:
 
 - <https://github.com/shikokuchuo/automerge-r>
 
-- <http://shikokuchuo.net/automerge-r/>
+- <https://shikokuchuo.net/automerge-r>
 
 - Report bugs at <https://github.com/shikokuchuo/automerge-r/issues>
 
