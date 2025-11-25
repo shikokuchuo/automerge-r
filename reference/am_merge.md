@@ -3,7 +3,7 @@
 Merges all changes from another Automerge document into this one. This
 is a one-way merge: changes flow from `other` into `doc`, but `other` is
 not modified. For bidirectional synchronization, use
-[`am_sync_bidirectional()`](http://shikokuchuo.net/automerge-r/reference/am_sync_bidirectional.md).
+[`am_sync()`](http://shikokuchuo.net/automerge-r/reference/am_sync.md).
 
 ## Usage
 

@@ -8,17 +8,19 @@
 <title>R Bindings for Automerge CRDT Library • automerge</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/Source_Sans_Pro-0.4.10/font.css" rel="stylesheet">
+<link href="deps/Source_Code_Pro-0.4.10/font.css" rel="stylesheet">
+<link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="R Bindings for Automerge CRDT Library">
 <meta name="description" content="Provides R bindings to the Automerge Conflict-free Replicated Data Type (CRDT) library via its C FFI. Automerge enables automatic merging of concurrent changes without conflicts, making it ideal for distributed systems, collaborative applications, and offline-first architectures. The package supports all Automerge data types (maps, lists, text, counters) and provides both low-level and high-level synchronization protocols for seamless interoperability with JavaScript and other Automerge implementations.">
 <meta property="og:description" content="Provides R bindings to the Automerge Conflict-free Replicated Data Type (CRDT) library via its C FFI. Automerge enables automatic merging of concurrent changes without conflicts, making it ideal for distributed systems, collaborative applications, and offline-first architectures. The package supports all Automerge data types (maps, lists, text, counters) and provides both low-level and high-level synchronization protocols for seamless interoperability with JavaScript and other Automerge implementations.">
 </head>
 <body>
-    <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
+    <a href="#container" class="visually-hidden-focusable">Skip to content</a>
 
 
-    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
+    <nav class="navbar navbar-expand-lg fixed-top bg-none" data-bs-theme="light" aria-label="Site navigation"><div class="container">
 
     <a class="navbar-brand me-2" href="index.html">automerge</a>
 
@@ -53,7 +55,7 @@
 
 
   </div>
-</nav><div class="container template-home">
+</nav><div class="container template-home" id="container">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="automerge">automerge<a class="anchor" aria-label="anchor" href="#automerge"></a>
@@ -87,24 +89,21 @@
 <span><span class="fu"><a href="reference/am_commit.html">am_commit</a></span><span class="op">(</span><span class="va">bob</span>, <span class="st">"Bob's data"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Later, sync with zero conflicts</span></span>
-<span><span class="fu"><a href="reference/am_sync_bidirectional.html">am_sync_bidirectional</a></span><span class="op">(</span><span class="va">alice</span>, <span class="va">bob</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/am_sync.html">am_sync</a></span><span class="op">(</span><span class="va">alice</span>, <span class="va">bob</span><span class="op">)</span></span>
 <span><span class="co">#&gt; $doc1</span></span>
 <span><span class="co">#&gt; &lt;Automerge Document&gt;</span></span>
-<span><span class="co">#&gt; Actor: ec6695efcb797fca5280aa64b2a380a4 </span></span>
+<span><span class="co">#&gt; Actor: 7fb913089a19c62608bf9aac55d53556 </span></span>
 <span><span class="co">#&gt; Root keys: 3 </span></span>
 <span><span class="co">#&gt; Keys: experiment, humidity, temperature </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $doc2</span></span>
 <span><span class="co">#&gt; &lt;Automerge Document&gt;</span></span>
-<span><span class="co">#&gt; Actor: 45b5ce4998ec9eea74411339bc82138a </span></span>
+<span><span class="co">#&gt; Actor: b3a737ba1797b7e4ccae705e698bb590 </span></span>
 <span><span class="co">#&gt; Root keys: 3 </span></span>
 <span><span class="co">#&gt; Keys: experiment, humidity, temperature </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $rounds</span></span>
-<span><span class="co">#&gt; [1] 4</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $converged</span></span>
-<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 4</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="key-features">Key Features<a class="anchor" aria-label="anchor" href="#key-features"></a>
@@ -117,7 +116,7 @@
 <li>
 <strong>Collaborative text editing</strong>: Cursors and marks for rich text applications</li>
 <li>
-<strong>Bidirectional sync</strong>: High-level <code><a href="reference/am_sync_bidirectional.html">am_sync_bidirectional()</a></code> or low-level protocol access</li>
+<strong>Bidirectional sync</strong>: High-level <code><a href="reference/am_sync.html">am_sync()</a></code> or low-level protocol access</li>
 <li>
 <strong>Offline-first</strong>: Make changes offline, merge when connected</li>
 <li>
@@ -199,8 +198,10 @@
 <div class="developers">
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
-<li>Charlie Gao <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0000-0002-0750-061X" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
-<li>Posit Software, PBC <br><small class="roles"> Copyright holder, funder </small>  <a href="https://ror.org/03wc8by49" class="external-link"><img src="https://raw.githubusercontent.com/ror-community/ror-logos/main/ror-icon-rgb.svg" class="ror" alt="ROR"></a> </li>
+<li>
+<a href="https://github.com/shikokuchuo" class="external-link">Charlie Gao</a> <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0000-0002-0750-061X" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
+<li>
+<a href="https://www.posit.co" class="external-link"><img src="https://www.tidyverse.org/posit-logo.svg" alt="Posit" height="16" width="62" style="margin-bottom: 3px;"></a> <br><small class="roles"> Copyright holder, funder </small>  <a href="https://ror.org/03wc8by49" class="external-link"><img src="https://raw.githubusercontent.com/ror-community/ror-logos/main/ror-icon-rgb.svg" class="ror" alt="ROR"></a> </li>
 </ul>
 </div>
 
@@ -217,20 +218,16 @@
 </div>
 
 
-    <footer><div class="pkgdown-footer-left">
-  <p>Developed by Charlie Gao, Posit Software, PBC.</p>
+   </div>
+  <footer><div class="container">
+  <div class="pkgdown-footer-left">
+  <p>Developed by <a href="https://github.com/shikokuchuo" class="external-link">Charlie Gao</a>, <a href="https://www.posit.co" class="external-link"><img src="https://www.tidyverse.org/posit-logo.svg" alt="Posit" height="16" width="62" style="margin-bottom: 3px;"></a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">
   <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
-    </footer>
-</div>
-
-
-
-
-
-  </body>
+  </div></footer>
+</body>
 </html>

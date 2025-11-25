@@ -72,7 +72,7 @@
   : Save an Automerge document to binary format
 - [`am_set_actor()`](http://shikokuchuo.net/automerge-r/reference/am_set_actor.md)
   : Set the actor ID of a document
-- [`am_sync_bidirectional()`](http://shikokuchuo.net/automerge-r/reference/am_sync_bidirectional.md)
+- [`am_sync()`](http://shikokuchuo.net/automerge-r/reference/am_sync.md)
   : Bidirectional synchronization
 - [`am_sync_decode()`](http://shikokuchuo.net/automerge-r/reference/am_sync_decode.md)
   : Receive and apply a sync message

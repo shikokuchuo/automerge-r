@@ -33,7 +33,7 @@ peer2[["data2"]] <- 200
 am_commit(peer2, "Peer2 changes")
 
 # Automatic bidirectional sync
-result <- am_sync_bidirectional(peer1, peer2)
+result <- am_sync(peer1, peer2)
 
 result$rounds
 #> [1] 4
@@ -370,7 +370,7 @@ str(y_changes)
 #>  $ : raw [1:109] 85 6f 4a 83 ...
 
 # Sync to merge divergent histories
-result <- am_sync_bidirectional(peer_x, peer_y)
+result <- am_sync(peer_x, peer_y)
 result$rounds
 #> [1] 4
 
@@ -406,7 +406,7 @@ editor2[["status"]] <- "published"
 am_commit(editor2, "Editor 2 changes")
 
 # Sync editors
-result <- am_sync_bidirectional(editor1, editor2)
+result <- am_sync(editor1, editor2)
 
 # Counter: Both increments sum (CRDT)
 result$doc1[["counter"]]
@@ -414,7 +414,7 @@ result$doc1[["counter"]]
 
 # Status: Deterministic conflict resolution (one value wins)
 result$doc1[["status"]]
-#> [1] "review"
+#> [1] "published"
 ```
 
 ## Sync Performance
@@ -434,7 +434,7 @@ for (i in 1:10) {
   doc_frequent[[paste0("k", i)]] <- i
   am_commit(doc_frequent, paste("Change", i))
 
-  result <- am_sync_bidirectional(doc_frequent, peer_frequent)
+  result <- am_sync(doc_frequent, peer_frequent)
   sync_count_frequent <- sync_count_frequent + 1
 }
 
@@ -452,7 +452,7 @@ for (i in 1:10) {
 }
 am_commit(doc_batched, "Batch of 10 changes")
 
-result <- am_sync_bidirectional(doc_batched, peer_batched)
+result <- am_sync(doc_batched, peer_batched)
 
 # 1 commit, 1 sync operation
 result$rounds
@@ -524,7 +524,7 @@ am_commit(doc_no_reuse)
 peer_no_reuse <- am_create()
 
 # First sync
-result1 <- am_sync_bidirectional(doc_no_reuse, peer_no_reuse)
+result1 <- am_sync(doc_no_reuse, peer_no_reuse)
 result1$rounds
 #> [1] 4
 
@@ -533,7 +533,7 @@ doc_no_reuse[["v2"]] <- 2
 am_commit(doc_no_reuse)
 
 # Second sync (creates new sync state, may resend some data)
-result2 <- am_sync_bidirectional(doc_no_reuse, peer_no_reuse)
+result2 <- am_sync(doc_no_reuse, peer_no_reuse)
 result2$rounds
 #> [1] 4
 
@@ -591,7 +591,7 @@ measure_sync <- function(n_changes, batch_size) {
     # Commit every batch_size changes
     if (changes_made %% batch_size == 0) {
       am_commit(doc, sprintf("Batch at %d", changes_made))
-      result <- am_sync_bidirectional(doc, peer)
+      result <- am_sync(doc, peer)
       syncs_performed <- syncs_performed + 1
     }
   }
@@ -599,7 +599,7 @@ measure_sync <- function(n_changes, batch_size) {
   # Final commit if needed
   if (changes_made %% batch_size != 0) {
     am_commit(doc, "Final batch")
-    result <- am_sync_bidirectional(doc, peer)
+    result <- am_sync(doc, peer)
     syncs_performed <- syncs_performed + 1
   }
 
