@@ -1,4 +1,4 @@
 url: http://shikokuchuo.net/automerge-r/
 template:
+  package: tidytemplate
   bootstrap: 5
-

@@ -85,7 +85,7 @@ test_that("am_sync_encode/decode synchronize simple changes", {
   expect_equal(am_get(doc2, AM_ROOT, "y"), 2)
 })
 
-test_that("am_sync_bidirectional synchronizes two documents", {
+test_that("am_sync synchronizes two documents", {
   doc1 <- am_create()
   doc2 <- am_create()
 
@@ -99,11 +99,10 @@ test_that("am_sync_bidirectional synchronizes two documents", {
   am_commit(doc2)
 
   # Sync using high-level helper
-  result <- am_sync_bidirectional(doc1, doc2)
+  result <- am_sync(doc1, doc2)
 
   expect_type(result, "list")
-  expect_named(result, c("doc1", "doc2", "rounds", "converged"))
-  expect_true(result$converged)
+  expect_named(result, c("doc1", "doc2", "rounds"))
   expect_gt(result$rounds, 0)
   expect_lte(result$rounds, 100)
 
@@ -119,7 +118,7 @@ test_that("am_sync_bidirectional synchronizes two documents", {
   expect_equal(am_get(doc2, AM_ROOT, "d"), 4)
 })
 
-test_that("am_sync_bidirectional handles concurrent edits", {
+test_that("am_sync handles concurrent edits", {
   # Start with synchronized documents
   doc1 <- am_create()
   am_put(doc1, AM_ROOT, "counter", 0)
@@ -138,9 +137,8 @@ test_that("am_sync_bidirectional handles concurrent edits", {
   am_commit(doc2, "Doc2 update")
 
   # Sync them
-  result <- am_sync_bidirectional(doc1, doc2)
+  result <- am_sync(doc1, doc2)
 
-  expect_true(result$converged)
 
   # Both should have both x and y
   expect_equal(am_get(doc1, AM_ROOT, "x"), "from_doc1")
@@ -276,8 +274,7 @@ test_that("sync works with nested objects", {
   am_commit(doc2, "Add items")
 
   # Sync
-  result <- am_sync_bidirectional(doc1, doc2)
-  expect_true(result$converged)
+  result <- am_sync(doc1, doc2)
 
   # Both should have both structures
   config1 <- am_get(doc1, AM_ROOT, "config")
@@ -357,8 +354,7 @@ test_that("sync works with text objects", {
   am_commit(doc2)
 
   # Sync
-  result <- am_sync_bidirectional(doc1, doc2)
-  expect_true(result$converged)
+  result <- am_sync(doc1, doc2)
 
   # Both should have both text objects
   notes1 <- am_get(doc1, AM_ROOT, "notes")
@@ -370,24 +366,6 @@ test_that("sync works with text objects", {
   greet2 <- am_get(doc2, AM_ROOT, "greet")
   expect_equal(am_text_get(notes2), "Hello from doc1")
   expect_equal(am_text_get(greet2), "Hi from doc2")
-})
-
-test_that("am_sync_bidirectional fails with insufficient max_rounds", {
-  doc1 <- am_create()
-  doc2 <- am_create()
-
-  # Create documents with changes that will require multiple rounds
-  am_put(doc1, AM_ROOT, "a", 1)
-  am_commit(doc1)
-
-  am_put(doc2, AM_ROOT, "b", 2)
-  am_commit(doc2)
-
-  # Try to sync with max_rounds = 1, which is too small
-  expect_error(
-    am_sync_bidirectional(doc1, doc2, max_rounds = 1),
-    "Failed to synchronize within 1 rounds"
-  )
 })
 
 test_that("am_get_changes with specific heads", {

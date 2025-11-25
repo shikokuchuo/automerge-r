@@ -358,7 +358,7 @@ peer2[["data2"]] <- 200
 am_commit(peer2)
 
 # Bidirectional sync
-result <- am_sync_bidirectional(peer1, peer2)
+result <- am_sync(peer1, peer2)
 result$rounds
 
 # Both documents now have all data
@@ -380,7 +380,7 @@ result$doc2[["data2"]]
 # Function help
 ?am_create
 ?am_put
-?am_sync_bidirectional
+?am_sync
 
 # Package help
 ?automerge

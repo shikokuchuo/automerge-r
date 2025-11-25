@@ -338,56 +338,35 @@ test_that("am_sync_decode validates message type", {
   })
 })
 
-test_that("am_sync_bidirectional validates doc1 parameter", {
+test_that("am_sync validates doc1 parameter", {
   doc <- am_create()
 
   expect_snapshot(error = TRUE, {
-    am_sync_bidirectional("not a doc", doc)
+    am_sync("not a doc", doc)
   })
 
   expect_snapshot(error = TRUE, {
-    am_sync_bidirectional(123, doc)
+    am_sync(123, doc)
   })
 
   expect_snapshot(error = TRUE, {
-    am_sync_bidirectional(NULL, doc)
+    am_sync(NULL, doc)
   })
 })
 
-test_that("am_sync_bidirectional validates doc2 parameter", {
+test_that("am_sync validates doc2 parameter", {
   doc <- am_create()
 
   expect_snapshot(error = TRUE, {
-    am_sync_bidirectional(doc, "not a doc")
+    am_sync(doc, "not a doc")
   })
 
   expect_snapshot(error = TRUE, {
-    am_sync_bidirectional(doc, 456)
+    am_sync(doc, 456)
   })
 
   expect_snapshot(error = TRUE, {
-    am_sync_bidirectional(doc, NULL)
-  })
-})
-
-test_that("am_sync_bidirectional validates max_rounds parameter", {
-  doc1 <- am_create()
-  doc2 <- am_create()
-
-  expect_snapshot(error = TRUE, {
-    am_sync_bidirectional(doc1, doc2, max_rounds = "not numeric")
-  })
-
-  expect_snapshot(error = TRUE, {
-    am_sync_bidirectional(doc1, doc2, max_rounds = -1)
-  })
-
-  expect_snapshot(error = TRUE, {
-    am_sync_bidirectional(doc1, doc2, max_rounds = 0)
-  })
-
-  expect_snapshot(error = TRUE, {
-    am_sync_bidirectional(doc1, doc2, max_rounds = c(1, 2))
+    am_sync(doc, NULL)
   })
 })
 

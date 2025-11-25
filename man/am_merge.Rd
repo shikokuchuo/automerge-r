@@ -18,7 +18,7 @@ The target document \code{doc} (invisibly)
 Merges all changes from another Automerge document into this one.
 This is a one-way merge: changes flow from \code{other} into \code{doc},
 but \code{other} is not modified. For bidirectional synchronization,
-use \code{\link[=am_sync_bidirectional]{am_sync_bidirectional()}}.
+use \code{\link[=am_sync]{am_sync()}}.
 }
 \examples{
 doc1 <- am_create()

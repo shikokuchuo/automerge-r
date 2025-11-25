@@ -87,19 +87,16 @@ am_sync_decode <- function(doc, sync_state, message) {
 #'
 #' The function exchanges sync messages back and forth between the two documents
 #' until both sides report no more messages to send (`am_sync_encode()` returns `NULL`).
-#' A maximum number of rounds prevents infinite loops in case of errors.
+#' The Automerge sync protocol is mathematically guaranteed to converge.
 #'
 #' @param doc1 First Automerge document
 #' @param doc2 Second Automerge document
-#' @param max_rounds Maximum number of message exchange rounds (default: 100).
-#'   If this limit is reached, an error is raised.
 #'
 #' @return A list with components:
 #'   \describe{
 #'     \item{doc1}{The first document (updated with changes from doc2)}
 #'     \item{doc2}{The second document (updated with changes from doc1)}
 #'     \item{rounds}{Number of sync rounds completed}
-#'     \item{converged}{Logical indicating if sync converged successfully}
 #'   }
 #'
 #' @export
@@ -113,19 +110,16 @@ am_sync_decode <- function(doc, sync_state, message) {
 #' am_put(doc2, AM_ROOT, "y", 2)
 #'
 #' # Synchronize them
-#' result <- am_sync_bidirectional(doc1, doc2)
+#' result <- am_sync(doc1, doc2)
 #' cat("Synced in", result$rounds, "rounds\n")
 #'
 #' # Now both documents have both x and y
-am_sync_bidirectional <- function(doc1, doc2, max_rounds = 100) {
+am_sync <- function(doc1, doc2) {
   if (!inherits(doc1, "am_doc")) {
     stop("doc1 must be an Automerge document")
   }
   if (!inherits(doc2, "am_doc")) {
     stop("doc2 must be an Automerge document")
-  }
-  if (!is.numeric(max_rounds) || length(max_rounds) != 1 || max_rounds < 1) {
-    stop("max_rounds must be a positive integer")
   }
 
   # Create sync states for both sides
@@ -153,21 +147,12 @@ am_sync_bidirectional <- function(doc1, doc2, max_rounds = 100) {
     if (!is.null(msg2)) {
       am_sync_decode(doc1, sync1, msg2)
     }
-
-    # Check round limit
-    if (round >= max_rounds) {
-      stop(sprintf(
-        "Failed to synchronize within %d rounds. This may indicate a bug or network issue.",
-        max_rounds
-      ))
-    }
   }
 
   list(
     doc1 = doc1,
     doc2 = doc2,
-    rounds = round,
-    converged = TRUE
+    rounds = round
   )
 }
 

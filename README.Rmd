@@ -46,7 +46,7 @@ bob$humidity <- 65
 am_commit(bob, "Bob's data")
 
 # Later, sync with zero conflicts
-am_sync_bidirectional(alice, bob)
+am_sync(alice, bob)
 ```
 
 ## Key Features
@@ -54,7 +54,7 @@ am_sync_bidirectional(alice, bob)
 - **Familiar R syntax**: Work with CRDT documents like regular R lists
 - **Rich data types**: Maps, lists, text objects, counters, and timestamps
 - **Collaborative text editing**: Cursors and marks for rich text applications
-- **Bidirectional sync**: High-level `am_sync_bidirectional()` or low-level protocol access
+- **Bidirectional sync**: High-level `am_sync()` or low-level protocol access
 - **Offline-first**: Make changes offline, merge when connected
 - **Cross-platform**: Interoperates with JavaScript and other Automerge implementations
 - **Zero dependencies**: Only base R required at runtime

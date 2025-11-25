@@ -326,85 +326,53 @@
       Error in `am_sync_decode()`:
       ! message must be a raw vector
 
-# am_sync_bidirectional validates doc1 parameter
+# am_sync validates doc1 parameter
 
     Code
-      am_sync_bidirectional("not a doc", doc)
+      am_sync("not a doc", doc)
     Condition
-      Error in `am_sync_bidirectional()`:
+      Error in `am_sync()`:
       ! doc1 must be an Automerge document
 
 ---
 
     Code
-      am_sync_bidirectional(123, doc)
+      am_sync(123, doc)
     Condition
-      Error in `am_sync_bidirectional()`:
+      Error in `am_sync()`:
       ! doc1 must be an Automerge document
 
 ---
 
     Code
-      am_sync_bidirectional(NULL, doc)
+      am_sync(NULL, doc)
     Condition
-      Error in `am_sync_bidirectional()`:
+      Error in `am_sync()`:
       ! doc1 must be an Automerge document
 
-# am_sync_bidirectional validates doc2 parameter
+# am_sync validates doc2 parameter
 
     Code
-      am_sync_bidirectional(doc, "not a doc")
+      am_sync(doc, "not a doc")
     Condition
-      Error in `am_sync_bidirectional()`:
+      Error in `am_sync()`:
       ! doc2 must be an Automerge document
 
 ---
 
     Code
-      am_sync_bidirectional(doc, 456)
+      am_sync(doc, 456)
     Condition
-      Error in `am_sync_bidirectional()`:
+      Error in `am_sync()`:
       ! doc2 must be an Automerge document
 
 ---
 
     Code
-      am_sync_bidirectional(doc, NULL)
+      am_sync(doc, NULL)
     Condition
-      Error in `am_sync_bidirectional()`:
+      Error in `am_sync()`:
       ! doc2 must be an Automerge document
-
-# am_sync_bidirectional validates max_rounds parameter
-
-    Code
-      am_sync_bidirectional(doc1, doc2, max_rounds = "not numeric")
-    Condition
-      Error in `am_sync_bidirectional()`:
-      ! max_rounds must be a positive integer
-
----
-
-    Code
-      am_sync_bidirectional(doc1, doc2, max_rounds = -1)
-    Condition
-      Error in `am_sync_bidirectional()`:
-      ! max_rounds must be a positive integer
-
----
-
-    Code
-      am_sync_bidirectional(doc1, doc2, max_rounds = 0)
-    Condition
-      Error in `am_sync_bidirectional()`:
-      ! max_rounds must be a positive integer
-
----
-
-    Code
-      am_sync_bidirectional(doc1, doc2, max_rounds = c(1, 2))
-    Condition
-      Error in `am_sync_bidirectional()`:
-      ! max_rounds must be a positive integer
 
 # am_get_changes validates heads parameter
 

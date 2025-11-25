@@ -114,7 +114,7 @@ am_fork <- function(doc, heads = NULL) {
 #' Merges all changes from another Automerge document into this one.
 #' This is a one-way merge: changes flow from `other` into `doc`,
 #' but `other` is not modified. For bidirectional synchronization,
-#' use [am_sync_bidirectional()].
+#' use [am_sync()].
 #'
 #' @param doc Target document (will receive changes)
 #' @param other Source document (provides changes)

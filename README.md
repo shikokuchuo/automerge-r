@@ -46,24 +46,21 @@ bob$humidity <- 65
 am_commit(bob, "Bob's data")
 
 # Later, sync with zero conflicts
-am_sync_bidirectional(alice, bob)
+am_sync(alice, bob)
 #> $doc1
 #> <Automerge Document>
-#> Actor: ec6695efcb797fca5280aa64b2a380a4 
+#> Actor: 7fb913089a19c62608bf9aac55d53556 
 #> Root keys: 3 
 #> Keys: experiment, humidity, temperature 
 #> 
 #> $doc2
 #> <Automerge Document>
-#> Actor: 45b5ce4998ec9eea74411339bc82138a 
+#> Actor: b3a737ba1797b7e4ccae705e698bb590 
 #> Root keys: 3 
 #> Keys: experiment, humidity, temperature 
 #> 
 #> $rounds
 #> [1] 4
-#> 
-#> $converged
-#> [1] TRUE
 ```
 
 ## Key Features
@@ -73,8 +70,8 @@ am_sync_bidirectional(alice, bob)
   timestamps
 - **Collaborative text editing**: Cursors and marks for rich text
   applications
-- **Bidirectional sync**: High-level `am_sync_bidirectional()` or
-  low-level protocol access
+- **Bidirectional sync**: High-level `am_sync()` or low-level protocol
+  access
 - **Offline-first**: Make changes offline, merge when connected
 - **Cross-platform**: Interoperates with JavaScript and other Automerge
   implementations

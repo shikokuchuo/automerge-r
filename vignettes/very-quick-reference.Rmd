@@ -187,7 +187,7 @@ am_put(doc, AM_ROOT, "notes", am_text()) # Text object
 
 ```{r}
 # Bidirectional sync (auto-converge)
-result <- am_sync_bidirectional(doc1, doc2)
+result <- am_sync(doc1, doc2)
 doc1 <- result$doc1
 doc2 <- result$doc2
 cat("Converged in", result$rounds, "rounds\n")
@@ -289,7 +289,7 @@ AM_MARK_EXPAND_BOTH # "both" (expands at both boundaries)
 # Function help
 ?am_create
 ?am_put
-?am_sync_bidirectional
+?am_sync
 
 # Package help
 ?automerge
