@@ -18,10 +18,7 @@ SEXP C_am_sync_state_new(void) {
     // Extract the AMsyncState* from the result using AMitemToSyncState()
     AMitem *item = AMresultItem(result);
     AMsyncState *state = NULL;
-    if (!AMitemToSyncState(item, &state)) {
-        AMresultFree(result);
-        Rf_error("Failed to extract sync state from result");
-    }
+    AMitemToSyncState(item, &state);
 
     // Create wrapper structure
     am_syncstate *state_wrapper = (am_syncstate *) malloc(sizeof(am_syncstate));
@@ -96,10 +93,7 @@ SEXP C_am_sync_encode(SEXP doc_ptr, SEXP sync_state_ptr) {
 
     // Extract sync message
     AMsyncMessage const *msg = NULL;
-    if (!AMitemToSyncMessage(item, &msg)) {
-        AMresultFree(result);
-        Rf_error("Failed to extract sync message from result");
-    }
+    AMitemToSyncMessage(item, &msg);
 
     // Encode sync message to bytes
     AMresult *encode_result = AMsyncMessageEncode(msg);
@@ -107,11 +101,7 @@ SEXP C_am_sync_encode(SEXP doc_ptr, SEXP sync_state_ptr) {
 
     AMitem *encode_item = AMresultItem(encode_result);
     AMbyteSpan bytes;
-    if (!AMitemToBytes(encode_item, &bytes)) {
-        AMresultFree(encode_result);
-        AMresultFree(result);
-        Rf_error("Failed to extract bytes from encoded sync message");
-    }
+    AMitemToBytes(encode_item, &bytes);
 
     // Copy to R raw vector
     SEXP r_bytes = PROTECT(Rf_allocVector(RAWSXP, bytes.count));
@@ -156,10 +146,7 @@ SEXP C_am_sync_decode(SEXP doc_ptr, SEXP sync_state_ptr, SEXP message) {
 
     AMitem *decode_item = AMresultItem(decode_result);
     AMsyncMessage const *msg = NULL;
-    if (!AMitemToSyncMessage(decode_item, &msg)) {
-        AMresultFree(decode_result);
-        Rf_error("Failed to extract sync message from decoded bytes");
-    }
+    AMitemToSyncMessage(decode_item, &msg);
 
     // Receive sync message
     AMresult *result = AMreceiveSyncMessage(doc, state_wrapper->state, msg);
@@ -209,11 +196,7 @@ SEXP C_am_get_heads(SEXP doc_ptr) {
         if (!item) break;
 
         AMbyteSpan hash;
-        if (!AMitemToChangeHash(item, &hash)) {
-            AMresultFree(result);
-            UNPROTECT(1);
-            Rf_error("Failed to extract change hash at index %zu", i);
-        }
+        AMitemToChangeHash(item, &hash);
 
         // Copy hash to R raw vector
         SEXP r_hash = Rf_allocVector(RAWSXP, hash.count);
@@ -308,11 +291,7 @@ SEXP C_am_get_changes(SEXP doc_ptr, SEXP heads) {
         if (!item) break;
 
         AMchange *change = NULL;
-        if (!AMitemToChange(item, &change)) {
-            AMresultFree(result);
-            UNPROTECT(1);
-            Rf_error("Failed to extract change at index %zu", i);
-        }
+        AMitemToChange(item, &change);
 
         // Serialize change to bytes
         AMbyteSpan bytes = AMchangeRawBytes(change);

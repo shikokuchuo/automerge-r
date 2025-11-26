@@ -44,21 +44,8 @@ SEXP C_am_cursor(SEXP obj_ptr, SEXP position) {
 
     // Extract cursor from result item
     AMitem *item = AMresultItem(result);
-    if (!item) {
-        AMresultFree(result);
-        Rf_error("Failed to get cursor item from result");
-    }
-
     AMcursor const *cursor = NULL;
-    if (!AMitemToCursor(item, &cursor)) {
-        AMresultFree(result);
-        Rf_error("Failed to extract cursor from item");
-    }
-
-    if (!cursor) {
-        AMresultFree(result);
-        Rf_error("Cursor extraction returned NULL");
-    }
+    AMitemToCursor(item, &cursor);
 
     // Wrap result as external pointer with parent = doc_ptr
     // The cursor pointer is borrowed from the result, so we wrap the result
@@ -102,24 +89,14 @@ SEXP C_am_cursor_position(SEXP obj_ptr, SEXP cursor_ptr) {
         Rf_error("cursor must be an external pointer (am_cursor object)");
     }
 
-    AMresult *cursor_result = (AMresult *)R_ExternalPtrAddr(cursor_ptr);
+    AMresult *cursor_result = (AMresult *) R_ExternalPtrAddr(cursor_ptr);
     if (!cursor_result) {
         Rf_error("Invalid cursor pointer (NULL or freed)");
     }
 
     AMitem *cursor_item = AMresultItem(cursor_result);
-    if (!cursor_item) {
-        Rf_error("Failed to get cursor item from result");
-    }
-
     AMcursor const *cursor = NULL;
-    if (!AMitemToCursor(cursor_item, &cursor)) {
-        Rf_error("Failed to extract cursor from item");
-    }
-
-    if (!cursor) {
-        Rf_error("Cursor extraction returned NULL");
-    }
+    AMitemToCursor(cursor_item, &cursor);
 
     // Call AMgetCursorPosition (heads parameter NULL for current state)
     AMresult *result = AMgetCursorPosition(doc, obj_id, cursor, NULL);
@@ -127,16 +104,8 @@ SEXP C_am_cursor_position(SEXP obj_ptr, SEXP cursor_ptr) {
 
     // Extract position from result
     AMitem *item = AMresultItem(result);
-    if (!item) {
-        AMresultFree(result);
-        Rf_error("Failed to get position item from result");
-    }
-
     uint64_t c_pos;
-    if (!AMitemToUint(item, &c_pos)) {
-        AMresultFree(result);
-        Rf_error("Failed to extract position from item");
-    }
+    AMitemToUint(item, &c_pos);
 
     // Return 0-based position directly
     if (c_pos > INT_MAX) {
@@ -170,16 +139,11 @@ static SEXP convert_mark_to_r_list(AMmark const *mark, size_t index) {
     }
 
     AMitem *value_item = AMresultItem(value_result);
-    if (!value_item) {
-        AMresultFree(value_result);
-        Rf_error("Failed to get value item at index %zu", index);
-    }
 
     const char *names[] = {"name", "value", "start", "end", ""};
     SEXP mark_list = PROTECT(Rf_mkNamed(VECSXP, names));
-
-    SET_VECTOR_ELT(mark_list, 0, Rf_ScalarString(Rf_mkCharLenCE((char *)name_span.src,
-                                                                  name_span.count, CE_UTF8)));
+    SEXP name = Rf_mkCharLenCE((char *) name_span.src, name_span.count, CE_UTF8);
+    SET_VECTOR_ELT(mark_list, 0, Rf_ScalarString(name));
     SET_VECTOR_ELT(mark_list, 1, amitem_to_r_value(value_item));
     SET_VECTOR_ELT(mark_list, 2, Rf_ScalarInteger((int)c_start));
     SET_VECTOR_ELT(mark_list, 3, Rf_ScalarInteger((int)c_end));
@@ -250,7 +214,7 @@ static SEXP C_am_marks_impl(SEXP obj_ptr, int filter_position) {
             if (!item) break;
 
             AMmark const *mark = NULL;
-            if (!AMitemToMark(item, &mark)) continue;
+            AMitemToMark(item, &mark);
 
             size_t c_start = AMmarkStart(mark);
             size_t c_end = AMmarkEnd(mark);
@@ -269,17 +233,10 @@ static SEXP C_am_marks_impl(SEXP obj_ptr, int filter_position) {
     size_t output_index = 0;
     for (size_t i = 0; i < total_count; i++) {
         AMitem *item = AMitemsNext(&items, 1);
-        if (!item) {
-            AMresultFree(result);
-            Rf_error("Failed to get mark item at index %zu", i);
-        }
 
         // Extract mark
         AMmark const *mark = NULL;
-        if (!AMitemToMark(item, &mark)) {
-            AMresultFree(result);
-            Rf_error("Failed to extract mark from item at index %zu", i);
-        }
+        AMitemToMark(item, &mark);
 
         // Apply filter if needed
         if (filtering) {
@@ -377,16 +334,12 @@ static SEXP amitem_to_r_value(AMitem *item) {
             return R_NilValue;
         case AM_VAL_TYPE_BOOL: {
             bool val;
-            if (!AMitemToBool(item, &val)) {
-                Rf_error("Failed to extract boolean from mark value");
-            }
+            AMitemToBool(item, &val);
             return Rf_ScalarLogical(val);
         }
         case AM_VAL_TYPE_INT: {
             int64_t val;
-            if (!AMitemToInt(item, &val)) {
-                Rf_error("Failed to extract integer from mark value");
-            }
+            AMitemToInt(item, &val);
             if (val < INT_MIN || val > INT_MAX) {
                 Rf_warning("Mark value integer out of R integer range, converting to double");
                 return Rf_ScalarReal((double)val);
@@ -395,9 +348,7 @@ static SEXP amitem_to_r_value(AMitem *item) {
         }
         case AM_VAL_TYPE_UINT: {
             uint64_t val;
-            if (!AMitemToUint(item, &val)) {
-                Rf_error("Failed to extract unsigned integer from mark value");
-            }
+            AMitemToUint(item, &val);
             if (val > INT_MAX) {
                 Rf_warning("Mark value unsigned integer out of R integer range, converting to double");
                 return Rf_ScalarReal((double)val);
@@ -406,23 +357,17 @@ static SEXP amitem_to_r_value(AMitem *item) {
         }
         case AM_VAL_TYPE_F64: {
             double val;
-            if (!AMitemToF64(item, &val)) {
-                Rf_error("Failed to extract double from mark value");
-            }
+            AMitemToF64(item, &val);
             return Rf_ScalarReal(val);
         }
         case AM_VAL_TYPE_STR: {
             AMbyteSpan span;
-            if (!AMitemToStr(item, &span)) {
-                Rf_error("Failed to extract string from mark value");
-            }
+            AMitemToStr(item, &span);
             return Rf_ScalarString(Rf_mkCharLenCE((char *)span.src, span.count, CE_UTF8));
         }
         case AM_VAL_TYPE_BYTES: {
             AMbyteSpan span;
-            if (!AMitemToBytes(item, &span)) {
-                Rf_error("Failed to extract bytes from mark value");
-            }
+            AMitemToBytes(item, &span);
             SEXP raw = PROTECT(Rf_allocVector(RAWSXP, span.count));
             memcpy(RAW(raw), span.src, span.count);
             UNPROTECT(1);
@@ -545,10 +490,6 @@ SEXP C_am_mark_create(SEXP obj_ptr, SEXP start, SEXP end,
     }
 
     AMitem *value_item = AMresultItem(value_result);
-    if (!value_item) {
-        AMresultFree(value_result);
-        Rf_error("Failed to get value item from result");
-    }
 
     // Call AMmarkCreate
     AMresult *result = AMmarkCreate(doc, obj_id, c_start, c_end, expand_mode,

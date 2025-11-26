@@ -264,18 +264,14 @@ static SEXP am_item_to_r(AMitem *item, SEXP parent_doc_sexp, SEXP parent_result_
 
         case AM_VAL_TYPE_BOOL: {
             bool val;
-            if (!AMitemToBool(item, &val)) {
-                Rf_error("Failed to extract boolean value");
-            }
+            AMitemToBool(item, &val);
             result = Rf_ScalarLogical(val);
             break;
         }
 
         case AM_VAL_TYPE_INT: {
             int64_t val;
-            if (!AMitemToInt(item, &val)) {
-                Rf_error("Failed to extract integer value");
-            }
+            AMitemToInt(item, &val);
             result = val > INT_MAX || val < INT_MIN ?
                 Rf_ScalarReal((double) val):
                 Rf_ScalarInteger((int) val);
@@ -284,36 +280,28 @@ static SEXP am_item_to_r(AMitem *item, SEXP parent_doc_sexp, SEXP parent_result_
 
         case AM_VAL_TYPE_UINT: {
             uint64_t val;
-            if (!AMitemToUint(item, &val)) {
-                Rf_error("Failed to extract unsigned integer value");
-            }
+            AMitemToUint(item, &val);
             result = Rf_ScalarReal((double) val);
             break;
         }
 
         case AM_VAL_TYPE_F64: {
             double val;
-            if (!AMitemToF64(item, &val)) {
-                Rf_error("Failed to extract double value");
-            }
+            AMitemToF64(item, &val);
             result = Rf_ScalarReal(val);
             break;
         }
 
         case AM_VAL_TYPE_STR: {
             AMbyteSpan val;
-            if (!AMitemToStr(item, &val)) {
-                Rf_error("Failed to extract string value");
-            }
+            AMitemToStr(item, &val);
             result = Rf_ScalarString(Rf_mkCharLen((const char *) val.src, val.count));
             break;
         }
 
         case AM_VAL_TYPE_BYTES: {
             AMbyteSpan val;
-            if (!AMitemToBytes(item, &val)) {
-                Rf_error("Failed to extract bytes value");
-            }
+            AMitemToBytes(item, &val);
             result = PROTECT(Rf_allocVector(RAWSXP, val.count));
             memcpy(RAW(result), val.src, val.count);
             UNPROTECT(1);
@@ -322,9 +310,7 @@ static SEXP am_item_to_r(AMitem *item, SEXP parent_doc_sexp, SEXP parent_result_
 
         case AM_VAL_TYPE_TIMESTAMP: {
             int64_t val;
-            if (!AMitemToTimestamp(item, &val)) {
-                Rf_error("Failed to extract timestamp value");
-            }
+            AMitemToTimestamp(item, &val);
             // Convert milliseconds to seconds for POSIXct
             result = PROTECT(Rf_ScalarReal((double) val / 1000.0));
 
@@ -340,9 +326,7 @@ static SEXP am_item_to_r(AMitem *item, SEXP parent_doc_sexp, SEXP parent_result_
 
         case AM_VAL_TYPE_COUNTER: {
             int64_t val;
-            if (!AMitemToCounter(item, &val)) {
-                Rf_error("Failed to extract counter value");
-            }
+            AMitemToCounter(item, &val);
             result = val > INT_MAX || val < INT_MIN ?
                 Rf_ScalarReal((double) val):
                 Rf_ScalarInteger((int) val);

@@ -25,10 +25,7 @@ SEXP C_am_create(SEXP actor_id) {
 
         AMitem *actor_item = AMresultItem(actor_result);
         AMactorId const *actor = NULL;
-        if (!AMitemToActorId(actor_item, &actor)) {
-            AMresultFree(actor_result);
-            Rf_error("Failed to extract actor ID from string");
-        }
+        AMitemToActorId(actor_item, &actor);
 
         result = AMcreate(actor);
         AMresultFree(actor_result);
@@ -39,10 +36,7 @@ SEXP C_am_create(SEXP actor_id) {
 
         AMitem *actor_item = AMresultItem(actor_result);
         AMactorId const *actor = NULL;
-        if (!AMitemToActorId(actor_item, &actor)) {
-            AMresultFree(actor_result);
-            Rf_error("Failed to extract actor ID from bytes");
-        }
+        AMitemToActorId(actor_item, &actor);
 
         result = AMcreate(actor);
         AMresultFree(actor_result);
@@ -55,10 +49,7 @@ SEXP C_am_create(SEXP actor_id) {
     // Extract the AMdoc* from the result
     AMitem *item = AMresultItem(result);
     AMdoc *doc = NULL;
-    if (!AMitemToDoc(item, &doc)) {
-        AMresultFree(result);
-        Rf_error("Failed to extract document from result");
-    }
+    AMitemToDoc(item, &doc);
 
     // Create wrapper structure
     am_doc *doc_wrapper = (am_doc *) malloc(sizeof(am_doc));
@@ -98,10 +89,7 @@ SEXP C_am_save(SEXP doc_ptr) {
     // Extract bytes from result
     AMitem *item = AMresultItem(result);
     AMbyteSpan bytes;
-    if (!AMitemToBytes(item, &bytes)) {
-        AMresultFree(result);
-        Rf_error("Failed to extract bytes from save result");
-    }
+    AMitemToBytes(item, &bytes);
 
     // Copy to R raw vector
     SEXP r_bytes = PROTECT(Rf_allocVector(RAWSXP, bytes.count));
@@ -129,10 +117,7 @@ SEXP C_am_load(SEXP data) {
     // Extract the AMdoc* from the result
     AMitem *item = AMresultItem(result);
     AMdoc *doc = NULL;
-    if (!AMitemToDoc(item, &doc)) {
-        AMresultFree(result);
-        Rf_error("Failed to extract document from load result");
-    }
+    AMitemToDoc(item, &doc);
 
     // Create wrapper structure
     am_doc *doc_wrapper = (am_doc *) malloc(sizeof(am_doc));
@@ -282,10 +267,7 @@ SEXP C_am_fork(SEXP doc_ptr, SEXP heads) {
     // Extract the AMdoc* from the result
     AMitem *item = AMresultItem(result);
     AMdoc *forked_doc = NULL;
-    if (!AMitemToDoc(item, &forked_doc)) {
-        AMresultFree(result);
-        Rf_error("Failed to extract forked document from result");
-    }
+    AMitemToDoc(item, &forked_doc);
 
     // Create wrapper structure
     am_doc *doc_wrapper = (am_doc *) malloc(sizeof(am_doc));
@@ -348,10 +330,7 @@ SEXP C_am_get_actor(SEXP doc_ptr) {
     // Extract actor ID
     AMitem *item = AMresultItem(result);
     AMactorId const *actor_id = NULL;
-    if (!AMitemToActorId(item, &actor_id)) {
-        AMresultFree(result);
-        Rf_error("Failed to extract actor ID from result");
-    }
+    AMitemToActorId(item, &actor_id);
 
     // Convert to bytes
     AMbyteSpan bytes = AMactorIdBytes(actor_id);
@@ -379,10 +358,7 @@ SEXP C_am_get_actor_hex(SEXP doc_ptr) {
 
     AMitem *item = AMresultItem(result);
     AMactorId const *actor_id = NULL;
-    if (!AMitemToActorId(item, &actor_id)) {
-        AMresultFree(result);
-        Rf_error("Failed to extract actor ID from result");
-    }
+    AMitemToActorId(item, &actor_id);
 
     AMbyteSpan hex_str = AMactorIdStr(actor_id);
 
@@ -411,10 +387,7 @@ SEXP C_am_set_actor(SEXP doc_ptr, SEXP actor_id) {
         actor_result = AMactorIdInit();
         CHECK_RESULT(actor_result, AM_VAL_TYPE_ACTOR_ID);
         AMitem *actor_item = AMresultItem(actor_result);
-        if (!AMitemToActorId(actor_item, &actor)) {
-            AMresultFree(actor_result);
-            Rf_error("Failed to extract actor ID from init");
-        }
+        AMitemToActorId(actor_item, &actor);
     } else if (TYPEOF(actor_id) == STRSXP && XLENGTH(actor_id) == 1) {
         // Hex string
         const char *hex_str = CHAR(STRING_ELT(actor_id, 0));
@@ -422,19 +395,13 @@ SEXP C_am_set_actor(SEXP doc_ptr, SEXP actor_id) {
         actor_result = AMactorIdFromStr(hex_span);
         CHECK_RESULT(actor_result, AM_VAL_TYPE_ACTOR_ID);
         AMitem *actor_item = AMresultItem(actor_result);
-        if (!AMitemToActorId(actor_item, &actor)) {
-            AMresultFree(actor_result);
-            Rf_error("Failed to extract actor ID from string");
-        }
+        AMitemToActorId(actor_item, &actor);
     } else if (TYPEOF(actor_id) == RAWSXP) {
         // Raw bytes
         actor_result = AMactorIdFromBytes(RAW(actor_id), (size_t) XLENGTH(actor_id));
         CHECK_RESULT(actor_result, AM_VAL_TYPE_ACTOR_ID);
         AMitem *actor_item = AMresultItem(actor_result);
-        if (!AMitemToActorId(actor_item, &actor)) {
-            AMresultFree(actor_result);
-            Rf_error("Failed to extract actor ID from bytes");
-        }
+        AMitemToActorId(actor_item, &actor);
     } else {
         Rf_error("actor_id must be NULL, a character string (hex), or raw bytes");
     }
@@ -669,11 +636,7 @@ SEXP C_am_get_changes_added(SEXP doc1_ptr, SEXP doc2_ptr) {
         if (!item) break;
 
         AMchange *change = NULL;
-        if (!AMitemToChange(item, &change)) {
-            AMresultFree(result);
-            UNPROTECT(1);
-            Rf_error("Failed to extract change at index %zu", i);
-        }
+        AMitemToChange(item, &change);
 
         // Serialize change to bytes
         AMbyteSpan bytes = AMchangeRawBytes(change);
