@@ -43,7 +43,7 @@ library(automerge)
 doc <- am_create()
 print(doc)
 #> <Automerge Document>
-#> Actor: a2af8ad6c4bd65c475f838670b0a1822 
+#> Actor: 0e880b043aa83e9c0f8cca8b73431472 
 #> Root keys: 0
 ```
 
@@ -278,7 +278,7 @@ am_put(doc9, AM_ROOT, "created_at", Sys.time())
 am_put(doc9, AM_ROOT, "updated_at", Sys.time())
 
 doc9[["created_at"]]
-#> [1] "2025-11-26 10:19:46 UTC"
+#> [1] "2025-11-26 10:39:44 UTC"
 ```
 
 ## Saving and Loading Documents
