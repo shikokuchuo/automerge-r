@@ -152,6 +152,157 @@ SEXP C_am_cursor_position(SEXP obj_ptr, SEXP cursor_ptr) {
 
 // Mark Support ---------------------------------------------------------------
 
+// Forward declaration
+static SEXP amitem_to_r_value(AMitem *item);
+
+/**
+ * Helper: Convert single mark to R list.
+ * Returns an unprotected R list (all internal allocations are cleaned up).
+ */
+static SEXP convert_mark_to_r_list(AMmark const *mark, size_t index) {
+    AMbyteSpan name_span = AMmarkName(mark);
+    size_t c_start = AMmarkStart(mark);
+    size_t c_end = AMmarkEnd(mark);
+
+    AMresult *value_result = AMmarkValue(mark);
+    if (!value_result) {
+        Rf_error("Failed to get mark value at index %zu", index);
+    }
+
+    AMitem *value_item = AMresultItem(value_result);
+    if (!value_item) {
+        AMresultFree(value_result);
+        Rf_error("Failed to get value item at index %zu", index);
+    }
+
+    const char *names[] = {"name", "value", "start", "end", ""};
+    SEXP mark_list = PROTECT(Rf_mkNamed(VECSXP, names));
+
+    SET_VECTOR_ELT(mark_list, 0, Rf_ScalarString(Rf_mkCharLenCE((char *)name_span.src,
+                                                                  name_span.count, CE_UTF8)));
+    SET_VECTOR_ELT(mark_list, 1, amitem_to_r_value(value_item));
+    SET_VECTOR_ELT(mark_list, 2, Rf_ScalarInteger((int)c_start));
+    SET_VECTOR_ELT(mark_list, 3, Rf_ScalarInteger((int)c_end));
+
+    AMresultFree(value_result);
+    UNPROTECT(1);
+
+    return mark_list;
+}
+
+/**
+ * Implementation for getting marks with optional position filtering.
+ *
+ * @param obj_ptr External pointer to AMobjId (must be text object)
+ * @param filter_position If >= 0, filter marks to include only those at this position.
+ *                        If < 0, return all marks (no filtering).
+ * @return R list of marks
+ */
+static SEXP C_am_marks_impl(SEXP obj_ptr, int filter_position) {
+    // Get document from object ID
+    SEXP doc_ptr = get_doc_from_objid(obj_ptr);
+    AMdoc *doc = get_doc(doc_ptr);
+    if (!doc) {
+        Rf_error("Invalid document pointer");
+    }
+
+    // Get object ID
+    const AMobjId *obj_id = get_objid(obj_ptr);
+    if (!obj_id) {
+        Rf_error("Invalid object ID");
+    }
+
+    // Call AMmarks (heads parameter NULL for current state)
+    AMresult *result = AMmarks(doc, obj_id, NULL);
+
+    // Check if result is valid
+    AMstatus status = AMresultStatus(result);
+    if (status != AM_STATUS_OK) {
+        AMbyteSpan err_span = AMresultError(result);
+        if (err_span.count > 0) {
+            size_t msg_size = err_span.count < MAX_ERROR_MSG_SIZE ?
+                              err_span.count : MAX_ERROR_MSG_SIZE;
+            char err_msg[msg_size + 1];
+            memcpy(err_msg, err_span.src, msg_size);
+            err_msg[msg_size] = '\0';
+            AMresultFree(result);
+            Rf_error("Automerge error: %s", err_msg);
+        } else {
+            AMresultFree(result);
+            Rf_error("Automerge error: unknown error (no error message)");
+        }
+    }
+
+    // Get items iterator
+    AMitems items = AMresultItems(result);
+    size_t total_count = AMitemsSize(&items);
+
+    bool filtering = filter_position >= 0;
+    size_t c_pos = filtering ? (size_t)filter_position : 0;
+
+    // If filtering, need to count matches first
+    size_t output_count = total_count;
+    if (filtering) {
+        output_count = 0;
+        AMitems items_copy = AMresultItems(result);
+        for (size_t i = 0; i < total_count; i++) {
+            AMitem *item = AMitemsNext(&items_copy, 1);
+            if (!item) break;
+
+            AMmark const *mark = NULL;
+            if (!AMitemToMark(item, &mark)) continue;
+
+            size_t c_start = AMmarkStart(mark);
+            size_t c_end = AMmarkEnd(mark);
+
+            // Mark range is [start, end) - includes start, excludes end
+            if (c_start <= c_pos && c_pos < c_end) {
+                output_count++;
+            }
+        }
+    }
+
+    // Create R list to store marks
+    SEXP marks_list = PROTECT(Rf_allocVector(VECSXP, output_count));
+
+    // Iterate and collect marks
+    size_t output_index = 0;
+    for (size_t i = 0; i < total_count; i++) {
+        AMitem *item = AMitemsNext(&items, 1);
+        if (!item) {
+            AMresultFree(result);
+            Rf_error("Failed to get mark item at index %zu", i);
+        }
+
+        // Extract mark
+        AMmark const *mark = NULL;
+        if (!AMitemToMark(item, &mark)) {
+            AMresultFree(result);
+            Rf_error("Failed to extract mark from item at index %zu", i);
+        }
+
+        // Apply filter if needed
+        if (filtering) {
+            size_t c_start = AMmarkStart(mark);
+            size_t c_end = AMmarkEnd(mark);
+
+            // Mark range is [start, end) - includes start, excludes end
+            if (!(c_start <= c_pos && c_pos < c_end)) {
+                continue;  // Skip marks that don't include the position
+            }
+        }
+
+        SEXP mark_list = convert_mark_to_r_list(mark, i);
+        SET_VECTOR_ELT(marks_list, output_index, mark_list);
+
+        output_index++;
+    }
+
+    AMresultFree(result);
+    UNPROTECT(1);  // marks_list
+    return marks_list;
+}
+
 /**
  * Helper: Convert R expand string to AMmarkExpand enum.
  */
@@ -422,119 +573,30 @@ SEXP C_am_mark_create(SEXP obj_ptr, SEXP start, SEXP end,
  * @return R list of marks, each mark is a list with: name, value, start, end
  */
 SEXP C_am_marks(SEXP obj_ptr) {
-    // Get document from object ID
-    SEXP doc_ptr = get_doc_from_objid(obj_ptr);
-    AMdoc *doc = get_doc(doc_ptr);
-    if (!doc) {
-        Rf_error("Invalid document pointer");
+    return C_am_marks_impl(obj_ptr, -1);  // -1 = no filtering
+}
+
+/**
+ * Get marks at a specific position in a text object.
+ *
+ * R signature: am_marks_at(obj, position)
+ *
+ * @param obj_ptr External pointer to AMobjId (must be text object)
+ * @param position R integer (0-based position)
+ * @return R list of marks that include the position, each mark is a list with: name, value, start, end
+ */
+SEXP C_am_marks_at(SEXP obj_ptr, SEXP position) {
+    // Validate position (0-based indexing)
+    if (TYPEOF(position) != INTSXP && TYPEOF(position) != REALSXP) {
+        Rf_error("position must be numeric");
+    }
+    if (Rf_xlength(position) != 1) {
+        Rf_error("position must be a scalar");
+    }
+    int r_pos = Rf_asInteger(position);
+    if (r_pos < 0) {
+        Rf_error("position must be non-negative (uses 0-based indexing)");
     }
 
-    // Get object ID
-    const AMobjId *obj_id = get_objid(obj_ptr);
-    if (!obj_id) {
-        Rf_error("Invalid object ID");
-    }
-
-    // Call AMmarks (heads parameter NULL for current state)
-    AMresult *result = AMmarks(doc, obj_id, NULL);
-
-    // Check if result is valid
-    AMstatus status = AMresultStatus(result);
-    if (status != AM_STATUS_OK) {
-        AMbyteSpan err_span = AMresultError(result);
-        if (err_span.count > 0) {
-            size_t msg_size = err_span.count < MAX_ERROR_MSG_SIZE ?
-                              err_span.count : MAX_ERROR_MSG_SIZE;
-            char err_msg[msg_size + 1];
-            memcpy(err_msg, err_span.src, msg_size);
-            err_msg[msg_size] = '\0';
-            AMresultFree(result);
-            Rf_error("Automerge error: %s", err_msg);
-        } else {
-            AMresultFree(result);
-            Rf_error("Automerge error: unknown error (no error message)");
-        }
-    }
-
-    // Get items iterator
-    AMitems items = AMresultItems(result);
-    size_t count = AMitemsSize(&items);
-
-    // Create R list to store marks
-    SEXP marks_list = PROTECT(Rf_allocVector(VECSXP, count));
-
-    // Iterate over marks
-    for (size_t i = 0; i < count; i++) {
-        AMitem *item = AMitemsNext(&items, 1);
-        if (!item) {
-            AMresultFree(result);
-            UNPROTECT(1);
-            Rf_error("Failed to get mark item at index %zu", i);
-        }
-
-        // Extract mark
-        AMmark const *mark = NULL;
-        if (!AMitemToMark(item, &mark)) {
-            AMresultFree(result);
-            UNPROTECT(1);
-            Rf_error("Failed to extract mark from item at index %zu", i);
-        }
-
-        // Get mark properties
-        AMbyteSpan name_span = AMmarkName(mark);
-        size_t c_start = AMmarkStart(mark);
-        size_t c_end = AMmarkEnd(mark);
-
-        // Get mark value
-        AMresult *value_result = AMmarkValue(mark);
-        if (!value_result) {
-            AMresultFree(result);
-            UNPROTECT(1);
-            Rf_error("Failed to get mark value at index %zu", i);
-        }
-
-        AMitem *value_item = AMresultItem(value_result);
-        if (!value_item) {
-            AMresultFree(value_result);
-            AMresultFree(result);
-            UNPROTECT(1);
-            Rf_error("Failed to get value item at index %zu", i);
-        }
-
-        SEXP r_value = PROTECT(amitem_to_r_value(value_item));
-        AMresultFree(value_result);
-
-        // Use 0-based positions directly
-        int r_start = (int)c_start;
-        int r_end = (int)c_end;
-
-        // Create R list for this mark
-        SEXP mark_list = PROTECT(Rf_allocVector(VECSXP, 4));
-        SEXP mark_names = PROTECT(Rf_allocVector(STRSXP, 4));
-
-        // Set field names
-        SET_STRING_ELT(mark_names, 0, Rf_mkChar("name"));
-        SET_STRING_ELT(mark_names, 1, Rf_mkChar("value"));
-        SET_STRING_ELT(mark_names, 2, Rf_mkChar("start"));
-        SET_STRING_ELT(mark_names, 3, Rf_mkChar("end"));
-        Rf_namesgets(mark_list, mark_names);
-
-        // Set field values
-        SEXP name_str = PROTECT(Rf_ScalarString(Rf_mkCharLenCE((char *)name_span.src,
-                                                                 name_span.count, CE_UTF8)));
-        SET_VECTOR_ELT(mark_list, 0, name_str);
-        SET_VECTOR_ELT(mark_list, 1, r_value);
-        SET_VECTOR_ELT(mark_list, 2, Rf_ScalarInteger(r_start));
-        SET_VECTOR_ELT(mark_list, 3, Rf_ScalarInteger(r_end));
-        UNPROTECT(1);  // name_str
-
-        // Add to marks list
-        SET_VECTOR_ELT(marks_list, i, mark_list);
-
-        UNPROTECT(3);  // r_value, mark_list, mark_names
-    }
-
-    AMresultFree(result);
-    UNPROTECT(1);  // marks_list
-    return marks_list;
+    return C_am_marks_impl(obj_ptr, r_pos);
 }

@@ -39,6 +39,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"C_am_cursor_position", (DL_FUNC) &C_am_cursor_position, 2},
     {"C_am_mark_create", (DL_FUNC) &C_am_mark_create, 6},
     {"C_am_marks", (DL_FUNC) &C_am_marks, 1},
+    {"C_am_marks_at", (DL_FUNC) &C_am_marks_at, 2},
     // Helper functions
     {"C_get_doc_from_objid", (DL_FUNC) &C_get_doc_from_objid, 1},
     {NULL, NULL, 0}

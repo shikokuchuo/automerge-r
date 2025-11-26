@@ -184,8 +184,9 @@ am_marks <- function(obj) {
 
 #' Get marks at a specific position
 #'
-#' Convenience function to retrieve marks that include a specific position.
-#' This is equivalent to calling [am_marks()] and filtering the results.
+#' Retrieves marks that include a specific position in a text object. This
+#' function efficiently filters marks at the C level, avoiding the overhead
+#' of converting all marks to R objects.
 #'
 #' @param obj An Automerge object ID (must be a text object)
 #' @param position Integer position (0-based inter-character position) to query.
@@ -208,14 +209,5 @@ am_marks <- function(obj) {
 #' print(marks_at_3)
 #' # List of 2 marks (both "bold" and "underline" include position 3)
 am_marks_at <- function(obj, position) {
-  all_marks <- am_marks(obj)
-  if (length(all_marks) == 0) {
-    return(list())
-  }
-
-  # Filter marks that include the position
-  # Mark range is [start, end) - includes start, excludes end
-  Filter(function(mark) {
-    mark$start <= position && position < mark$end
-  }, all_marks)
+  .Call(C_am_marks_at, obj, position)
 }

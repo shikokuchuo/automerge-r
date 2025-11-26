@@ -17,8 +17,9 @@ A list of marks that include the specified position. Returns an empty
 list if no marks cover that position.
 }
 \description{
-Convenience function to retrieve marks that include a specific position.
-This is equivalent to calling \code{\link[=am_marks]{am_marks()}} and filtering the results.
+Retrieves marks that include a specific position in a text object. This
+function efficiently filters marks at the C level, avoiding the overhead
+of converting all marks to R objects.
 }
 \examples{
 doc <- am_create()
