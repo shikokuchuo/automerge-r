@@ -1,13 +1,13 @@
 # Convert Automerge document to R list
 
-Converts an Automerge document to a standard R list. This is a
-convenience wrapper around
+Converts an Automerge document to a standard R list. This is equivalent
+to
 [`as.list.am_doc()`](http://shikokuchuo.net/automerge-r/reference/as.list.am_doc.md).
 
 ## Usage
 
 ``` r
-from_automerge(doc, obj = AM_ROOT)
+from_automerge(doc)
 ```
 
 ## Arguments
@@ -15,10 +15,6 @@ from_automerge(doc, obj = AM_ROOT)
 - doc:
 
   An Automerge document
-
-- obj:
-
-  Optional object ID (default: AM_ROOT for full document)
 
 ## Value
 

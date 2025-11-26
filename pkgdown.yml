@@ -6,7 +6,7 @@ articles:
   crdt-concepts: crdt-concepts.html
   sync-protocol: sync-protocol.html
   very-quick-reference: very-quick-reference.html
-last_built: 2025-11-26T12:17Z
+last_built: 2025-11-26T15:19Z
 urls:
   reference: http://shikokuchuo.net/automerge-r/reference
   article: http://shikokuchuo.net/automerge-r/articles
