@@ -35,20 +35,16 @@ am_commit(bob, "Bob's data")
 
 # Later, sync with zero conflicts
 am_sync(alice, bob)
-#> $doc1
+alice
 #> <Automerge Document>
-#> Actor: 7fb913089a19c62608bf9aac55d53556 
+#> Actor: f13c3435c37f00870ad5006bd804566d 
 #> Root keys: 3 
-#> Keys: experiment, humidity, temperature 
-#> 
-#> $doc2
+#> Keys: experiment, humidity, temperature
+bob
 #> <Automerge Document>
-#> Actor: b3a737ba1797b7e4ccae705e698bb590 
+#> Actor: 492d96612922d06aa4ca653d14f3bb0a 
 #> Root keys: 3 
-#> Keys: experiment, humidity, temperature 
-#> 
-#> $rounds
-#> [1] 4
+#> Keys: experiment, humidity, temperature
 ```
 
 ## Key Features

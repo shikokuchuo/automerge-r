@@ -243,10 +243,9 @@ documentation with <code>?function_name</code>.</p>
 </h3>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Bidirectional sync (auto-converge)</span></span>
-<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/am_sync.html">am_sync</a></span><span class="op">(</span><span class="va">doc1</span>, <span class="va">doc2</span><span class="op">)</span></span>
-<span><span class="va">doc1</span> <span class="op">&lt;-</span> <span class="va">result</span><span class="op">$</span><span class="va">doc1</span></span>
-<span><span class="va">doc2</span> <span class="op">&lt;-</span> <span class="va">result</span><span class="op">$</span><span class="va">doc2</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Converged in"</span>, <span class="va">result</span><span class="op">$</span><span class="va">rounds</span>, <span class="st">"rounds\n"</span><span class="op">)</span></span>
+<span><span class="co"># Documents are modified in place</span></span>
+<span><span class="va">rounds</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/am_sync.html">am_sync</a></span><span class="op">(</span><span class="va">doc1</span>, <span class="va">doc2</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Converged in"</span>, <span class="va">rounds</span>, <span class="st">"rounds\n"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># One-way merge</span></span>
 <span><span class="fu"><a href="../reference/am_merge.html">am_merge</a></span><span class="op">(</span><span class="va">doc1</span>, <span class="va">doc2</span><span class="op">)</span> <span class="co"># Merge doc2 into doc1</span></span></code></pre></div>

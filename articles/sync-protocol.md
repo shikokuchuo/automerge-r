@@ -32,20 +32,20 @@ peer2[["edited_by"]] <- "peer2"
 peer2[["data2"]] <- 200
 am_commit(peer2, "Peer2 changes")
 
-# Automatic bidirectional sync
-result <- am_sync(peer1, peer2)
+# Automatic bidirectional sync (documents modified in place)
+rounds <- am_sync(peer1, peer2)
 
-result$rounds
+rounds
 #> [1] 4
 
 # Both documents now have all data
-result$doc1[["data1"]]
+peer1[["data1"]]
 #> [1] 100
-result$doc1[["data2"]]
+peer1[["data2"]]
 #> [1] 200
-result$doc2[["data1"]]
+peer2[["data1"]]
 #> [1] 100
-result$doc2[["data2"]]
+peer2[["data2"]]
 #> [1] 200
 ```
 
@@ -75,7 +75,7 @@ am_merge(target, source)
 
 # Target now has source's changes
 target[["version"]]
-#> [1] "1.0"
+#> [1] "2.0"
 
 # Source is unchanged
 names(source)
@@ -370,12 +370,12 @@ str(y_changes)
 #>  $ : raw [1:109] 85 6f 4a 83 ...
 
 # Sync to merge divergent histories
-result <- am_sync(peer_x, peer_y)
-result$rounds
+rounds <- am_sync(peer_x, peer_y)
+rounds
 #> [1] 4
 
 # After sync, heads are identical again
-identical(am_get_heads(result$doc1), am_get_heads(result$doc2))
+identical(am_get_heads(peer_x), am_get_heads(peer_y))
 #> [1] TRUE
 ```
 
@@ -406,14 +406,14 @@ editor2[["status"]] <- "published"
 am_commit(editor2, "Editor 2 changes")
 
 # Sync editors
-result <- am_sync(editor1, editor2)
+rounds <- am_sync(editor1, editor2)
 
 # Counter: Both increments sum (CRDT)
-result$doc1[["counter"]]
+editor1[["counter"]]
 #> <Automerge Counter: 8 >
 
 # Status: Deterministic conflict resolution (one value wins)
-result$doc1[["status"]]
+editor1[["status"]]
 #> [1] "published"
 ```
 
@@ -434,7 +434,7 @@ for (i in 1:10) {
   doc_frequent[[paste0("k", i)]] <- i
   am_commit(doc_frequent, paste("Change", i))
 
-  result <- am_sync(doc_frequent, peer_frequent)
+  rounds <- am_sync(doc_frequent, peer_frequent)
   sync_count_frequent <- sync_count_frequent + 1
 }
 
@@ -452,10 +452,10 @@ for (i in 1:10) {
 }
 am_commit(doc_batched, "Batch of 10 changes")
 
-result <- am_sync(doc_batched, peer_batched)
+rounds <- am_sync(doc_batched, peer_batched)
 
 # 1 commit, 1 sync operation
-result$rounds
+rounds
 #> [1] 4
 
 # Compare document sizes
@@ -524,8 +524,8 @@ am_commit(doc_no_reuse)
 peer_no_reuse <- am_create()
 
 # First sync
-result1 <- am_sync(doc_no_reuse, peer_no_reuse)
-result1$rounds
+rounds1 <- am_sync(doc_no_reuse, peer_no_reuse)
+rounds1
 #> [1] 4
 
 # Add more changes
@@ -533,8 +533,8 @@ doc_no_reuse[["v2"]] <- 2
 am_commit(doc_no_reuse)
 
 # Second sync (creates new sync state, may resend some data)
-result2 <- am_sync(doc_no_reuse, peer_no_reuse)
-result2$rounds
+rounds2 <- am_sync(doc_no_reuse, peer_no_reuse)
+rounds2
 #> [1] 4
 
 # With reusing sync state (efficient)
@@ -591,7 +591,7 @@ measure_sync <- function(n_changes, batch_size) {
     # Commit every batch_size changes
     if (changes_made %% batch_size == 0) {
       am_commit(doc, sprintf("Batch at %d", changes_made))
-      result <- am_sync(doc, peer)
+      rounds <- am_sync(doc, peer)
       syncs_performed <- syncs_performed + 1
     }
   }
@@ -599,7 +599,7 @@ measure_sync <- function(n_changes, batch_size) {
   # Final commit if needed
   if (changes_made %% batch_size != 0) {
     am_commit(doc, "Final batch")
-    result <- am_sync(doc, peer)
+    rounds <- am_sync(doc, peer)
     syncs_performed <- syncs_performed + 1
   }
 

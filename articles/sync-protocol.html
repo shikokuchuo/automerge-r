@@ -101,20 +101,20 @@ protocol automatically.</p>
 <span><span class="va">peer2</span><span class="op">[[</span><span class="st">"data2"</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">200</span></span>
 <span><span class="fu"><a href="../reference/am_commit.html">am_commit</a></span><span class="op">(</span><span class="va">peer2</span>, <span class="st">"Peer2 changes"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Automatic bidirectional sync</span></span>
-<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/am_sync.html">am_sync</a></span><span class="op">(</span><span class="va">peer1</span>, <span class="va">peer2</span><span class="op">)</span></span>
+<span><span class="co"># Automatic bidirectional sync (documents modified in place)</span></span>
+<span><span class="va">rounds</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/am_sync.html">am_sync</a></span><span class="op">(</span><span class="va">peer1</span>, <span class="va">peer2</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">result</span><span class="op">$</span><span class="va">rounds</span></span>
+<span><span class="va">rounds</span></span>
 <span><span class="co">#&gt; [1] 4</span></span>
 <span></span>
 <span><span class="co"># Both documents now have all data</span></span>
-<span><span class="va">result</span><span class="op">$</span><span class="va">doc1</span><span class="op">[[</span><span class="st">"data1"</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">peer1</span><span class="op">[[</span><span class="st">"data1"</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="co">#&gt; [1] 100</span></span>
-<span><span class="va">result</span><span class="op">$</span><span class="va">doc1</span><span class="op">[[</span><span class="st">"data2"</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">peer1</span><span class="op">[[</span><span class="st">"data2"</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="co">#&gt; [1] 200</span></span>
-<span><span class="va">result</span><span class="op">$</span><span class="va">doc2</span><span class="op">[[</span><span class="st">"data1"</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">peer2</span><span class="op">[[</span><span class="st">"data1"</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="co">#&gt; [1] 100</span></span>
-<span><span class="va">result</span><span class="op">$</span><span class="va">doc2</span><span class="op">[[</span><span class="st">"data2"</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">peer2</span><span class="op">[[</span><span class="st">"data2"</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="co">#&gt; [1] 200</span></span></code></pre></div>
 <p><strong>When to use</strong>: Simple peer-to-peer synchronization
 where both sides need all changes.</p>
@@ -142,7 +142,7 @@ changes back:</p>
 <span></span>
 <span><span class="co"># Target now has source's changes</span></span>
 <span><span class="va">target</span><span class="op">[[</span><span class="st">"version"</span><span class="op">]</span><span class="op">]</span></span>
-<span><span class="co">#&gt; [1] "1.0"</span></span>
+<span><span class="co">#&gt; [1] "2.0"</span></span>
 <span></span>
 <span><span class="co"># Source is unchanged</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">source</span><span class="op">)</span></span>
@@ -444,12 +444,12 @@ graph.</p>
 <span><span class="co">#&gt;  $ : raw [1:109] 85 6f 4a 83 ...</span></span>
 <span></span>
 <span><span class="co"># Sync to merge divergent histories</span></span>
-<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/am_sync.html">am_sync</a></span><span class="op">(</span><span class="va">peer_x</span>, <span class="va">peer_y</span><span class="op">)</span></span>
-<span><span class="va">result</span><span class="op">$</span><span class="va">rounds</span></span>
+<span><span class="va">rounds</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/am_sync.html">am_sync</a></span><span class="op">(</span><span class="va">peer_x</span>, <span class="va">peer_y</span><span class="op">)</span></span>
+<span><span class="va">rounds</span></span>
 <span><span class="co">#&gt; [1] 4</span></span>
 <span></span>
 <span><span class="co"># After sync, heads are identical again</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="fu"><a href="../reference/am_get_heads.html">am_get_heads</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">doc1</span><span class="op">)</span>, <span class="fu"><a href="../reference/am_get_heads.html">am_get_heads</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">doc2</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="fu"><a href="../reference/am_get_heads.html">am_get_heads</a></span><span class="op">(</span><span class="va">peer_x</span><span class="op">)</span>, <span class="fu"><a href="../reference/am_get_heads.html">am_get_heads</a></span><span class="op">(</span><span class="va">peer_y</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
 </div>
 </div>
@@ -480,14 +480,14 @@ graph.</p>
 <span><span class="fu"><a href="../reference/am_commit.html">am_commit</a></span><span class="op">(</span><span class="va">editor2</span>, <span class="st">"Editor 2 changes"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Sync editors</span></span>
-<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/am_sync.html">am_sync</a></span><span class="op">(</span><span class="va">editor1</span>, <span class="va">editor2</span><span class="op">)</span></span>
+<span><span class="va">rounds</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/am_sync.html">am_sync</a></span><span class="op">(</span><span class="va">editor1</span>, <span class="va">editor2</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Counter: Both increments sum (CRDT)</span></span>
-<span><span class="va">result</span><span class="op">$</span><span class="va">doc1</span><span class="op">[[</span><span class="st">"counter"</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">editor1</span><span class="op">[[</span><span class="st">"counter"</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="co">#&gt; &lt;Automerge Counter: 8 &gt;</span></span>
 <span></span>
 <span><span class="co"># Status: Deterministic conflict resolution (one value wins)</span></span>
-<span><span class="va">result</span><span class="op">$</span><span class="va">doc1</span><span class="op">[[</span><span class="st">"status"</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">editor1</span><span class="op">[[</span><span class="st">"status"</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="co">#&gt; [1] "published"</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -508,7 +508,7 @@ and <em>efficiency</em>:</p>
 <span>  <span class="va">doc_frequent</span><span class="op">[[</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"k"</span>, <span class="va">i</span><span class="op">)</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">i</span></span>
 <span>  <span class="fu"><a href="../reference/am_commit.html">am_commit</a></span><span class="op">(</span><span class="va">doc_frequent</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"Change"</span>, <span class="va">i</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span>  <span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/am_sync.html">am_sync</a></span><span class="op">(</span><span class="va">doc_frequent</span>, <span class="va">peer_frequent</span><span class="op">)</span></span>
+<span>  <span class="va">rounds</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/am_sync.html">am_sync</a></span><span class="op">(</span><span class="va">doc_frequent</span>, <span class="va">peer_frequent</span><span class="op">)</span></span>
 <span>  <span class="va">sync_count_frequent</span> <span class="op">&lt;-</span> <span class="va">sync_count_frequent</span> <span class="op">+</span> <span class="fl">1</span></span>
 <span><span class="op">}</span></span>
 <span></span>
@@ -526,10 +526,10 @@ and <em>efficiency</em>:</p>
 <span><span class="op">}</span></span>
 <span><span class="fu"><a href="../reference/am_commit.html">am_commit</a></span><span class="op">(</span><span class="va">doc_batched</span>, <span class="st">"Batch of 10 changes"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/am_sync.html">am_sync</a></span><span class="op">(</span><span class="va">doc_batched</span>, <span class="va">peer_batched</span><span class="op">)</span></span>
+<span><span class="va">rounds</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/am_sync.html">am_sync</a></span><span class="op">(</span><span class="va">doc_batched</span>, <span class="va">peer_batched</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 1 commit, 1 sync operation</span></span>
-<span><span class="va">result</span><span class="op">$</span><span class="va">rounds</span></span>
+<span><span class="va">rounds</span></span>
 <span><span class="co">#&gt; [1] 4</span></span>
 <span></span>
 <span><span class="co"># Compare document sizes</span></span>
@@ -596,8 +596,8 @@ incremental sync:</p>
 <span><span class="va">peer_no_reuse</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/am_create.html">am_create</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># First sync</span></span>
-<span><span class="va">result1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/am_sync.html">am_sync</a></span><span class="op">(</span><span class="va">doc_no_reuse</span>, <span class="va">peer_no_reuse</span><span class="op">)</span></span>
-<span><span class="va">result1</span><span class="op">$</span><span class="va">rounds</span></span>
+<span><span class="va">rounds1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/am_sync.html">am_sync</a></span><span class="op">(</span><span class="va">doc_no_reuse</span>, <span class="va">peer_no_reuse</span><span class="op">)</span></span>
+<span><span class="va">rounds1</span></span>
 <span><span class="co">#&gt; [1] 4</span></span>
 <span></span>
 <span><span class="co"># Add more changes</span></span>
@@ -605,8 +605,8 @@ incremental sync:</p>
 <span><span class="fu"><a href="../reference/am_commit.html">am_commit</a></span><span class="op">(</span><span class="va">doc_no_reuse</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Second sync (creates new sync state, may resend some data)</span></span>
-<span><span class="va">result2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/am_sync.html">am_sync</a></span><span class="op">(</span><span class="va">doc_no_reuse</span>, <span class="va">peer_no_reuse</span><span class="op">)</span></span>
-<span><span class="va">result2</span><span class="op">$</span><span class="va">rounds</span></span>
+<span><span class="va">rounds2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/am_sync.html">am_sync</a></span><span class="op">(</span><span class="va">doc_no_reuse</span>, <span class="va">peer_no_reuse</span><span class="op">)</span></span>
+<span><span class="va">rounds2</span></span>
 <span><span class="co">#&gt; [1] 4</span></span>
 <span></span>
 <span><span class="co"># With reusing sync state (efficient)</span></span>
@@ -663,7 +663,7 @@ incremental sync:</p>
 <span>    <span class="co"># Commit every batch_size changes</span></span>
 <span>    <span class="kw">if</span> <span class="op">(</span><span class="va">changes_made</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html" class="external-link">%%</a></span> <span class="va">batch_size</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
 <span>      <span class="fu"><a href="../reference/am_commit.html">am_commit</a></span><span class="op">(</span><span class="va">doc</span>, <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"Batch at %d"</span>, <span class="va">changes_made</span><span class="op">)</span><span class="op">)</span></span>
-<span>      <span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/am_sync.html">am_sync</a></span><span class="op">(</span><span class="va">doc</span>, <span class="va">peer</span><span class="op">)</span></span>
+<span>      <span class="va">rounds</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/am_sync.html">am_sync</a></span><span class="op">(</span><span class="va">doc</span>, <span class="va">peer</span><span class="op">)</span></span>
 <span>      <span class="va">syncs_performed</span> <span class="op">&lt;-</span> <span class="va">syncs_performed</span> <span class="op">+</span> <span class="fl">1</span></span>
 <span>    <span class="op">}</span></span>
 <span>  <span class="op">}</span></span>
@@ -671,7 +671,7 @@ incremental sync:</p>
 <span>  <span class="co"># Final commit if needed</span></span>
 <span>  <span class="kw">if</span> <span class="op">(</span><span class="va">changes_made</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html" class="external-link">%%</a></span> <span class="va">batch_size</span> <span class="op">!=</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="../reference/am_commit.html">am_commit</a></span><span class="op">(</span><span class="va">doc</span>, <span class="st">"Final batch"</span><span class="op">)</span></span>
-<span>    <span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/am_sync.html">am_sync</a></span><span class="op">(</span><span class="va">doc</span>, <span class="va">peer</span><span class="op">)</span></span>
+<span>    <span class="va">rounds</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/am_sync.html">am_sync</a></span><span class="op">(</span><span class="va">doc</span>, <span class="va">peer</span><span class="op">)</span></span>
 <span>    <span class="va">syncs_performed</span> <span class="op">&lt;-</span> <span class="va">syncs_performed</span> <span class="op">+</span> <span class="fl">1</span></span>
 <span>  <span class="op">}</span></span>
 <span></span>

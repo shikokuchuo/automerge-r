@@ -172,10 +172,9 @@ am_put(doc, AM_ROOT, "notes", am_text()) # Text object
 
 ``` r
 # Bidirectional sync (auto-converge)
-result <- am_sync(doc1, doc2)
-doc1 <- result$doc1
-doc2 <- result$doc2
-cat("Converged in", result$rounds, "rounds\n")
+# Documents are modified in place
+rounds <- am_sync(doc1, doc2)
+cat("Converged in", rounds, "rounds\n")
 
 # One-way merge
 am_merge(doc1, doc2) # Merge doc2 into doc1

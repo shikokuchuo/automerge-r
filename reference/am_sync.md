@@ -22,19 +22,8 @@ am_sync(doc1, doc2)
 
 ## Value
 
-A list with components:
-
-- doc1:
-
-  The first document (updated with changes from doc2)
-
-- doc2:
-
-  The second document (updated with changes from doc1)
-
-- rounds:
-
-  Number of sync rounds completed
+An integer indicating the number of sync rounds completed (invisibly).
+Both documents are modified in place to include each other's changes.
 
 ## Details
 
@@ -55,9 +44,9 @@ doc2 <- am_create()
 am_put(doc1, AM_ROOT, "x", 1)
 am_put(doc2, AM_ROOT, "y", 2)
 
-# Synchronize them
-result <- am_sync(doc1, doc2)
-cat("Synced in", result$rounds, "rounds\n")
+# Synchronize them (documents modified in place)
+rounds <- am_sync(doc1, doc2)
+cat("Synced in", rounds, "rounds\n")
 #> Synced in 4 rounds
 
 # Now both documents have both x and y

@@ -123,7 +123,7 @@ applications like shared notebooks or data pipelines</li>
 <code class="sourceCode R"><span><span class="va">doc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/am_create.html">am_create</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">doc</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;Automerge Document&gt;</span></span>
-<span><span class="co">#&gt; Actor: 837b9d7c0c2e1745559f22e01d514a6e </span></span>
+<span><span class="co">#&gt; Actor: a2af8ad6c4bd65c475f838670b0a1822 </span></span>
 <span><span class="co">#&gt; Root keys: 0</span></span></code></pre></div>
 </div>
 <div class="section level3">
@@ -355,7 +355,7 @@ without conflicts:</p>
 <span><span class="fu"><a href="../reference/am_put.html">am_put</a></span><span class="op">(</span><span class="va">doc9</span>, <span class="va">AM_ROOT</span>, <span class="st">"updated_at"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">doc9</span><span class="op">[[</span><span class="st">"created_at"</span><span class="op">]</span><span class="op">]</span></span>
-<span><span class="co">#&gt; [1] "2025-11-25 11:15:53 UTC"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "2025-11-26 10:19:46 UTC"</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -435,7 +435,7 @@ without conflicts:</p>
 <span><span class="va">doc12</span><span class="op">[[</span><span class="st">"value2"</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="co">#&gt; [1] 200</span></span>
 <span><span class="va">doc12</span><span class="op">[[</span><span class="st">"source"</span><span class="op">]</span><span class="op">]</span> <span class="co"># One value wins deterministically for conflicting keys</span></span>
-<span><span class="co">#&gt; [1] "doc13"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "doc12"</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -455,19 +455,19 @@ documents:</p>
 <span><span class="va">peer2</span><span class="op">[[</span><span class="st">"data2"</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">200</span></span>
 <span><span class="fu"><a href="../reference/am_commit.html">am_commit</a></span><span class="op">(</span><span class="va">peer2</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Bidirectional sync</span></span>
-<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/am_sync.html">am_sync</a></span><span class="op">(</span><span class="va">peer1</span>, <span class="va">peer2</span><span class="op">)</span></span>
-<span><span class="va">result</span><span class="op">$</span><span class="va">rounds</span></span>
+<span><span class="co"># Bidirectional sync (documents modified in place)</span></span>
+<span><span class="va">rounds</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/am_sync.html">am_sync</a></span><span class="op">(</span><span class="va">peer1</span>, <span class="va">peer2</span><span class="op">)</span></span>
+<span><span class="va">rounds</span></span>
 <span><span class="co">#&gt; [1] 4</span></span>
 <span></span>
 <span><span class="co"># Both documents now have all data</span></span>
-<span><span class="va">result</span><span class="op">$</span><span class="va">doc1</span><span class="op">[[</span><span class="st">"data1"</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">peer1</span><span class="op">[[</span><span class="st">"data1"</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="co">#&gt; [1] 100</span></span>
-<span><span class="va">result</span><span class="op">$</span><span class="va">doc1</span><span class="op">[[</span><span class="st">"data2"</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">peer1</span><span class="op">[[</span><span class="st">"data2"</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="co">#&gt; [1] 200</span></span>
-<span><span class="va">result</span><span class="op">$</span><span class="va">doc2</span><span class="op">[[</span><span class="st">"data1"</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">peer2</span><span class="op">[[</span><span class="st">"data1"</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="co">#&gt; [1] 100</span></span>
-<span><span class="va">result</span><span class="op">$</span><span class="va">doc2</span><span class="op">[[</span><span class="st">"data2"</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">peer2</span><span class="op">[[</span><span class="st">"data2"</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="co">#&gt; [1] 200</span></span></code></pre></div>
 </div>
 <div class="section level2">
