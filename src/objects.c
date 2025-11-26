@@ -314,13 +314,12 @@ static SEXP am_item_to_r(AMitem *item, SEXP parent_doc_sexp, SEXP parent_result_
             // Convert milliseconds to seconds for POSIXct
             result = PROTECT(Rf_ScalarReal((double) val / 1000.0));
 
-            // Set POSIXct class (requires both "POSIXct" and "POSIXt")
-            SEXP classes = PROTECT(Rf_allocVector(STRSXP, 2));
+            SEXP classes = Rf_allocVector(STRSXP, 2);
+            Rf_classgets(result, classes);
             SET_STRING_ELT(classes, 0, Rf_mkChar("POSIXct"));
             SET_STRING_ELT(classes, 1, Rf_mkChar("POSIXt"));
-            Rf_classgets(result, classes);
-
-            UNPROTECT(2);
+            
+            UNPROTECT(1);
             break;
         }
 
@@ -507,10 +506,7 @@ SEXP C_am_keys(SEXP doc_ptr, SEXP obj_ptr) {
     const AMobjId *obj_id = get_objid(obj_ptr);
 
     AMresult *result = AMkeys(doc, obj_id, NULL);  // NULL = current heads
-
-    if (AMresultStatus(result) != AM_STATUS_OK) {
-        CHECK_RESULT(result, AM_VAL_TYPE_VOID);  // Will error
-    }
+    CHECK_RESULT(result, AM_VAL_TYPE_VOID);
 
     // Count keys
     AMitems items = AMresultItems(result);
@@ -647,10 +643,7 @@ SEXP C_am_text_get(SEXP text_ptr) {
     const AMobjId *text_obj = get_objid(text_ptr);
 
     AMresult *result = AMtext(doc, text_obj, NULL);  // NULL = current heads
-
-    if (AMresultStatus(result) != AM_STATUS_OK) {
-        CHECK_RESULT(result, AM_VAL_TYPE_VOID);  // Will error
-    }
+    CHECK_RESULT(result, AM_VAL_TYPE_VOID);
 
     // Get string from result item
     AMitem *item = AMresultItem(result);

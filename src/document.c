@@ -65,12 +65,12 @@ SEXP C_am_create(SEXP actor_id) {
     R_RegisterCFinalizer(ext_ptr, am_doc_finalizer);
 
     // Set class attribute
-    SEXP class = PROTECT(Rf_allocVector(STRSXP, 2));
+    SEXP class = Rf_allocVector(STRSXP, 2);
+    Rf_classgets(ext_ptr, class);
     SET_STRING_ELT(class, 0, Rf_mkChar("am_doc"));
     SET_STRING_ELT(class, 1, Rf_mkChar("automerge"));
-    Rf_classgets(ext_ptr, class);
-
-    UNPROTECT(2);
+    
+    UNPROTECT(1);
     return ext_ptr;
 }
 
@@ -133,12 +133,12 @@ SEXP C_am_load(SEXP data) {
     R_RegisterCFinalizer(ext_ptr, am_doc_finalizer);
 
     // Set class attribute
-    SEXP class = PROTECT(Rf_allocVector(STRSXP, 2));
+    SEXP class = Rf_allocVector(STRSXP, 2);
+    Rf_classgets(ext_ptr, class);
     SET_STRING_ELT(class, 0, Rf_mkChar("am_doc"));
     SET_STRING_ELT(class, 1, Rf_mkChar("automerge"));
-    Rf_classgets(ext_ptr, class);
 
-    UNPROTECT(2);
+    UNPROTECT(1);
     return ext_ptr;
 }
 
@@ -283,12 +283,12 @@ SEXP C_am_fork(SEXP doc_ptr, SEXP heads) {
     R_RegisterCFinalizer(ext_ptr, am_doc_finalizer);
 
     // Set class attribute
-    SEXP class = PROTECT(Rf_allocVector(STRSXP, 2));
+    SEXP class = Rf_allocVector(STRSXP, 2);
+    Rf_classgets(ext_ptr, class);
     SET_STRING_ELT(class, 0, Rf_mkChar("am_doc"));
     SET_STRING_ELT(class, 1, Rf_mkChar("automerge"));
-    Rf_classgets(ext_ptr, class);
 
-    UNPROTECT(2);
+    UNPROTECT(1);
     return ext_ptr;
 }
 
@@ -307,9 +307,7 @@ SEXP C_am_merge(SEXP doc_ptr, SEXP other_ptr) {
 
     // AMmerge returns heads (change hashes) if changes were merged,
     // but result can be empty if there were no new changes
-    if (AMresultStatus(result) != AM_STATUS_OK) {
-        CHECK_RESULT(result, AM_VAL_TYPE_VOID);  // Will error and free
-    }
+    CHECK_RESULT(result, AM_VAL_TYPE_VOID);
 
     AMresultFree(result);
     return doc_ptr;  // Return document for chaining
@@ -450,9 +448,7 @@ SEXP C_am_commit(SEXP doc_ptr, SEXP message, SEXP time) {
 
     // AMcommit returns VOID if there were no pending operations,
     // or CHANGE_HASH if changes were committed
-    if (AMresultStatus(result) != AM_STATUS_OK) {
-        CHECK_RESULT(result, AM_VAL_TYPE_VOID);  // Will error and free
-    }
+    CHECK_RESULT(result, AM_VAL_TYPE_VOID);
 
     AMresultFree(result);
     return doc_ptr;  // Return document for chaining

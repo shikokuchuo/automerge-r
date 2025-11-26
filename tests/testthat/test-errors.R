@@ -455,3 +455,390 @@ test_that("am_delete_path warns on non-object intermediate path component", {
     "Path component at position 1 is not an object"
   )
 })
+
+# Object operations validation errors -----------------------------------------
+
+test_that("am_put with invalid key types for maps", {
+  doc <- am_create()
+
+  # Map keys must be single character strings
+  expect_snapshot(error = TRUE, {
+    am_put(doc, AM_ROOT, 123, "value")
+  })
+
+  expect_snapshot(error = TRUE, {
+    am_put(doc, AM_ROOT, c("a", "b"), "value")
+  })
+
+  expect_snapshot(error = TRUE, {
+    am_put(doc, AM_ROOT, list("key"), "value")
+  })
+})
+
+test_that("am_put with invalid positions for lists", {
+  doc <- am_create()
+  doc$items <- am_list(1, 2, 3)
+  items <- am_get(doc, AM_ROOT, "items")
+
+  # List positions must be positive
+  expect_snapshot(error = TRUE, {
+    am_put(doc, items, 0, "value")
+  })
+
+  expect_snapshot(error = TRUE, {
+    am_put(doc, items, -1, "value")
+  })
+
+  # Position must be scalar
+  expect_snapshot(error = TRUE, {
+    am_put(doc, items, c(1, 2), "value")
+  })
+})
+
+test_that("am_put with invalid value types", {
+  doc <- am_create()
+
+  # Non-scalar POSIXct
+  expect_snapshot(error = TRUE, {
+    am_put(doc, AM_ROOT, "time", as.POSIXct(c("2024-01-01", "2024-01-02")))
+  })
+
+  # Non-scalar counter
+  counter <- structure(c(1L, 2L), class = "am_counter")
+  expect_snapshot(error = TRUE, {
+    am_put(doc, AM_ROOT, "counter", counter)
+  })
+
+  # Non-scalar or non-string am_text
+  expect_snapshot(error = TRUE, {
+    am_put(doc, AM_ROOT, "text", structure(123, class = "am_text_type"))
+  })
+
+  expect_snapshot(error = TRUE, {
+    am_put(doc, AM_ROOT, "text", structure(c("a", "b"), class = "am_text_type"))
+  })
+})
+
+test_that("am_insert validates list-only operation", {
+  doc <- am_create()
+
+  # Cannot insert into root (which is a map)
+  expect_snapshot(error = TRUE, {
+    am_insert(doc, AM_ROOT, 1, "value")
+  })
+
+  # Cannot insert into a map
+  doc$map <- AM_OBJ_TYPE_MAP
+  map_obj <- am_get(doc, AM_ROOT, "map")
+  expect_snapshot(error = TRUE, {
+    am_insert(doc, map_obj, 1, "value")
+  })
+})
+
+test_that("am_delete with invalid positions for lists", {
+  doc <- am_create()
+  doc$items <- am_list(1, 2, 3)
+  items <- am_get(doc, AM_ROOT, "items")
+
+  # List positions must be positive
+  expect_snapshot(error = TRUE, {
+    am_delete(doc, items, 0)
+  })
+
+  expect_snapshot(error = TRUE, {
+    am_delete(doc, items, -1)
+  })
+
+  # Position must be scalar
+  expect_snapshot(error = TRUE, {
+    am_delete(doc, items, c(1, 2))
+  })
+})
+
+test_that("am_text_splice validation errors", {
+  doc <- am_create()
+  doc$text <- am_text("Hello")
+  text_obj <- am_get(doc, AM_ROOT, "text")
+
+  # pos must be numeric
+  expect_snapshot(error = TRUE, {
+    am_text_splice(text_obj, "not numeric", 0, "")
+  })
+
+  # del_count must be numeric
+  expect_snapshot(error = TRUE, {
+    am_text_splice(text_obj, 0, "not numeric", "")
+  })
+
+  # text must be single character string
+  expect_snapshot(error = TRUE, {
+    am_text_splice(text_obj, 0, 0, 123)
+  })
+
+  expect_snapshot(error = TRUE, {
+    am_text_splice(text_obj, 0, 0, c("a", "b"))
+  })
+
+  # pos must be non-negative
+  expect_snapshot(error = TRUE, {
+    am_text_splice(text_obj, -1, 0, "")
+  })
+
+  # del_count must be non-negative
+  expect_snapshot(error = TRUE, {
+    am_text_splice(text_obj, 0, -1, "")
+  })
+})
+
+test_that("am_counter_increment validation errors", {
+  doc <- am_create()
+  doc$counter <- am_counter(10)
+
+  # Delta must be numeric
+  expect_snapshot(error = TRUE, {
+    am_counter_increment(doc, AM_ROOT, "counter", "not numeric")
+  })
+
+  # Delta must be scalar
+  expect_snapshot(error = TRUE, {
+    am_counter_increment(doc, AM_ROOT, "counter", c(1, 2))
+  })
+
+  # Map key must be single character string
+  expect_snapshot(error = TRUE, {
+    am_counter_increment(doc, AM_ROOT, 123, 1)
+  })
+
+  expect_snapshot(error = TRUE, {
+    am_counter_increment(doc, AM_ROOT, c("a", "b"), 1)
+  })
+
+  # Cannot increment counter in text object
+  doc$text <- am_text("Hello")
+  text_obj <- am_get(doc, AM_ROOT, "text")
+  expect_snapshot(error = TRUE, {
+    am_counter_increment(doc, text_obj, 0, 1)
+  })
+})
+
+test_that("am_counter_increment with list positions", {
+  doc <- am_create()
+  doc$counters <- am_list(am_counter(1), am_counter(2))
+  counters <- am_get(doc, AM_ROOT, "counters")
+
+  # Position must be numeric
+  expect_snapshot(error = TRUE, {
+    am_counter_increment(doc, counters, "not numeric", 1)
+  })
+
+  # Position must be scalar
+  expect_snapshot(error = TRUE, {
+    am_counter_increment(doc, counters, c(1, 2), 1)
+  })
+
+  # Position must be >= 1 (1-based indexing)
+  expect_snapshot(error = TRUE, {
+    am_counter_increment(doc, counters, 0, 1)
+  })
+})
+
+# Cursor validation errors ----------------------------------------------------
+
+test_that("am_cursor validation errors", {
+  doc <- am_create()
+  doc$text <- am_text("Hello")
+  text_obj <- am_get(doc, AM_ROOT, "text")
+
+  # position must be numeric
+  expect_snapshot(error = TRUE, {
+    am_cursor(text_obj, "not numeric")
+  })
+
+  # position must be scalar
+  expect_snapshot(error = TRUE, {
+    am_cursor(text_obj, c(1, 2))
+  })
+
+  # position must be non-negative
+  expect_snapshot(error = TRUE, {
+    am_cursor(text_obj, -1)
+  })
+})
+
+test_that("am_cursor_position validation errors", {
+  doc <- am_create()
+  doc$text <- am_text("Hello")
+  text_obj <- am_get(doc, AM_ROOT, "text")
+  cursor <- am_cursor(text_obj, 0)
+
+  # cursor must be external pointer
+  expect_snapshot(error = TRUE, {
+    am_cursor_position(text_obj, "not a cursor")
+  })
+
+  expect_snapshot(error = TRUE, {
+    am_cursor_position(text_obj, 123)
+  })
+})
+
+# Mark validation errors ------------------------------------------------------
+
+test_that("am_mark_create validation errors", {
+  doc <- am_create()
+  doc$text <- am_text("Hello")
+  text_obj <- am_get(doc, AM_ROOT, "text")
+
+  # start must be numeric
+  expect_snapshot(error = TRUE, {
+    am_mark_create(text_obj, "not numeric", 5, "bold", TRUE)
+  })
+
+  # start must be scalar
+  expect_snapshot(error = TRUE, {
+    am_mark_create(text_obj, c(0, 1), 5, "bold", TRUE)
+  })
+
+  # start must be non-negative
+  expect_snapshot(error = TRUE, {
+    am_mark_create(text_obj, -1, 5, "bold", TRUE)
+  })
+
+  # end must be numeric
+  expect_snapshot(error = TRUE, {
+    am_mark_create(text_obj, 0, "not numeric", "bold", TRUE)
+  })
+
+  # end must be scalar
+  expect_snapshot(error = TRUE, {
+    am_mark_create(text_obj, 0, c(3, 5), "bold", TRUE)
+  })
+
+  # end must be non-negative
+  expect_snapshot(error = TRUE, {
+    am_mark_create(text_obj, 0, -1, "bold", TRUE)
+  })
+
+  # end must be greater than start
+  expect_snapshot(error = TRUE, {
+    am_mark_create(text_obj, 5, 5, "bold", TRUE)
+  })
+
+  expect_snapshot(error = TRUE, {
+    am_mark_create(text_obj, 5, 3, "bold", TRUE)
+  })
+
+  # name must be single character string
+  expect_snapshot(error = TRUE, {
+    am_mark_create(text_obj, 0, 5, 123, TRUE)
+  })
+
+  expect_snapshot(error = TRUE, {
+    am_mark_create(text_obj, 0, 5, c("a", "b"), TRUE)
+  })
+
+  # expand must be valid string
+  expect_snapshot(error = TRUE, {
+    am_mark_create(text_obj, 0, 5, "bold", TRUE, expand = "invalid")
+  })
+
+  expect_snapshot(error = TRUE, {
+    am_mark_create(text_obj, 0, 5, "bold", TRUE, expand = 123)
+  })
+
+  # Mark value must be scalar POSIXct
+  expect_snapshot(error = TRUE, {
+    am_mark_create(text_obj, 0, 5, "time", as.POSIXct(c("2024-01-01", "2024-01-02")))
+  })
+
+  # Mark value must be scalar counter
+  counter <- structure(c(1L, 2L), class = "am_counter")
+  expect_snapshot(error = TRUE, {
+    am_mark_create(text_obj, 0, 5, "counter", counter)
+  })
+})
+
+test_that("am_marks_at validation errors", {
+  doc <- am_create()
+  doc$text <- am_text("Hello")
+  text_obj <- am_get(doc, AM_ROOT, "text")
+
+  # position must be numeric
+  expect_snapshot(error = TRUE, {
+    am_marks_at(text_obj, "not numeric")
+  })
+
+  # position must be scalar
+  expect_snapshot(error = TRUE, {
+    am_marks_at(text_obj, c(0, 1))
+  })
+
+  # position must be non-negative
+  expect_snapshot(error = TRUE, {
+    am_marks_at(text_obj, -1)
+  })
+})
+
+# Document lifecycle validation errors ----------------------------------------
+
+test_that("am_create with invalid actor_id types", {
+  # actor_id must be NULL, character, or raw
+  expect_snapshot(error = TRUE, {
+    am_create(actor_id = 123)
+  })
+
+  expect_snapshot(error = TRUE, {
+    am_create(actor_id = list("id"))
+  })
+
+  expect_snapshot(error = TRUE, {
+    am_create(actor_id = TRUE)
+  })
+})
+
+test_that("am_fork with invalid heads parameter", {
+  doc <- am_create()
+  doc$x <- 1
+  am_commit(doc)
+
+  # heads must be NULL or list of raw vectors
+  expect_snapshot(error = TRUE, {
+    am_fork(doc, heads = "not a list")
+  })
+
+  expect_snapshot(error = TRUE, {
+    am_fork(doc, heads = 123)
+  })
+
+  # Elements must be raw vectors
+  expect_snapshot(error = TRUE, {
+    am_fork(doc, heads = list("not raw"))
+  })
+
+  expect_snapshot(error = TRUE, {
+    am_fork(doc, heads = list(123))
+  })
+})
+
+test_that("am_get_change_by_hash validation errors", {
+  doc <- am_create()
+  doc$x <- 1
+  am_commit(doc)
+
+  # hash must be raw vector
+  expect_snapshot(error = TRUE, {
+    am_get_change_by_hash(doc, "not raw")
+  })
+
+  expect_snapshot(error = TRUE, {
+    am_get_change_by_hash(doc, 123)
+  })
+
+  # hash must be exactly 32 bytes
+  expect_snapshot(error = TRUE, {
+    am_get_change_by_hash(doc, raw(10))
+  })
+
+  expect_snapshot(error = TRUE, {
+    am_get_change_by_hash(doc, raw(50))
+  })
+})

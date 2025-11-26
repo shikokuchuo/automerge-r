@@ -29,14 +29,14 @@ SEXP C_am_cursor(SEXP obj_ptr, SEXP position) {
     if (TYPEOF(position) != INTSXP && TYPEOF(position) != REALSXP) {
         Rf_error("position must be numeric");
     }
-    if (Rf_xlength(position) != 1) {
+    if (XLENGTH(position) != 1) {
         Rf_error("position must be a scalar");
     }
     int r_pos = Rf_asInteger(position);
     if (r_pos < 0) {
         Rf_error("position must be non-negative (uses 0-based indexing)");
     }
-    size_t c_pos = (size_t)r_pos;  // Direct use, already 0-based
+    size_t c_pos = (size_t) r_pos;  // Direct use, already 0-based
 
     // Call AMgetCursor (heads parameter NULL for current state)
     AMresult *result = AMgetCursor(doc, obj_id, c_pos, NULL);
@@ -52,11 +52,9 @@ SEXP C_am_cursor(SEXP obj_ptr, SEXP position) {
     SEXP cursor_ptr = PROTECT(wrap_am_result(result, doc_ptr));
 
     // Set class to am_cursor
-    SEXP class_vec = PROTECT(Rf_allocVector(STRSXP, 1));
-    SET_STRING_ELT(class_vec, 0, Rf_mkChar("am_cursor"));
-    Rf_classgets(cursor_ptr, class_vec);
+    Rf_classgets(cursor_ptr, Rf_mkString("am_cursor"));
 
-    UNPROTECT(2);  // cursor_ptr, class_vec
+    UNPROTECT(1);
     return cursor_ptr;
 }
 
@@ -112,7 +110,7 @@ SEXP C_am_cursor_position(SEXP obj_ptr, SEXP cursor_ptr) {
         AMresultFree(result);
         Rf_error("Position too large to represent as R integer");
     }
-    int r_pos = (int)c_pos;  // Direct use, 0-based
+    int r_pos = (int) c_pos;  // Direct use, 0-based
 
     AMresultFree(result);
 
@@ -178,24 +176,7 @@ static SEXP C_am_marks_impl(SEXP obj_ptr, int filter_position) {
 
     // Call AMmarks (heads parameter NULL for current state)
     AMresult *result = AMmarks(doc, obj_id, NULL);
-
-    // Check if result is valid
-    AMstatus status = AMresultStatus(result);
-    if (status != AM_STATUS_OK) {
-        AMbyteSpan err_span = AMresultError(result);
-        if (err_span.count > 0) {
-            size_t msg_size = err_span.count < MAX_ERROR_MSG_SIZE ?
-                              err_span.count : MAX_ERROR_MSG_SIZE;
-            char err_msg[msg_size + 1];
-            memcpy(err_msg, err_span.src, msg_size);
-            err_msg[msg_size] = '\0';
-            AMresultFree(result);
-            Rf_error("Automerge error: %s", err_msg);
-        } else {
-            AMresultFree(result);
-            Rf_error("Automerge error: unknown error (no error message)");
-        }
-    }
+    CHECK_RESULT(result, AM_VAL_TYPE_VOID);
 
     // Get items iterator
     AMitems items = AMresultItems(result);
@@ -342,18 +323,18 @@ static SEXP amitem_to_r_value(AMitem *item) {
             AMitemToInt(item, &val);
             if (val < INT_MIN || val > INT_MAX) {
                 Rf_warning("Mark value integer out of R integer range, converting to double");
-                return Rf_ScalarReal((double)val);
+                return Rf_ScalarReal((double) val);
             }
-            return Rf_ScalarInteger((int)val);
+            return Rf_ScalarInteger((int) val);
         }
         case AM_VAL_TYPE_UINT: {
             uint64_t val;
             AMitemToUint(item, &val);
             if (val > INT_MAX) {
                 Rf_warning("Mark value unsigned integer out of R integer range, converting to double");
-                return Rf_ScalarReal((double)val);
+                return Rf_ScalarReal((double) val);
             }
-            return Rf_ScalarInteger((int)val);
+            return Rf_ScalarInteger((int) val);
         }
         case AM_VAL_TYPE_F64: {
             double val;
@@ -363,7 +344,7 @@ static SEXP amitem_to_r_value(AMitem *item) {
         case AM_VAL_TYPE_STR: {
             AMbyteSpan span;
             AMitemToStr(item, &span);
-            return Rf_ScalarString(Rf_mkCharLenCE((char *)span.src, span.count, CE_UTF8));
+            return Rf_ScalarString(Rf_mkCharLenCE((char *) span.src, span.count, CE_UTF8));
         }
         case AM_VAL_TYPE_BYTES: {
             AMbyteSpan span;
@@ -381,13 +362,13 @@ static SEXP amitem_to_r_value(AMitem *item) {
                     Rf_error("Failed to extract timestamp from mark value");
                 }
             }
-            double seconds = (double)val / 1000.0;
+            double seconds = (double) val / 1000.0;
             SEXP result = PROTECT(Rf_ScalarReal(seconds));
-            SEXP class_vec = PROTECT(Rf_allocVector(STRSXP, 2));
+            SEXP class_vec = Rf_allocVector(STRSXP, 2);
+            Rf_classgets(result, class_vec);
             SET_STRING_ELT(class_vec, 0, Rf_mkChar("POSIXct"));
             SET_STRING_ELT(class_vec, 1, Rf_mkChar("POSIXt"));
-            Rf_classgets(result, class_vec);
-            UNPROTECT(2);
+            UNPROTECT(1);
             return result;
         }
         case AM_VAL_TYPE_COUNTER: {
@@ -401,13 +382,11 @@ static SEXP amitem_to_r_value(AMitem *item) {
             }
             if (val < INT_MIN || val > INT_MAX) {
                 Rf_warning("Counter value out of R integer range, converting to double");
-                return Rf_ScalarReal((double)val);
+                return Rf_ScalarReal((double) val);
             }
-            SEXP result = PROTECT(Rf_ScalarInteger((int)val));
-            SEXP class_vec = PROTECT(Rf_allocVector(STRSXP, 1));
-            SET_STRING_ELT(class_vec, 0, Rf_mkChar("am_counter"));
-            Rf_classgets(result, class_vec);
-            UNPROTECT(2);
+            SEXP result = PROTECT(Rf_ScalarInteger((int) val));
+            Rf_classgets(result, Rf_mkString("am_counter"));
+            UNPROTECT(1);
             return result;
         }
         default:
@@ -454,7 +433,7 @@ SEXP C_am_mark_create(SEXP obj_ptr, SEXP start, SEXP end,
     if (r_start < 0) {
         Rf_error("start must be non-negative (uses 0-based indexing)");
     }
-    size_t c_start = (size_t)r_start;  // Direct use, 0-based
+    size_t c_start = (size_t) r_start;  // Direct use, 0-based
 
     // Validate end position (0-based indexing)
     if (TYPEOF(end) != INTSXP && TYPEOF(end) != REALSXP) {
@@ -467,7 +446,7 @@ SEXP C_am_mark_create(SEXP obj_ptr, SEXP start, SEXP end,
     if (r_end < 0) {
         Rf_error("end must be non-negative (uses 0-based indexing)");
     }
-    size_t c_end = (size_t)r_end;  // Direct use, 0-based
+    size_t c_end = (size_t) r_end;  // Direct use, 0-based
 
     if (c_end <= c_start) {
         Rf_error("end must be greater than start");
@@ -531,7 +510,7 @@ SEXP C_am_marks_at(SEXP obj_ptr, SEXP position) {
     if (TYPEOF(position) != INTSXP && TYPEOF(position) != REALSXP) {
         Rf_error("position must be numeric");
     }
-    if (Rf_xlength(position) != 1) {
+    if (XLENGTH(position) != 1) {
         Rf_error("position must be a scalar");
     }
     int r_pos = Rf_asInteger(position);

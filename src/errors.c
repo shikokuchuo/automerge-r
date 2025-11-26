@@ -20,20 +20,14 @@ void check_result_impl(AMresult *result, AMvalType expected_type,
     if (status != AM_STATUS_OK) {
         AMbyteSpan err_span = AMresultError(result);
 
-        if (err_span.count > 0) {
-            size_t msg_size = err_span.count < MAX_ERROR_MSG_SIZE ?
-                              err_span.count : MAX_ERROR_MSG_SIZE;
-            char err_msg[MAX_ERROR_MSG_SIZE + 1];
-            memcpy(err_msg, err_span.src, msg_size);
-            err_msg[msg_size] = '\0';
+        size_t msg_size = err_span.count < MAX_ERROR_MSG_SIZE ?
+                          err_span.count : MAX_ERROR_MSG_SIZE;
+        char err_msg[MAX_ERROR_MSG_SIZE + 1];
+        memcpy(err_msg, err_span.src, msg_size);
+        err_msg[msg_size] = '\0';
 
-            AMresultFree(result);
-            Rf_error("Automerge error at %s:%d: %s", file, line, err_msg);
-        } else {
-            AMresultFree(result);
-            Rf_error("Automerge error at %s:%d: unknown error (no error message)",
-                     file, line);
-        }
+        AMresultFree(result);
+        Rf_error("Automerge error at %s:%d: %s", file, line, err_msg);
     }
 
     if (expected_type != AM_VAL_TYPE_VOID) {

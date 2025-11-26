@@ -33,10 +33,8 @@ SEXP C_am_sync_state_new(void) {
     // NOTE: No parent to protect - sync state is document-independent
     SEXP ext_ptr = PROTECT(R_MakeExternalPtr(state_wrapper, R_NilValue, R_NilValue));
     R_RegisterCFinalizer(ext_ptr, am_syncstate_finalizer);
-
-    // Set class attribute
-    SEXP class = Rf_mkString("am_syncstate");
-    Rf_classgets(ext_ptr, class);
+    
+    Rf_classgets(ext_ptr, Rf_mkString("am_syncstate"));
 
     UNPROTECT(1);
     return ext_ptr;
@@ -65,11 +63,7 @@ SEXP C_am_sync_encode(SEXP doc_ptr, SEXP sync_state_ptr) {
 
     // Generate sync message
     AMresult *result = AMgenerateSyncMessage(doc, state_wrapper->state);
-
-    // Check result status
-    if (AMresultStatus(result) != AM_STATUS_OK) {
-        CHECK_RESULT(result, AM_VAL_TYPE_VOID);  // Will error and free
-    }
+    CHECK_RESULT(result, AM_VAL_TYPE_VOID);
 
     // Get result item and check type
     AMitem *item = AMresultItem(result);
@@ -341,15 +335,14 @@ SEXP C_am_apply_changes(SEXP doc_ptr, SEXP changes) {
         // Apply this change incrementally
         AMresult *result = AMloadIncremental(doc, RAW(change_bytes), (size_t) XLENGTH(change_bytes));
 
-        // Check for errors
+        // Check for errors with custom context
         if (AMresultStatus(result) != AM_STATUS_OK) {
-            // Extract error message
             AMbyteSpan error_span = AMresultError(result);
-            char error_msg[MAX_ERROR_MSG_SIZE];
-            size_t msg_len = error_span.count < MAX_ERROR_MSG_SIZE - 1 ?
-                           error_span.count : MAX_ERROR_MSG_SIZE - 1;
-            memcpy(error_msg, error_span.src, msg_len);
-            error_msg[msg_len] = '\0';
+            size_t msg_size = error_span.count < MAX_ERROR_MSG_SIZE ?
+                              error_span.count : MAX_ERROR_MSG_SIZE;
+            char error_msg[MAX_ERROR_MSG_SIZE + 1];
+            memcpy(error_msg, error_span.src, msg_size);
+            error_msg[msg_size] = '\0';
 
             AMresultFree(result);
             Rf_error("Failed to apply change at index %lld: %s", (long long) i, error_msg);

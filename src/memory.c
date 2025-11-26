@@ -175,7 +175,8 @@ SEXP am_wrap_nested_object(const AMobjId *obj_id, SEXP parent_result_sexp) {
     AMdoc *doc = get_doc(parent_doc_sexp);
     AMobjType obj_type = AMobjObjType(doc, obj_id);
 
-    SEXP classes = PROTECT(Rf_allocVector(STRSXP, 2));
+    SEXP classes = Rf_allocVector(STRSXP, 2);
+    Rf_classgets(obj_id_ptr, classes);
     switch(obj_type) {
         case AM_OBJ_TYPE_MAP:
             SET_STRING_ELT(classes, 0, Rf_mkChar("am_map"));
@@ -191,8 +192,7 @@ SEXP am_wrap_nested_object(const AMobjId *obj_id, SEXP parent_result_sexp) {
             break;
     }
     SET_STRING_ELT(classes, 1, Rf_mkChar("am_object"));
-    Rf_classgets(obj_id_ptr, classes);
 
-    UNPROTECT(2);  // obj_id_ptr, classes
+    UNPROTECT(1);
     return obj_id_ptr;
 }
