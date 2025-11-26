@@ -234,7 +234,7 @@ am_text_splice(text12, 5, 0, " Everyone")
 am_merge(doc11, doc12)
 
 am_text_get(text11)
-#> [1] "Hello World Everyone"
+#> [1] "Hello Everyone World"
 ```
 
 ### Counters
@@ -287,9 +287,9 @@ doc16[["updated_at"]] <- Sys.time()
 am_merge(doc15, doc16)
 
 doc15[["created_at"]]
-#> [1] "2025-11-26 20:06:34 UTC"
+#> [1] "2025-11-26 22:23:43 UTC"
 doc15[["updated_at"]]
-#> [1] "2025-11-26 20:06:34 UTC"
+#> [1] "2025-11-26 22:23:43 UTC"
 ```
 
 **When to use**: Audit trails, modification times, temporal metadata.
@@ -541,7 +541,7 @@ am_merge(doc26, doc27)
 
 # One will win - application should handle both states sensibly
 doc26[["status"]] # Should be prepared for either 'published' or 'archived'
-#> [1] "published"
+#> [1] "archived"
 ```
 
 ## Further Reading
