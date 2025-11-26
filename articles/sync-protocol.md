@@ -372,7 +372,7 @@ str(y_changes)
 # Sync to merge divergent histories
 rounds <- am_sync(peer_x, peer_y)
 rounds
-#> [1] 4
+#> [1] 5
 
 # After sync, heads are identical again
 identical(am_get_heads(peer_x), am_get_heads(peer_y))

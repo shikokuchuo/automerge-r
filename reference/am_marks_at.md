@@ -1,9 +1,8 @@
 # Get marks at a specific position
 
-Convenience function to retrieve marks that include a specific position.
-This is equivalent to calling
-[`am_marks()`](http://shikokuchuo.net/automerge-r/reference/am_marks.md)
-and filtering the results.
+Retrieves marks that include a specific position in a text object. This
+function efficiently filters marks at the C level, avoiding the overhead
+of converting all marks to R objects.
 
 ## Usage
 
