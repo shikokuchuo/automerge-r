@@ -4,19 +4,17 @@
 \alias{from_automerge}
 \title{Convert Automerge document to R list}
 \usage{
-from_automerge(doc, obj = AM_ROOT)
+from_automerge(doc)
 }
 \arguments{
 \item{doc}{An Automerge document}
-
-\item{obj}{Optional object ID (default: AM_ROOT for full document)}
 }
 \value{
 Named list with document contents
 }
 \description{
-Converts an Automerge document to a standard R list. This is a convenience
-wrapper around \code{as.list.am_doc()}.
+Converts an Automerge document to a standard R list. This is equivalent to
+\code{as.list.am_doc()}.
 }
 \examples{
 doc <- am_create()

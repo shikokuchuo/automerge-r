@@ -40,19 +40,17 @@ am_get_path <- function(doc, path) {
     )
   }
 
-  if (length(path) == 0) {
+  if (length(path) == 0L) {
     stop("path cannot be empty")
   }
 
   obj <- AM_ROOT
 
-  for (i in seq_along(path)) {
-    key <- if (is.list(path)) path[[i]] else path[i]
-
+  for (key in path) {
     obj <- am_get(doc, obj, key)
 
     if (is.null(obj)) {
-      return(NULL)
+      return()
     }
   }
 
@@ -93,14 +91,15 @@ am_put_path <- function(doc, path, value, create_intermediate = TRUE) {
     )
   }
 
-  if (length(path) == 0) {
+  path_len <- length(path)
+  if (path_len == 0L) {
     stop("path cannot be empty")
   }
 
   obj <- AM_ROOT
 
-  for (i in seq_len(length(path) - 1)) {
-    key <- if (is.list(path)) path[[i]] else path[i]
+  for (i in seq_len(path_len - 1L)) {
+    key <- path[[i]]
     next_obj <- am_get(doc, obj, key)
 
     if (is.null(next_obj)) {
@@ -127,7 +126,7 @@ am_put_path <- function(doc, path, value, create_intermediate = TRUE) {
     }
   }
 
-  final_key <- if (is.list(path)) path[[length(path)]] else path[length(path)]
+  final_key <- path[[path_len]]
   am_put(doc, obj, final_key, value)
 
   invisible(doc)
@@ -163,14 +162,15 @@ am_delete_path <- function(doc, path) {
     )
   }
 
-  if (length(path) == 0) {
+  path_len <- length(path)
+  if (path_len == 0L) {
     stop("path cannot be empty")
   }
 
   obj <- AM_ROOT
 
-  for (i in seq_len(length(path) - 1)) {
-    key <- if (is.list(path)) path[[i]] else path[i]
+  for (i in seq_len(path_len - 1L)) {
+    key <- path[[i]]
     obj_result <- am_get(doc, obj, key)
 
     if (is.null(obj_result)) {
@@ -186,7 +186,7 @@ am_delete_path <- function(doc, path) {
     }
   }
 
-  final_key <- if (is.list(path)) path[[length(path)]] else path[length(path)]
+  final_key <- path[[path_len]]
   am_delete(doc, obj, final_key)
 
   invisible(doc)
@@ -232,7 +232,7 @@ as_automerge <- function(x, doc = NULL, actor_id = NULL) {
     for (name in names(x)) {
       am_put(doc, AM_ROOT, name, x[[name]])
     }
-  } else if (length(x) == 1) {
+  } else if (length(x) == 1L) {
     # Single primitive value
     am_put(doc, AM_ROOT, "value", x)
   } else {
@@ -245,11 +245,10 @@ as_automerge <- function(x, doc = NULL, actor_id = NULL) {
 
 #' Convert Automerge document to R list
 #'
-#' Converts an Automerge document to a standard R list. This is a convenience
-#' wrapper around `as.list.am_doc()`.
+#' Converts an Automerge document to a standard R list. This is equivalent to
+#' `as.list.am_doc()`.
 #'
 #' @param doc An Automerge document
-#' @param obj Optional object ID (default: AM_ROOT for full document)
 #' @return Named list with document contents
 #' @export
 #' @examples
@@ -258,7 +257,7 @@ as_automerge <- function(x, doc = NULL, actor_id = NULL) {
 #' doc$age <- 30L
 #'
 #' from_automerge(doc)  # list(name = "Alice", age = 30L)
-from_automerge <- function(doc, obj = AM_ROOT) {
+from_automerge <- function(doc) {
   if (!inherits(doc, "am_doc")) {
     stop("doc must be an Automerge document (am_doc)")
   }

@@ -135,8 +135,8 @@ print.am_doc <- function(x, ...) {
 #' as.list(doc)  # list(name = "Alice", age = 30L)
 as.list.am_doc <- function(x, ...) {
   root_keys <- am_keys(x, AM_ROOT)
-  result <- lapply(root_keys, function(k) {
-    value <- am_get(x, AM_ROOT, k)
+  root_values <- am_values(x, AM_ROOT)
+  result <- lapply(root_values, function(value) {
     if (inherits(value, "am_object")) {
       as.list(value)
     } else {
@@ -333,8 +333,8 @@ as.list.am_map <- function(x, doc = NULL, ...) {
     doc <- .Call(C_get_doc_from_objid, x)
   }
   keys <- am_keys(doc, x)
-  result <- lapply(keys, function(k) {
-    value <- am_get(doc, x, k)
+  values <- am_values(doc, x)
+  result <- lapply(values, function(value) {
     if (inherits(value, "am_object")) {
       as.list(value, doc = doc)
     } else {
@@ -358,9 +358,8 @@ as.list.am_list <- function(x, doc = NULL, ...) {
   if (is.null(doc)) {
     doc <- .Call(C_get_doc_from_objid, x)
   }
-  len <- am_length(doc, x)
-  result <- lapply(seq_len(len), function(i) {
-    value <- am_get(doc, x, i)
+  values <- am_values(doc, x)
+  result <- lapply(values, function(value) {
     if (inherits(value, "am_object")) {
       as.list(value, doc = doc)
     } else {
