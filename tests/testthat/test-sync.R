@@ -99,12 +99,11 @@ test_that("am_sync synchronizes two documents", {
   am_commit(doc2)
 
   # Sync using high-level helper
-  result <- am_sync(doc1, doc2)
+  rounds <- am_sync(doc1, doc2)
 
-  expect_type(result, "list")
-  expect_named(result, c("doc1", "doc2", "rounds"))
-  expect_gt(result$rounds, 0)
-  expect_lte(result$rounds, 100)
+  expect_type(rounds, "double")
+  expect_gt(rounds, 0)
+  expect_lte(rounds, 100)
 
   # Both documents should have all four keys
   expect_equal(am_get(doc1, AM_ROOT, "a"), 1)
@@ -137,7 +136,8 @@ test_that("am_sync handles concurrent edits", {
   am_commit(doc2, "Doc2 update")
 
   # Sync them
-  result <- am_sync(doc1, doc2)
+  rounds <- am_sync(doc1, doc2)
+  expect_gt(rounds, 0)
 
 
   # Both should have both x and y
@@ -274,7 +274,8 @@ test_that("sync works with nested objects", {
   am_commit(doc2, "Add items")
 
   # Sync
-  result <- am_sync(doc1, doc2)
+  rounds <- am_sync(doc1, doc2)
+  expect_gt(rounds, 0)
 
   # Both should have both structures
   config1 <- am_get(doc1, AM_ROOT, "config")
@@ -354,7 +355,8 @@ test_that("sync works with text objects", {
   am_commit(doc2)
 
   # Sync
-  result <- am_sync(doc1, doc2)
+  rounds <- am_sync(doc1, doc2)
+  expect_gt(rounds, 0)
 
   # Both should have both text objects
   notes1 <- am_get(doc1, AM_ROOT, "notes")

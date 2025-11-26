@@ -12,12 +12,8 @@ am_sync(doc1, doc2)
 \item{doc2}{Second Automerge document}
 }
 \value{
-A list with components:
-\describe{
-\item{doc1}{The first document (updated with changes from doc2)}
-\item{doc2}{The second document (updated with changes from doc1)}
-\item{rounds}{Number of sync rounds completed}
-}
+An integer indicating the number of sync rounds completed (invisibly).
+Both documents are modified in place to include each other's changes.
 }
 \description{
 Automatically synchronizes two documents by exchanging messages until
@@ -38,9 +34,9 @@ doc2 <- am_create()
 am_put(doc1, AM_ROOT, "x", 1)
 am_put(doc2, AM_ROOT, "y", 2)
 
-# Synchronize them
-result <- am_sync(doc1, doc2)
-cat("Synced in", result$rounds, "rounds\n")
+# Synchronize them (documents modified in place)
+rounds <- am_sync(doc1, doc2)
+cat("Synced in", rounds, "rounds\n")
 
 # Now both documents have both x and y
 }

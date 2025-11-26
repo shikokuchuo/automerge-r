@@ -92,12 +92,8 @@ am_sync_decode <- function(doc, sync_state, message) {
 #' @param doc1 First Automerge document
 #' @param doc2 Second Automerge document
 #'
-#' @return A list with components:
-#'   \describe{
-#'     \item{doc1}{The first document (updated with changes from doc2)}
-#'     \item{doc2}{The second document (updated with changes from doc1)}
-#'     \item{rounds}{Number of sync rounds completed}
-#'   }
+#' @return An integer indicating the number of sync rounds completed (invisibly).
+#'   Both documents are modified in place to include each other's changes.
 #'
 #' @export
 #' @examples
@@ -109,9 +105,9 @@ am_sync_decode <- function(doc, sync_state, message) {
 #' am_put(doc1, AM_ROOT, "x", 1)
 #' am_put(doc2, AM_ROOT, "y", 2)
 #'
-#' # Synchronize them
-#' result <- am_sync(doc1, doc2)
-#' cat("Synced in", result$rounds, "rounds\n")
+#' # Synchronize them (documents modified in place)
+#' rounds <- am_sync(doc1, doc2)
+#' cat("Synced in", rounds, "rounds\n")
 #'
 #' # Now both documents have both x and y
 am_sync <- function(doc1, doc2) {
@@ -122,25 +118,20 @@ am_sync <- function(doc1, doc2) {
     stop("doc2 must be an Automerge document")
   }
 
-  # Create sync states for both sides
   sync1 <- am_sync_state_new()
   sync2 <- am_sync_state_new()
 
-  # Exchange messages until convergence
   round <- 0
   repeat {
     round <- round + 1
 
-    # Generate messages from both sides
     msg1 <- am_sync_encode(doc1, sync1)
     msg2 <- am_sync_encode(doc2, sync2)
 
-    # Check if both sides have no more messages (converged)
     if (is.null(msg1) && is.null(msg2)) {
       break
     }
 
-    # Apply messages
     if (!is.null(msg1)) {
       am_sync_decode(doc2, sync2, msg1)
     }
@@ -149,11 +140,7 @@ am_sync <- function(doc1, doc2) {
     }
   }
 
-  list(
-    doc1 = doc1,
-    doc2 = doc2,
-    rounds = round
-  )
+  invisible(round)
 }
 
 # Change Tracking and History Functions --------------------------------------

@@ -47,6 +47,8 @@ am_commit(bob, "Bob's data")
 
 # Later, sync with zero conflicts
 am_sync(alice, bob)
+alice
+bob
 ```
 
 ## Key Features

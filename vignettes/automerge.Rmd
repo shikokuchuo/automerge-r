@@ -357,15 +357,15 @@ peer2[["edited_by"]] <- "peer2"
 peer2[["data2"]] <- 200
 am_commit(peer2)
 
-# Bidirectional sync
-result <- am_sync(peer1, peer2)
-result$rounds
+# Bidirectional sync (documents modified in place)
+rounds <- am_sync(peer1, peer2)
+rounds
 
 # Both documents now have all data
-result$doc1[["data1"]]
-result$doc1[["data2"]]
-result$doc2[["data1"]]
-result$doc2[["data2"]]
+peer1[["data1"]]
+peer1[["data2"]]
+peer2[["data1"]]
+peer2[["data2"]]
 ```
 
 ## Next Steps
