@@ -75,7 +75,7 @@ am_merge(target, source)
 
 # Target now has source's changes
 target[["version"]]
-#> [1] "1.0"
+#> [1] "2.0"
 
 # Source is unchanged
 names(source)
@@ -372,7 +372,7 @@ str(y_changes)
 # Sync to merge divergent histories
 rounds <- am_sync(peer_x, peer_y)
 rounds
-#> [1] 5
+#> [1] 4
 
 # After sync, heads are identical again
 identical(am_get_heads(peer_x), am_get_heads(peer_y))
@@ -414,7 +414,7 @@ editor1[["counter"]]
 
 # Status: Deterministic conflict resolution (one value wins)
 editor1[["status"]]
-#> [1] "review"
+#> [1] "published"
 ```
 
 ## Sync Performance

@@ -81,7 +81,7 @@ am_merge(doc1, doc2)
 
 # One value wins (deterministic, all replicas agree)
 doc1[["name"]]
-#> [1] "Alice Johnson"
+#> [1] "Alice Smith"
 ```
 
 **When to use**: Simple values where automatic conflict resolution is
@@ -156,8 +156,8 @@ for (i in seq_len(am_length(doc5, items5))) {
   print(am_get(doc5, items5, i))
 }
 #> [1] "A"
-#> [1] "B1"
 #> [1] "B2"
+#> [1] "B1"
 #> [1] "C"
 ```
 
@@ -287,9 +287,9 @@ doc16[["updated_at"]] <- Sys.time()
 am_merge(doc15, doc16)
 
 doc15[["created_at"]]
-#> [1] "2025-11-26 12:07:25 UTC"
+#> [1] "2025-11-26 12:18:05 UTC"
 doc15[["updated_at"]]
-#> [1] "2025-11-26 12:07:25 UTC"
+#> [1] "2025-11-26 12:18:05 UTC"
 ```
 
 **When to use**: Audit trails, modification times, temporal metadata.
