@@ -288,13 +288,7 @@ am_text <- function(initial = "") {
 #' am_text_splice(text_obj2, 6, 0, "World")
 #' am_text_get(text_obj2)  # "Hello😀World"
 am_text_splice <- function(text_obj, pos, del_count, text) {
-  invisible(.Call(
-    C_am_text_splice,
-    text_obj,
-    as.integer(pos),
-    as.integer(del_count),
-    as.character(text)
-  ))
+  invisible(.Call(C_am_text_splice, text_obj, pos, del_count, text))
 }
 
 #' Get text from a text object
@@ -374,8 +368,5 @@ am_values <- function(doc, obj) {
 #' am_counter_increment(doc, counters_obj, 1, 1)  # Increment first counter
 #' am_counter_increment(doc, counters_obj, 2, 2)  # Increment second counter
 am_counter_increment <- function(doc, obj, key, delta) {
-  if (!is.integer(delta)) {
-    delta <- as.integer(delta)
-  }
   invisible(.Call(C_am_counter_increment, doc, obj, key, delta))
 }
