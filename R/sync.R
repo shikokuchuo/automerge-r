@@ -193,9 +193,6 @@ am_get_heads <- function(doc) {
 #' all_changes <- am_get_changes(doc, NULL)
 #' cat("Document has", length(all_changes), "change(s)\n")
 am_get_changes <- function(doc, heads = NULL) {
-  if (!is.null(heads) && !is.list(heads)) {
-    stop("heads must be NULL or a list of raw vectors")
-  }
   .Call(C_am_get_changes, doc, heads)
 }
 
@@ -255,6 +252,5 @@ am_apply_changes <- function(doc, changes) {
 #' history <- am_get_history(doc)
 #' cat("Document history contains", length(history), "change(s)\n")
 am_get_history <- function(doc) {
-  # Get all changes (pass NULL for heads to get full history)
   am_get_changes(doc, NULL)
 }

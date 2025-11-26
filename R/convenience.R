@@ -35,7 +35,9 @@ am_get_path <- function(doc, path) {
   }
 
   if (!is.character(path) && !is.numeric(path) && !is.list(path)) {
-    stop("path must be a character vector, numeric vector, or list of mixed types")
+    stop(
+      "path must be a character vector, numeric vector, or list of mixed types"
+    )
   }
 
   if (length(path) == 0) {
@@ -47,15 +49,11 @@ am_get_path <- function(doc, path) {
   for (i in seq_along(path)) {
     key <- if (is.list(path)) path[[i]] else path[i]
 
-    # Get the next level
     obj <- am_get(doc, obj, key)
 
     if (is.null(obj)) {
       return(NULL)
     }
-
-    # If it's an am_object and not the final result, keep it for next iteration
-    # (am_object is now just the external pointer, so no need to extract $obj_id)
   }
 
   obj
@@ -90,14 +88,15 @@ am_put_path <- function(doc, path, value, create_intermediate = TRUE) {
   }
 
   if (!is.character(path) && !is.numeric(path) && !is.list(path)) {
-    stop("path must be a character vector, numeric vector, or list of mixed types")
+    stop(
+      "path must be a character vector, numeric vector, or list of mixed types"
+    )
   }
 
   if (length(path) == 0) {
     stop("path cannot be empty")
   }
 
-  # Navigate to parent, creating intermediate objects if needed
   obj <- AM_ROOT
 
   for (i in seq_len(length(path) - 1)) {
@@ -106,20 +105,21 @@ am_put_path <- function(doc, path, value, create_intermediate = TRUE) {
 
     if (is.null(next_obj)) {
       if (create_intermediate) {
-        # Create intermediate object (use am_map() for string keys to ensure MAP type)
         if (is.character(key)) {
           am_put(doc, obj, key, am_map())
           next_obj <- am_get(doc, obj, key)
         } else {
           # For numeric indices, parent must already be a list
-          stop(sprintf("Cannot create intermediate list element at index %d", key))
+          stop(sprintf(
+            "Cannot create intermediate list element at index %d",
+            key
+          ))
         }
       } else {
         stop(sprintf("Path component at position %d does not exist", i))
       }
     }
 
-    # Use am_object directly for next iteration (it's now just the external pointer)
     if (inherits(next_obj, "am_object")) {
       obj <- next_obj
     } else {
@@ -127,7 +127,6 @@ am_put_path <- function(doc, path, value, create_intermediate = TRUE) {
     }
   }
 
-  # Set the final value
   final_key <- if (is.list(path)) path[[length(path)]] else path[length(path)]
   am_put(doc, obj, final_key, value)
 
@@ -159,14 +158,15 @@ am_delete_path <- function(doc, path) {
   }
 
   if (!is.character(path) && !is.numeric(path) && !is.list(path)) {
-    stop("path must be a character vector, numeric vector, or list of mixed types")
+    stop(
+      "path must be a character vector, numeric vector, or list of mixed types"
+    )
   }
 
   if (length(path) == 0) {
     stop("path cannot be empty")
   }
 
-  # Navigate to parent
   obj <- AM_ROOT
 
   for (i in seq_len(length(path) - 1)) {
@@ -178,7 +178,6 @@ am_delete_path <- function(doc, path) {
       return(invisible(doc))
     }
 
-    # Use am_object directly for next iteration (it's now just the external pointer)
     if (inherits(obj_result, "am_object")) {
       obj <- obj_result
     } else {
@@ -187,7 +186,6 @@ am_delete_path <- function(doc, path) {
     }
   }
 
-  # Delete the final key
   final_key <- if (is.list(path)) path[[length(path)]] else path[length(path)]
   am_delete(doc, obj, final_key)
 
@@ -267,4 +265,3 @@ from_automerge <- function(doc, obj = AM_ROOT) {
 
   as.list(doc)
 }
-
