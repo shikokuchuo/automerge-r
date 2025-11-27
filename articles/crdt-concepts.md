@@ -156,8 +156,8 @@ for (i in seq_len(am_length(doc5, items5))) {
   print(am_get(doc5, items5, i))
 }
 #> [1] "A"
-#> [1] "B2"
 #> [1] "B1"
+#> [1] "B2"
 #> [1] "C"
 ```
 
@@ -219,7 +219,7 @@ doc9[["title"]] <- "My Document"
 doc10[["title"]] <- "Our Document"
 am_merge(doc9, doc10)
 doc9[["title"]] # One value wins deterministically
-#> [1] "Our Document"
+#> [1] "My Document"
 
 # Text object (CRDT)
 doc11 <- am_create()
@@ -287,9 +287,9 @@ doc16[["updated_at"]] <- Sys.time()
 am_merge(doc15, doc16)
 
 doc15[["created_at"]]
-#> [1] "2025-11-26 22:23:43 UTC"
+#> [1] "2025-11-27 15:16:31 UTC"
 doc15[["updated_at"]]
-#> [1] "2025-11-26 22:23:43 UTC"
+#> [1] "2025-11-27 15:16:31 UTC"
 ```
 
 **When to use**: Audit trails, modification times, temporal metadata.
