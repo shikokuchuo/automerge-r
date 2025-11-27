@@ -15,15 +15,9 @@ SEXP C_am_cursor(SEXP obj_ptr, SEXP position) {
     // Get document from object ID
     SEXP doc_ptr = get_doc_from_objid(obj_ptr);
     AMdoc *doc = get_doc(doc_ptr);
-    if (!doc) {
-        Rf_error("Invalid document pointer");
-    }
 
     // Get object ID
     const AMobjId *obj_id = get_objid(obj_ptr);
-    if (!obj_id) {
-        Rf_error("Invalid object ID");
-    }
 
     // Validate position (0-based indexing)
     if (TYPEOF(position) != INTSXP && TYPEOF(position) != REALSXP) {
@@ -71,15 +65,9 @@ SEXP C_am_cursor_position(SEXP obj_ptr, SEXP cursor_ptr) {
     // Get document from object ID
     SEXP doc_ptr = get_doc_from_objid(obj_ptr);
     AMdoc *doc = get_doc(doc_ptr);
-    if (!doc) {
-        Rf_error("Invalid document pointer");
-    }
 
     // Get object ID
     const AMobjId *obj_id = get_objid(obj_ptr);
-    if (!obj_id) {
-        Rf_error("Invalid object ID");
-    }
 
     // Extract cursor from cursor_ptr
     // The cursor is stored in an AMresult wrapped as external pointer
@@ -164,15 +152,9 @@ static SEXP C_am_marks_impl(SEXP obj_ptr, int filter_position) {
     // Get document from object ID
     SEXP doc_ptr = get_doc_from_objid(obj_ptr);
     AMdoc *doc = get_doc(doc_ptr);
-    if (!doc) {
-        Rf_error("Invalid document pointer");
-    }
 
     // Get object ID
     const AMobjId *obj_id = get_objid(obj_ptr);
-    if (!obj_id) {
-        Rf_error("Invalid object ID");
-    }
 
     // Call AMmarks (heads parameter NULL for current state)
     AMresult *result = AMmarks(doc, obj_id, NULL);
@@ -412,15 +394,9 @@ SEXP C_am_mark_create(SEXP obj_ptr, SEXP start, SEXP end,
     // Get document from object ID
     SEXP doc_ptr = get_doc_from_objid(obj_ptr);
     AMdoc *doc = get_doc(doc_ptr);
-    if (!doc) {
-        Rf_error("Invalid document pointer");
-    }
 
     // Get object ID
     const AMobjId *obj_id = get_objid(obj_ptr);
-    if (!obj_id) {
-        Rf_error("Invalid object ID");
-    }
 
     // Validate start position (0-based indexing)
     if (TYPEOF(start) != INTSXP && TYPEOF(start) != REALSXP) {

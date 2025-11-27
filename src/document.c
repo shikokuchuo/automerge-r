@@ -52,7 +52,7 @@ SEXP C_am_create(SEXP actor_id) {
     AMitemToDoc(item, &doc);
 
     // Create wrapper structure
-    am_doc *doc_wrapper = (am_doc *) malloc(sizeof(am_doc));
+    am_doc *doc_wrapper = malloc(sizeof(am_doc));
     if (!doc_wrapper) {
         AMresultFree(result);
         Rf_error("Failed to allocate memory for document wrapper");
@@ -120,7 +120,7 @@ SEXP C_am_load(SEXP data) {
     AMitemToDoc(item, &doc);
 
     // Create wrapper structure
-    am_doc *doc_wrapper = (am_doc *) malloc(sizeof(am_doc));
+    am_doc *doc_wrapper = malloc(sizeof(am_doc));
     if (!doc_wrapper) {
         AMresultFree(result);
         Rf_error("Failed to allocate memory for document wrapper");
@@ -166,7 +166,7 @@ static AMresult* convert_r_heads_to_amresult(SEXP heads_list, AMresult ***result
     }
 
     // Allocate array to hold AMresult pointers (for memory management)
-    AMresult **results = (AMresult **) malloc(n_heads * sizeof(AMresult *));
+    AMresult **results = malloc(n_heads * sizeof(AMresult *));
     if (!results) {
         Rf_error("Failed to allocate memory for change hash results");
     }
@@ -270,7 +270,7 @@ SEXP C_am_fork(SEXP doc_ptr, SEXP heads) {
     AMitemToDoc(item, &forked_doc);
 
     // Create wrapper structure
-    am_doc *doc_wrapper = (am_doc *) malloc(sizeof(am_doc));
+    am_doc *doc_wrapper = malloc(sizeof(am_doc));
     if (!doc_wrapper) {
         AMresultFree(result);
         Rf_error("Failed to allocate memory for forked document wrapper");

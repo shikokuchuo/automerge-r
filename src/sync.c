@@ -21,7 +21,7 @@ SEXP C_am_sync_state_new(void) {
     AMitemToSyncState(item, &state);
 
     // Create wrapper structure
-    am_syncstate *state_wrapper = (am_syncstate *) malloc(sizeof(am_syncstate));
+    am_syncstate *state_wrapper = malloc(sizeof(am_syncstate));
     if (!state_wrapper) {
         AMresultFree(result);
         Rf_error("Failed to allocate memory for sync state wrapper");

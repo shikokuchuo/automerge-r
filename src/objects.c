@@ -329,7 +329,7 @@ static SEXP am_item_to_r(AMitem *item, SEXP parent_doc_sexp, SEXP parent_result_
             result = val > INT_MAX || val < INT_MIN ?
                 Rf_ScalarReal((double) val):
                 Rf_ScalarInteger((int) val);
-            Rf_setAttrib(result, Rf_install("class"), Rf_mkString("am_counter"));
+            Rf_classgets(result, Rf_mkString("am_counter"));
             break;
         }
 

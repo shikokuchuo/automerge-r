@@ -76,7 +76,11 @@ const AMobjId *get_objid(SEXP obj_ptr) {
     if (TYPEOF(obj_ptr) != EXTPTRSXP) {
         Rf_error("Expected external pointer for object ID");
     }
-    return (const AMobjId *) R_ExternalPtrAddr(obj_ptr);
+    const AMobjId *obj_id = (const AMobjId *) R_ExternalPtrAddr(obj_ptr);
+    if (!obj_id) {
+        Rf_error("Invalid object ID pointer (NULL or freed)");
+    }
+    return obj_id;
 }
 
 /**
@@ -125,7 +129,7 @@ SEXP C_get_doc_from_objid(SEXP obj_ptr) {
 SEXP wrap_am_result(AMresult *result, SEXP parent_doc_sexp) {
     SEXP ext_ptr = PROTECT(R_MakeExternalPtr(result, R_NilValue, parent_doc_sexp));
     R_RegisterCFinalizer(ext_ptr, am_result_finalizer);
-    Rf_setAttrib(ext_ptr, Rf_install("class"), Rf_mkString("am_result"));
+    Rf_classgets(ext_ptr, Rf_mkString("am_result"));
     UNPROTECT(1);
     return ext_ptr;
 }
@@ -144,7 +148,7 @@ SEXP am_wrap_objid(const AMobjId *obj_id, SEXP parent_result_sexp) {
     // Wrap AMobjId* directly, use EXTPTR_PROT to keep parent result alive
     // No finalizer needed - obj_id is borrowed, parent will free it
     SEXP ext_ptr = PROTECT(R_MakeExternalPtr((void *) obj_id, R_NilValue, parent_result_sexp));
-    Rf_setAttrib(ext_ptr, Rf_install("class"), Rf_mkString("am_objid"));
+    Rf_classgets(ext_ptr, Rf_mkString("am_objid"));
     UNPROTECT(1);
     return ext_ptr;
 }
