@@ -82,6 +82,7 @@ if [ ${AUTOMERGE_FOUND} -eq 0 ]; then
     # UTF-32 code point indexing for natural R character semantics
     # This makes text positions match R's substr(), nchar() behaviour
     echo "Configuring with CMake..."
+    export CARGO_TERM_QUIET=true
     cmake -G "MinGW Makefiles" \
         -S src/automerge/rust/automerge-c -B automerge-build \
         -DCMAKE_BUILD_TYPE=Release \
