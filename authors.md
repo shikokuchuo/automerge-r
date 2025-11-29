@@ -12,7 +12,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/shikokuchuo/automerge-r/blob/dev/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/shikokuchuo/automerge-r/blob/main/DESCRIPTION)
 
 Gao C (2025). *automerge: R Bindings for Automerge CRDT Library*. R
 package version 0.1.0.9000,

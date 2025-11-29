@@ -64,7 +64,7 @@
       <h1>Synchronization Protocol</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/shikokuchuo/automerge-r/blob/dev/vignettes/sync-protocol.Rmd" class="external-link"><code>vignettes/sync-protocol.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/shikokuchuo/automerge-r/blob/main/vignettes/sync-protocol.Rmd" class="external-link"><code>vignettes/sync-protocol.Rmd</code></a></small>
       <div class="d-none name"><code>sync-protocol.Rmd</code></div>
     </div>
 
@@ -142,7 +142,7 @@ changes back:</p>
 <span></span>
 <span><span class="co"># Target now has source's changes</span></span>
 <span><span class="va">target</span><span class="op">[[</span><span class="st">"version"</span><span class="op">]</span><span class="op">]</span></span>
-<span><span class="co">#&gt; [1] "1.0"</span></span>
+<span><span class="co">#&gt; [1] "2.0"</span></span>
 <span></span>
 <span><span class="co"># Source is unchanged</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">source</span><span class="op">)</span></span>
@@ -205,9 +205,9 @@ API.</p>
 <span><span class="va">round</span></span>
 <span><span class="co">#&gt; [1] 3</span></span>
 <span><span class="va">peer3</span><span class="op">[[</span><span class="st">"source"</span><span class="op">]</span><span class="op">]</span></span>
-<span><span class="co">#&gt; [1] "peer3"</span></span>
+<span><span class="co">#&gt; [1] "peer4"</span></span>
 <span><span class="va">peer4</span><span class="op">[[</span><span class="st">"source"</span><span class="op">]</span><span class="op">]</span></span>
-<span><span class="co">#&gt; [1] "peer3"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "peer4"</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="protocol-components">Protocol Components<a class="anchor" aria-label="anchor" href="#protocol-components"></a>
@@ -488,7 +488,7 @@ graph.</p>
 <span></span>
 <span><span class="co"># Status: Deterministic conflict resolution (one value wins)</span></span>
 <span><span class="va">editor1</span><span class="op">[[</span><span class="st">"status"</span><span class="op">]</span><span class="op">]</span></span>
-<span><span class="co">#&gt; [1] "review"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "published"</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="sync-performance">Sync Performance<a class="anchor" aria-label="anchor" href="#sync-performance"></a>
