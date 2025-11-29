@@ -108,7 +108,7 @@ am_mark_create(text_obj, 6, 11, "italic", TRUE,
 
 # Get all marks
 marks <- am_marks(text_obj)
-print(marks)
+marks
 #> [[1]]
 #> [[1]]$name
 #> [1] "bold"

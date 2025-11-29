@@ -37,6 +37,6 @@ doc <- am_create()
 am_put(doc, AM_ROOT, "name", "Alice")
 
 name <- am_get(doc, AM_ROOT, "name")
-print(name)  # "Alice"
+name  # "Alice"
 #> [1] "Alice"
 ```

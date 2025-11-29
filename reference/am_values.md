@@ -31,7 +31,7 @@ am_put(doc, AM_ROOT, "b", 2)
 am_put(doc, AM_ROOT, "c", 3)
 
 values <- am_values(doc, AM_ROOT)
-print(values)  # list(1, 2, 3)
+values  # list(1, 2, 3)
 #> [[1]]
 #> [1] 1
 #> 

@@ -81,7 +81,7 @@ am_merge(doc1, doc2)
 
 # One value wins (deterministic, all replicas agree)
 doc1[["name"]]
-#> [1] "Alice Smith"
+#> [1] "Alice Johnson"
 ```
 
 **When to use**: Simple values where automatic conflict resolution is
@@ -219,7 +219,7 @@ doc9[["title"]] <- "My Document"
 doc10[["title"]] <- "Our Document"
 am_merge(doc9, doc10)
 doc9[["title"]] # One value wins deterministically
-#> [1] "My Document"
+#> [1] "Our Document"
 
 # Text object (CRDT)
 doc11 <- am_create()
@@ -234,7 +234,7 @@ am_text_splice(text12, 5, 0, " Everyone")
 am_merge(doc11, doc12)
 
 am_text_get(text11)
-#> [1] "Hello Everyone World"
+#> [1] "Hello World Everyone"
 ```
 
 ### Counters
@@ -287,9 +287,9 @@ doc16[["updated_at"]] <- Sys.time()
 am_merge(doc15, doc16)
 
 doc15[["created_at"]]
-#> [1] "2025-11-27 15:16:31 UTC"
+#> [1] "2025-11-29 13:12:04 UTC"
 doc15[["updated_at"]]
-#> [1] "2025-11-27 15:16:31 UTC"
+#> [1] "2025-11-29 13:12:04 UTC"
 ```
 
 **When to use**: Audit trails, modification times, temporal metadata.
@@ -541,7 +541,7 @@ am_merge(doc26, doc27)
 
 # One will win - application should handle both states sensibly
 doc26[["status"]] # Should be prepared for either 'published' or 'archived'
-#> [1] "archived"
+#> [1] "published"
 ```
 
 ## Further Reading
