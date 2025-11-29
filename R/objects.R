@@ -60,7 +60,7 @@ am_put <- function(doc, obj, key, value) {
 #' am_put(doc, AM_ROOT, "name", "Alice")
 #'
 #' name <- am_get(doc, AM_ROOT, "name")
-#' print(name)  # "Alice"
+#' name  # "Alice"
 am_get <- function(doc, obj, key) {
   .Call(C_am_get, doc, obj, key)
 }
@@ -103,7 +103,7 @@ am_delete <- function(doc, obj, key) {
 #' am_put(doc, AM_ROOT, "b", 2)
 #'
 #' keys <- am_keys(doc, AM_ROOT)
-#' print(keys)  # c("a", "b")
+#' keys  # c("a", "b")
 am_keys <- function(doc, obj) {
   .Call(C_am_keys, doc, obj)
 }
@@ -124,7 +124,7 @@ am_keys <- function(doc, obj) {
 #' am_put(doc, AM_ROOT, "b", 2)
 #'
 #' len <- am_length(doc, AM_ROOT)
-#' print(len)  # 2
+#' len  # 2
 am_length <- function(doc, obj) {
   .Call(C_am_length, doc, obj)
 }
@@ -304,7 +304,7 @@ am_text_splice <- function(text_obj, pos, del_count, text) {
 #' text_obj <- am_get(doc, AM_ROOT, "doc")
 #'
 #' text <- am_text_get(text_obj)
-#' print(text)  # "Hello"
+#' text  # "Hello"
 am_text_get <- function(text_obj) {
   .Call(C_am_text_get, text_obj)
 }
@@ -324,7 +324,7 @@ am_text_get <- function(text_obj) {
 #' am_put(doc, AM_ROOT, "c", 3)
 #'
 #' values <- am_values(doc, AM_ROOT)
-#' print(values)  # list(1, 2, 3)
+#' values  # list(1, 2, 3)
 am_values <- function(doc, obj) {
   .Call(C_am_values, doc, obj)
 }

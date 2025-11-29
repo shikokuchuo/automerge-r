@@ -79,5 +79,5 @@ am_mark_create(text_obj, 6, 11, "italic", TRUE,
 
 # Get all marks
 marks <- am_marks(text_obj)
-print(marks)
+marks
 }

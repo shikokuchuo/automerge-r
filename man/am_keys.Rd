@@ -24,5 +24,5 @@ am_put(doc, AM_ROOT, "a", 1)
 am_put(doc, AM_ROOT, "b", 2)
 
 keys <- am_keys(doc, AM_ROOT)
-print(keys)  # c("a", "b")
+keys  # c("a", "b")
 }

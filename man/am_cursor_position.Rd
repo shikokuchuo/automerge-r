@@ -30,5 +30,5 @@ cursor <- am_cursor(text_obj, 5)
 
 # Get position
 pos <- am_cursor_position(text_obj, cursor)
-print(pos)  # 5
+pos  # 5
 }

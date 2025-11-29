@@ -31,6 +31,6 @@ am_mark_create(text_obj, 2, 7, "underline", TRUE)
 
 # Get marks at position 3 (inside "Hello")
 marks_at_3 <- am_marks_at(text_obj, 3)
-print(marks_at_3)
+marks_at_3
 # List of 2 marks (both "bold" and "underline" include position 3)
 }

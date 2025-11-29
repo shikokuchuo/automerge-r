@@ -55,5 +55,5 @@ am_text_splice(text_obj, 0, 0, "Hi ")
 
 # Cursor position automatically adjusts
 new_pos <- am_cursor_position(text_obj, cursor)
-print(new_pos)  # 8 (cursor moved by 3 characters)
+new_pos  # 8 (cursor moved by 3 characters)
 }

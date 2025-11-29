@@ -33,6 +33,6 @@ am_mark_create(text_obj, 0, 5, "bold", TRUE)
 am_mark_create(text_obj, 6, 11, "italic", TRUE)
 
 marks <- am_marks(text_obj)
-print(marks)
+marks
 # List of 2 marks with name, value, start, end
 }

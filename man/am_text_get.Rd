@@ -21,5 +21,5 @@ am_put(doc, AM_ROOT, "doc", am_text("Hello"))
 text_obj <- am_get(doc, AM_ROOT, "doc")
 
 text <- am_text_get(text_obj)
-print(text)  # "Hello"
+text  # "Hello"
 }
