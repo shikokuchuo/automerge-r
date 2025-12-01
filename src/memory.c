@@ -10,11 +10,11 @@ void am_doc_finalizer(SEXP ext_ptr) {
     am_doc *doc_wrapper = (am_doc *) R_ExternalPtrAddr(ext_ptr);
     if (doc_wrapper) {
         if (doc_wrapper->result) {
-            AMresultFree(doc_wrapper->result);  // Free the owning result
+            AMresultFree(doc_wrapper->result);
             doc_wrapper->result = NULL;
         }
-        // Note: doc pointer is borrowed from result, freed automatically above
-        free(doc_wrapper);  // Free the wrapper struct
+        // doc pointer is borrowed from result, freed automatically above
+        free(doc_wrapper); 
     }
     R_ClearExternalPtr(ext_ptr);
 }
@@ -39,11 +39,11 @@ void am_syncstate_finalizer(SEXP ext_ptr) {
     am_syncstate *sync_state = (am_syncstate *) R_ExternalPtrAddr(ext_ptr);
     if (sync_state) {
         if (sync_state->result) {
-            AMresultFree(sync_state->result);  // Frees the owning result
+            AMresultFree(sync_state->result);
             sync_state->result = NULL;
         }
-        // Note: state pointer is borrowed from result, freed automatically above
-        free(sync_state);  // Free the wrapper struct
+        // state pointer is borrowed from result, freed automatically above
+        free(sync_state);
     }
     R_ClearExternalPtr(ext_ptr);
 }
@@ -62,7 +62,7 @@ AMdoc *get_doc(SEXP doc_ptr) {
     if (!doc_wrapper || !doc_wrapper->doc) {
         Rf_error("Invalid document pointer (NULL or freed)");
     }
-    return doc_wrapper->doc;  // Return borrowed AMdoc*
+    return doc_wrapper->doc;
 }
 
 /**
@@ -95,13 +95,11 @@ SEXP get_doc_from_objid(SEXP obj_ptr) {
         Rf_error("Expected external pointer for am_object");
     }
 
-    // Get parent result from EXTPTR_PROT
     SEXP result_ptr = R_ExternalPtrProtected(obj_ptr);
     if (!result_ptr || result_ptr == R_NilValue) {
         Rf_error("Invalid am_object: no parent result in protection chain");
     }
 
-    // Get parent doc from result's EXTPTR_PROT
     SEXP doc_ptr = R_ExternalPtrProtected(result_ptr);
     if (!doc_ptr || doc_ptr == R_NilValue) {
         Rf_error("Invalid am_object: no parent document in protection chain");
@@ -145,7 +143,6 @@ SEXP wrap_am_result(AMresult *result, SEXP parent_doc_sexp) {
 SEXP am_wrap_objid(const AMobjId *obj_id, SEXP parent_result_sexp) {
     if (!obj_id) return R_NilValue;
 
-    // Wrap AMobjId* directly, use EXTPTR_PROT to keep parent result alive
     // No finalizer needed - obj_id is borrowed, parent will free it
     SEXP ext_ptr = PROTECT(R_MakeExternalPtr((void *) obj_id, R_NilValue, parent_result_sexp));
     Rf_classgets(ext_ptr, Rf_mkString("am_objid"));
@@ -169,13 +166,10 @@ SEXP am_wrap_objid(const AMobjId *obj_id, SEXP parent_result_sexp) {
 SEXP am_wrap_nested_object(const AMobjId *obj_id, SEXP parent_result_sexp) {
     if (!obj_id) return R_NilValue;
 
-    // Get the document from the result's parent (stored in EXTPTR_PROT)
     SEXP parent_doc_sexp = R_ExternalPtrProtected(parent_result_sexp);
 
-    // Wrap the AMobjId* as external pointer (with protection chain)
     SEXP obj_id_ptr = PROTECT(am_wrap_objid(obj_id, parent_result_sexp));
 
-    // Query object type and set appropriate class vector
     AMdoc *doc = get_doc(parent_doc_sexp);
     AMobjType obj_type = AMobjObjType(doc, obj_id);
 

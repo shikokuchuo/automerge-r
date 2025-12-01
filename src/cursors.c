@@ -258,29 +258,29 @@ static AMresult* r_value_to_amitem(SEXP value) {
             Rf_error("Mark value must be scalar");
         }
         double seconds = Rf_asReal(value);
-        int64_t milliseconds = (int64_t)(seconds * 1000.0);
+        int64_t milliseconds = (int64_t) (seconds * 1000.0);
         return AMitemFromTimestamp(milliseconds);
     } else if (Rf_inherits(value, "am_counter")) {
         if (TYPEOF(value) != INTSXP || Rf_xlength(value) != 1) {
             Rf_error("Counter must be a scalar integer");
         }
-        int64_t val = (int64_t)INTEGER(value)[0];
+        int64_t val = (int64_t) INTEGER(value)[0];
         return AMitemFromCounter(val);
     } else if (TYPEOF(value) == LGLSXP && Rf_xlength(value) == 1) {
-        bool val = (bool)LOGICAL(value)[0];
+        bool val = (bool) LOGICAL(value)[0];
         return AMitemFromBool(val);
     } else if (TYPEOF(value) == INTSXP && Rf_xlength(value) == 1) {
-        int64_t val = (int64_t)INTEGER(value)[0];
+        int64_t val = (int64_t) INTEGER(value)[0];
         return AMitemFromInt(val);
     } else if (TYPEOF(value) == REALSXP && Rf_xlength(value) == 1) {
         double val = REAL(value)[0];
         return AMitemFromF64(val);
     } else if (TYPEOF(value) == STRSXP && Rf_xlength(value) == 1) {
         const char *str = CHAR(STRING_ELT(value, 0));
-        AMbyteSpan span = {.src = (uint8_t const *)str, .count = strlen(str)};
+        AMbyteSpan span = {.src = (uint8_t const *) str, .count = strlen(str)};
         return AMitemFromStr(span);
     } else if (TYPEOF(value) == RAWSXP) {
-        return AMitemFromBytes(RAW(value), (size_t)Rf_xlength(value));
+        return AMitemFromBytes(RAW(value), (size_t) Rf_xlength(value));
     } else {
         Rf_error("Unsupported mark value type");
     }

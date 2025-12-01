@@ -12,12 +12,10 @@
 SEXP C_am_create(SEXP actor_id) {
     AMresult *result = NULL;
 
-    // Handle actor ID parameter
     if (actor_id == R_NilValue) {
-        // NULL actor_id: AMcreate() will generate random actor ID
+        // NULL generates random actor ID
         result = AMcreate(NULL);
     } else if (TYPEOF(actor_id) == STRSXP && XLENGTH(actor_id) == 1) {
-        // Hex string: convert to actor ID using AMactorIdFromStr
         const char *hex_str = CHAR(STRING_ELT(actor_id, 0));
         AMbyteSpan hex_span = {.src = (uint8_t const *) hex_str, .count = strlen(hex_str)};
         AMresult *actor_result = AMactorIdFromStr(hex_span);
@@ -30,7 +28,6 @@ SEXP C_am_create(SEXP actor_id) {
         result = AMcreate(actor);
         AMresultFree(actor_result);
     } else if (TYPEOF(actor_id) == RAWSXP) {
-        // Raw bytes: convert to actor ID using AMactorIdFromBytes
         AMresult *actor_result = AMactorIdFromBytes(RAW(actor_id), (size_t) XLENGTH(actor_id));
         CHECK_RESULT(actor_result, AM_VAL_TYPE_ACTOR_ID);
 
@@ -46,30 +43,26 @@ SEXP C_am_create(SEXP actor_id) {
 
     CHECK_RESULT(result, AM_VAL_TYPE_DOC);
 
-    // Extract the AMdoc* from the result
     AMitem *item = AMresultItem(result);
     AMdoc *doc = NULL;
     AMitemToDoc(item, &doc);
 
-    // Create wrapper structure
     am_doc *doc_wrapper = malloc(sizeof(am_doc));
     if (!doc_wrapper) {
         AMresultFree(result);
         Rf_error("Failed to allocate memory for document wrapper");
     }
-    doc_wrapper->result = result;  // Store owning result
-    doc_wrapper->doc = doc;        // Store borrowed doc pointer
+    doc_wrapper->result = result;  // Owning result
+    doc_wrapper->doc = doc;        // Borrowed from result
 
-    // Create external pointer with finalizer
     SEXP ext_ptr = PROTECT(R_MakeExternalPtr(doc_wrapper, R_NilValue, R_NilValue));
     R_RegisterCFinalizer(ext_ptr, am_doc_finalizer);
 
-    // Set class attribute
     SEXP class = Rf_allocVector(STRSXP, 2);
     Rf_classgets(ext_ptr, class);
     SET_STRING_ELT(class, 0, Rf_mkChar("am_doc"));
     SET_STRING_ELT(class, 1, Rf_mkChar("automerge"));
-    
+
     UNPROTECT(1);
     return ext_ptr;
 }
@@ -86,12 +79,10 @@ SEXP C_am_save(SEXP doc_ptr) {
     AMresult *result = AMsave(doc);
     CHECK_RESULT(result, AM_VAL_TYPE_BYTES);
 
-    // Extract bytes from result
     AMitem *item = AMresultItem(result);
     AMbyteSpan bytes;
     AMitemToBytes(item, &bytes);
 
-    // Copy to R raw vector
     SEXP r_bytes = PROTECT(Rf_allocVector(RAWSXP, bytes.count));
     memcpy(RAW(r_bytes), bytes.src, bytes.count);
 
@@ -114,12 +105,10 @@ SEXP C_am_load(SEXP data) {
     AMresult *result = AMload(RAW(data), (size_t) XLENGTH(data));
     CHECK_RESULT(result, AM_VAL_TYPE_DOC);
 
-    // Extract the AMdoc* from the result
     AMitem *item = AMresultItem(result);
     AMdoc *doc = NULL;
     AMitemToDoc(item, &doc);
 
-    // Create wrapper structure
     am_doc *doc_wrapper = malloc(sizeof(am_doc));
     if (!doc_wrapper) {
         AMresultFree(result);
@@ -128,11 +117,9 @@ SEXP C_am_load(SEXP data) {
     doc_wrapper->result = result;
     doc_wrapper->doc = doc;
 
-    // Create external pointer with finalizer
     SEXP ext_ptr = PROTECT(R_MakeExternalPtr(doc_wrapper, R_NilValue, R_NilValue));
     R_RegisterCFinalizer(ext_ptr, am_doc_finalizer);
 
-    // Set class attribute
     SEXP class = Rf_allocVector(STRSXP, 2);
     Rf_classgets(ext_ptr, class);
     SET_STRING_ELT(class, 0, Rf_mkChar("am_doc"));
@@ -165,13 +152,11 @@ static AMresult* convert_r_heads_to_amresult(SEXP heads_list, AMresult ***result
         return NULL;
     }
 
-    // Allocate array to hold AMresult pointers (for memory management)
     AMresult **results = malloc(n_heads * sizeof(AMresult *));
     if (!results) {
         Rf_error("Failed to allocate memory for change hash results");
     }
 
-    // Convert each R raw vector to AMresult containing a change hash
     for (R_xlen_t i = 0; i < n_heads; i++) {
         SEXP r_hash = VECTOR_ELT(heads_list, i);
         if (TYPEOF(r_hash) != RAWSXP) {
@@ -182,13 +167,11 @@ static AMresult* convert_r_heads_to_amresult(SEXP heads_list, AMresult ***result
             Rf_error("All heads must be raw vectors (change hashes)");
         }
 
-        // Create AMbyteSpan for this hash
         AMbyteSpan hash_span = {
             .src = RAW(r_hash),
             .count = (size_t) XLENGTH(r_hash)
         };
 
-        // Convert to change hash item
         results[i] = AMitemFromChangeHash(hash_span);
         if (!results[i] || AMresultStatus(results[i]) != AM_STATUS_OK) {
             for (R_xlen_t j = 0; j <= i; j++) {
@@ -202,19 +185,12 @@ static AMresult* convert_r_heads_to_amresult(SEXP heads_list, AMresult ***result
     *results_out = results;
     *n_results = (size_t) n_heads;
 
-    // For a single head, return the result directly
-    if (n_heads == 1) {
-        return results[0];
+    if (n_heads != 1) {
+        // Lack of public API to build multi-item AMresults for AMfork
+        Rf_error("Forking at multiple specific heads not yet fully implemented (use single head or NULL)");
     }
 
-    // For multiple heads, we need to combine them into a single AMresult
-    // The most straightforward approach is to use the first result and note
-    // that AMfork expects AMitems from a result like AMgetHeads()
-    // Since we don't have a public API to build multi-item AMresults,
-    // we'll use a workaround for now and implement this properly
-    Rf_error("Forking at multiple specific heads not yet fully implemented (use single head or NULL)");
-
-    return NULL;  // Not reached
+    return results[0];
 }
 
 /**
@@ -232,26 +208,20 @@ SEXP C_am_fork(SEXP doc_ptr, SEXP heads) {
     size_t n_head_results = 0;
 
     if (heads == R_NilValue || (TYPEOF(heads) == VECSXP && XLENGTH(heads) == 0)) {
-        // Fork at current heads (NULL or empty list)
         result = AMfork(doc, NULL);
     } else {
-        // Fork at specified heads
         AMresult *heads_result = convert_r_heads_to_amresult(heads, &head_results, &n_head_results);
 
         if (n_head_results == 0) {
-            // Empty list case - treat as NULL
             result = AMfork(doc, NULL);
         } else if (heads_result && n_head_results == 1) {
-            // Single head case - can handle this
             AMitems heads_items = AMresultItems(heads_result);
             result = AMfork(doc, &heads_items);
 
-            // Clean up head result
             AMresultFree(heads_result);
             free(head_results);
         } else {
-            // Multiple heads case - not yet fully implemented
-            // Clean up allocated resources
+            // Multiple heads not yet implemented - clean up and error
             if (head_results) {
                 for (size_t i = 0; i < n_head_results; i++) {
                     AMresultFree(head_results[i]);
@@ -264,12 +234,10 @@ SEXP C_am_fork(SEXP doc_ptr, SEXP heads) {
 
     CHECK_RESULT(result, AM_VAL_TYPE_DOC);
 
-    // Extract the AMdoc* from the result
     AMitem *item = AMresultItem(result);
     AMdoc *forked_doc = NULL;
     AMitemToDoc(item, &forked_doc);
 
-    // Create wrapper structure
     am_doc *doc_wrapper = malloc(sizeof(am_doc));
     if (!doc_wrapper) {
         AMresultFree(result);
@@ -278,11 +246,9 @@ SEXP C_am_fork(SEXP doc_ptr, SEXP heads) {
     doc_wrapper->result = result;
     doc_wrapper->doc = forked_doc;
 
-    // Create external pointer with finalizer
     SEXP ext_ptr = PROTECT(R_MakeExternalPtr(doc_wrapper, R_NilValue, R_NilValue));
     R_RegisterCFinalizer(ext_ptr, am_doc_finalizer);
 
-    // Set class attribute
     SEXP class = Rf_allocVector(STRSXP, 2);
     Rf_classgets(ext_ptr, class);
     SET_STRING_ELT(class, 0, Rf_mkChar("am_doc"));
@@ -305,12 +271,11 @@ SEXP C_am_merge(SEXP doc_ptr, SEXP other_ptr) {
 
     AMresult *result = AMmerge(doc, other_doc);
 
-    // AMmerge returns heads (change hashes) if changes were merged,
-    // but result can be empty if there were no new changes
+    // AMmerge returns heads if changes were merged, or empty if no new changes
     CHECK_RESULT(result, AM_VAL_TYPE_VOID);
 
     AMresultFree(result);
-    return doc_ptr;  // Return document for chaining
+    return doc_ptr;
 }
 
 /**
@@ -325,15 +290,12 @@ SEXP C_am_get_actor(SEXP doc_ptr) {
     AMresult *result = AMgetActorId(doc);
     CHECK_RESULT(result, AM_VAL_TYPE_ACTOR_ID);
 
-    // Extract actor ID
     AMitem *item = AMresultItem(result);
     AMactorId const *actor_id = NULL;
     AMitemToActorId(item, &actor_id);
 
-    // Convert to bytes
     AMbyteSpan bytes = AMactorIdBytes(actor_id);
 
-    // Copy to R raw vector
     SEXP r_bytes = PROTECT(Rf_allocVector(RAWSXP, bytes.count));
     memcpy(RAW(r_bytes), bytes.src, bytes.count);
 
@@ -381,13 +343,12 @@ SEXP C_am_set_actor(SEXP doc_ptr, SEXP actor_id) {
     AMactorId const *actor = NULL;
 
     if (actor_id == R_NilValue) {
-        // NULL: generate random actor ID
+        // NULL generates random actor ID
         actor_result = AMactorIdInit();
         CHECK_RESULT(actor_result, AM_VAL_TYPE_ACTOR_ID);
         AMitem *actor_item = AMresultItem(actor_result);
         AMitemToActorId(actor_item, &actor);
     } else if (TYPEOF(actor_id) == STRSXP && XLENGTH(actor_id) == 1) {
-        // Hex string
         const char *hex_str = CHAR(STRING_ELT(actor_id, 0));
         AMbyteSpan hex_span = {.src = (uint8_t const *) hex_str, .count = strlen(hex_str)};
         actor_result = AMactorIdFromStr(hex_span);
@@ -395,7 +356,6 @@ SEXP C_am_set_actor(SEXP doc_ptr, SEXP actor_id) {
         AMitem *actor_item = AMresultItem(actor_result);
         AMitemToActorId(actor_item, &actor);
     } else if (TYPEOF(actor_id) == RAWSXP) {
-        // Raw bytes
         actor_result = AMactorIdFromBytes(RAW(actor_id), (size_t) XLENGTH(actor_id));
         CHECK_RESULT(actor_result, AM_VAL_TYPE_ACTOR_ID);
         AMitem *actor_item = AMresultItem(actor_result);
@@ -404,12 +364,11 @@ SEXP C_am_set_actor(SEXP doc_ptr, SEXP actor_id) {
         Rf_error("actor_id must be NULL, a character string (hex), or raw bytes");
     }
 
-    // Set the actor ID
     put_result = AMsetActorId(doc, actor);
 
     AMresultFree(put_result);
     AMresultFree(actor_result);
-    return doc_ptr;  // Return document for chaining
+    return doc_ptr;
 }
 
 /**
@@ -423,7 +382,6 @@ SEXP C_am_set_actor(SEXP doc_ptr, SEXP actor_id) {
 SEXP C_am_commit(SEXP doc_ptr, SEXP message, SEXP time) {
     AMdoc *doc = get_doc(doc_ptr);
 
-    // Handle message parameter
     AMbyteSpan msg_span = {.src = NULL, .count = 0};
     if (message != R_NilValue) {
         if (TYPEOF(message) != STRSXP || XLENGTH(message) != 1) {
@@ -434,14 +392,13 @@ SEXP C_am_commit(SEXP doc_ptr, SEXP message, SEXP time) {
         msg_span.count = strlen(msg_str);
     }
 
-    // Handle time parameter
     int64_t timestamp = 0;
     if (time != R_NilValue) {
         if (!Rf_inherits(time, "POSIXct") || Rf_xlength(time) != 1) {
             Rf_error("time must be NULL or a scalar POSIXct object");
         }
         double seconds = REAL(time)[0];
-        timestamp = (int64_t)(seconds * 1000.0);  // Convert to milliseconds
+        timestamp = (int64_t) (seconds * 1000.0);
     }
 
     AMresult *result = AMcommit(doc, msg_span, time == R_NilValue ? NULL : &timestamp);
@@ -451,7 +408,7 @@ SEXP C_am_commit(SEXP doc_ptr, SEXP message, SEXP time) {
     CHECK_RESULT(result, AM_VAL_TYPE_VOID);
 
     AMresultFree(result);
-    return doc_ptr;  // Return document for chaining
+    return doc_ptr;
 }
 
 /**
@@ -465,7 +422,7 @@ SEXP C_am_rollback(SEXP doc_ptr) {
 
     AMrollback(doc);
 
-    return doc_ptr;  // Return document for chaining
+    return doc_ptr;
 }
 
 // Historical Query and Advanced Fork/Merge Functions (Phase 6) ---------------
@@ -484,14 +441,12 @@ SEXP C_am_get_last_local_change(SEXP doc_ptr) {
 
     AMresult *result = AMgetLastLocalChange(doc);
 
-    // Check result status
     AMstatus status = AMresultStatus(result);
     if (status != AM_STATUS_OK) {
         AMresultFree(result);
         return R_NilValue;
     }
 
-    // Check if there are any items
     AMitems items = AMresultItems(result);
     size_t count = AMitemsSize(&items);
 
@@ -501,7 +456,6 @@ SEXP C_am_get_last_local_change(SEXP doc_ptr) {
         return R_NilValue;
     }
 
-    // Extract the first item
     AMitem *item = AMitemsNext(&items, 1);
     if (!item) {
         AMresultFree(result);
@@ -515,10 +469,8 @@ SEXP C_am_get_last_local_change(SEXP doc_ptr) {
         return R_NilValue;
     }
 
-    // Serialize change to bytes
     AMbyteSpan bytes = AMchangeRawBytes(change);
 
-    // Copy to R raw vector
     SEXP r_bytes = PROTECT(Rf_allocVector(RAWSXP, bytes.count));
     memcpy(RAW(r_bytes), bytes.src, bytes.count);
 
@@ -537,7 +489,6 @@ SEXP C_am_get_last_local_change(SEXP doc_ptr) {
 SEXP C_am_get_change_by_hash(SEXP doc_ptr, SEXP hash) {
     AMdoc *doc = get_doc(doc_ptr);
 
-    // Validate hash parameter
     if (TYPEOF(hash) != RAWSXP) {
         Rf_error("hash must be a raw vector");
     }
@@ -547,17 +498,14 @@ SEXP C_am_get_change_by_hash(SEXP doc_ptr, SEXP hash) {
         Rf_error("Change hash must be exactly 32 bytes");
     }
 
-    // Get change by hash
     AMresult *result = AMgetChangeByHash(doc, RAW(hash), hash_len);
 
-    // Check status
     AMstatus status = AMresultStatus(result);
     if (status != AM_STATUS_OK) {
         AMresultFree(result);
         return R_NilValue;  // Change not found
     }
 
-    // Extract the change
     AMitems items = AMresultItems(result);
     size_t count = AMitemsSize(&items);
 
@@ -579,10 +527,8 @@ SEXP C_am_get_change_by_hash(SEXP doc_ptr, SEXP hash) {
         return R_NilValue;  // Change not found
     }
 
-    // Serialize change to bytes
     AMbyteSpan bytes = AMchangeRawBytes(change);
 
-    // Copy to R raw vector
     SEXP r_bytes = PROTECT(Rf_allocVector(RAWSXP, bytes.count));
     memcpy(RAW(r_bytes), bytes.src, bytes.count);
 
@@ -608,25 +554,20 @@ SEXP C_am_get_changes_added(SEXP doc1_ptr, SEXP doc2_ptr) {
 
     AMresult *result = AMgetChangesAdded(doc1, doc2);
 
-    // Check result status
     if (AMresultStatus(result) != AM_STATUS_OK) {
-        CHECK_RESULT(result, AM_VAL_TYPE_CHANGE);  // Will error and free
+        CHECK_RESULT(result, AM_VAL_TYPE_CHANGE);
     }
 
-    // Count change items
     AMitems items = AMresultItems(result);
     size_t count = AMitemsSize(&items);
 
-    // If no changes, return empty list
     if (count == 0) {
         AMresultFree(result);
         return Rf_allocVector(VECSXP, 0);
     }
 
-    // Create R list to hold serialized changes
     SEXP changes_list = PROTECT(Rf_allocVector(VECSXP, count));
 
-    // Iterate and serialize each change
     for (size_t i = 0; i < count; i++) {
         AMitem *item = AMitemsNext(&items, 1);
         if (!item) break;
@@ -634,10 +575,8 @@ SEXP C_am_get_changes_added(SEXP doc1_ptr, SEXP doc2_ptr) {
         AMchange *change = NULL;
         AMitemToChange(item, &change);
 
-        // Serialize change to bytes
         AMbyteSpan bytes = AMchangeRawBytes(change);
 
-        // Copy to R raw vector
         SEXP r_bytes = Rf_allocVector(RAWSXP, bytes.count);
         memcpy(RAW(r_bytes), bytes.src, bytes.count);
         SET_VECTOR_ELT(changes_list, i, r_bytes);
