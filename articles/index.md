@@ -6,6 +6,8 @@
   automerge](http://shikokuchuo.net/automerge-r/articles/automerge.md):
 - [Understanding CRDTs in
   Automerge](http://shikokuchuo.net/automerge-r/articles/crdt-concepts.md):
+- [Cross-Platform Synchronization: JavaScript ↔
+  R](http://shikokuchuo.net/automerge-r/articles/cross-platform.md):
 - [Synchronization
   Protocol](http://shikokuchuo.net/automerge-r/articles/sync-protocol.md):
 - [Quick

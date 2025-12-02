@@ -37,6 +37,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/crdt-concepts.html">Understanding CRDTs in Automerge</a></li>
+    <li><a class="dropdown-item" href="../articles/cross-platform.html">Cross-Platform Synchronization: JavaScript ↔ R</a></li>
     <li><a class="dropdown-item" href="../articles/sync-protocol.html">Synchronization Protocol</a></li>
     <li><a class="dropdown-item" href="../articles/very-quick-reference.html">Quick Reference</a></li>
   </ul>
@@ -302,7 +303,9 @@ documentation with <code>?function_name</code>.</p>
 <span></span>
 <span><span class="co"># Automerge → R</span></span>
 <span><span class="va">r_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/from_automerge.html">from_automerge</a></span><span class="op">(</span><span class="va">doc</span><span class="op">)</span></span>
-<span><span class="va">r_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">as.list</a></span><span class="op">(</span><span class="va">doc</span><span class="op">)</span></span></code></pre></div>
+<span></span>
+<span><span class="va">r_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">as.list</a></span><span class="op">(</span><span class="va">doc</span><span class="op">)</span> <span class="co"># S3 method for documents</span></span>
+<span><span class="va">text_str</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">text_obj</span><span class="op">)</span> <span class="co"># S3 method for text objects</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="pipe-friendly-style">Pipe-Friendly Style<a class="anchor" aria-label="anchor" href="#pipe-friendly-style"></a>
