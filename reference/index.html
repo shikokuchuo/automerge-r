@@ -19,10 +19,12 @@
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/crdt-concepts.html">Understanding CRDTs in Automerge</a></li>
-    <li><a class="dropdown-item" href="../articles/cross-platform.html">Cross-Platform Synchronization: JavaScript ↔ R</a></li>
-    <li><a class="dropdown-item" href="../articles/sync-protocol.html">Synchronization Protocol</a></li>
-    <li><a class="dropdown-item" href="../articles/very-quick-reference.html">Quick Reference</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/automerge.html">Getting Started</a></li>
+    <li><a class="dropdown-item" href="../articles/quick-reference.html">Quick Reference</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="../articles/crdt-concepts.html">CRDT Concepts</a></li>
+    <li><a class="dropdown-item" href="../articles/sync-protocol.html">Sync Protocol</a></li>
+    <li><a class="dropdown-item" href="../articles/cross-platform.html">Cross-Platform Interoperability</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -40,9 +42,9 @@
     </div>
 
     <div class="section level2">
-      <h2 id="all-functions">All functions<a class="anchor" aria-label="anchor" href="#all-functions"></a></h2>
+      <h2 id="document-lifecycle">Document Lifecycle<a class="anchor" aria-label="anchor" href="#document-lifecycle"></a></h2>
 
-
+      <div class="section-desc"><p>Create, save, load, and manage Automerge documents</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -51,34 +53,6 @@
 
       <dl><dt>
 
-          <code><a href="am_apply_changes.html">am_apply_changes()</a></code>
-
-        </dt>
-        <dd>Apply changes to a document</dd>
-
-        <dt>
-
-          <code><a href="am_commit.html">am_commit()</a></code>
-
-        </dt>
-        <dd>Commit pending changes</dd>
-
-        <dt>
-
-          <code><a href="am_counter.html">am_counter()</a></code>
-
-        </dt>
-        <dd>Create an Automerge counter</dd>
-
-        <dt>
-
-          <code><a href="am_counter_increment.html">am_counter_increment()</a></code>
-
-        </dt>
-        <dd>Increment a counter value</dd>
-
-        <dt>
-
           <code><a href="am_create.html">am_create()</a></code>
 
         </dt>
@@ -86,31 +60,17 @@
 
         <dt>
 
-          <code><a href="am_cursor.html">am_cursor()</a></code>
+          <code><a href="am_load.html">am_load()</a></code>
 
         </dt>
-        <dd>Create a cursor at a position in a text object</dd>
+        <dd>Load an Automerge document from binary format</dd>
 
         <dt>
 
-          <code><a href="am_cursor_position.html">am_cursor_position()</a></code>
+          <code><a href="am_save.html">am_save()</a></code>
 
         </dt>
-        <dd>Get the current position of a cursor</dd>
-
-        <dt>
-
-          <code><a href="am_delete.html">am_delete()</a></code>
-
-        </dt>
-        <dd>Delete a key from a map or element from a list</dd>
-
-        <dt>
-
-          <code><a href="am_delete_path.html">am_delete_path()</a></code>
-
-        </dt>
-        <dd>Delete value at path</dd>
+        <dd>Save an Automerge document to binary format</dd>
 
         <dt>
 
@@ -121,12 +81,35 @@
 
         <dt>
 
-          <code><a href="am_get.html">am_get()</a></code>
+          <code><a href="am_merge.html">am_merge()</a></code>
 
         </dt>
-        <dd>Get a value from an Automerge map or list</dd>
+        <dd>Merge changes from another document</dd>
 
         <dt>
+
+          <code><a href="am_commit.html">am_commit()</a></code>
+
+        </dt>
+        <dd>Commit pending changes</dd>
+
+        <dt>
+
+          <code><a href="am_rollback.html">am_rollback()</a></code>
+
+        </dt>
+        <dd>Roll back pending operations</dd>
+      </dl></div><div class="section level2">
+      <h2 id="actor-management">Actor Management<a class="anchor" aria-label="anchor" href="#actor-management"></a></h2>
+
+      <div class="section-desc"><p>Get and set document actor IDs</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
 
           <code><a href="am_get_actor.html">am_get_actor()</a></code>
 
@@ -142,52 +125,40 @@
 
         <dt>
 
-          <code><a href="am_get_change_by_hash.html">am_get_change_by_hash()</a></code>
+          <code><a href="am_set_actor.html">am_set_actor()</a></code>
 
         </dt>
-        <dd>Get a specific change by its hash</dd>
+        <dd>Set the actor ID of a document</dd>
+      </dl></div><div class="section level2">
+      <h2 id="object-operations">Object Operations<a class="anchor" aria-label="anchor" href="#object-operations"></a></h2>
+
+      <div class="section-desc"><p>Create and manipulate maps, lists, and nested objects</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="am_put.html">am_put()</a></code>
+
+        </dt>
+        <dd>Put a value into an Automerge map or list</dd>
 
         <dt>
 
-          <code><a href="am_get_changes.html">am_get_changes()</a></code>
+          <code><a href="am_get.html">am_get()</a></code>
 
         </dt>
-        <dd>Get changes since specified heads</dd>
+        <dd>Get a value from an Automerge map or list</dd>
 
         <dt>
 
-          <code><a href="am_get_changes_added.html">am_get_changes_added()</a></code>
+          <code><a href="am_delete.html">am_delete()</a></code>
 
         </dt>
-        <dd>Get changes in one document that are not in another</dd>
-
-        <dt>
-
-          <code><a href="am_get_heads.html">am_get_heads()</a></code>
-
-        </dt>
-        <dd>Get the current heads of a document</dd>
-
-        <dt>
-
-          <code><a href="am_get_history.html">am_get_history()</a></code>
-
-        </dt>
-        <dd>Get document history</dd>
-
-        <dt>
-
-          <code><a href="am_get_last_local_change.html">am_get_last_local_change()</a></code>
-
-        </dt>
-        <dd>Get the last change made by the local actor</dd>
-
-        <dt>
-
-          <code><a href="am_get_path.html">am_get_path()</a></code>
-
-        </dt>
-        <dd>Navigate deep structures with path</dd>
+        <dd>Delete a key from a map or element from a list</dd>
 
         <dt>
 
@@ -205,124 +176,28 @@
 
         <dt>
 
+          <code><a href="am_values.html">am_values()</a></code>
+
+        </dt>
+        <dd>Get all values from a map or list</dd>
+
+        <dt>
+
           <code><a href="am_length.html">am_length()</a></code>
 
         </dt>
         <dd>Get the length of an Automerge map or list</dd>
+      </dl></div><div class="section level2">
+      <h2 id="text-operations">Text Operations<a class="anchor" aria-label="anchor" href="#text-operations"></a></h2>
 
-        <dt>
+      <div class="section-desc"><p>Work with collaborative text objects</p></div>
 
-          <code><a href="am_list.html">am_list()</a></code>
+      <dl></dl></div><div class="section level2">
 
-        </dt>
-        <dd>Create an Automerge list</dd>
 
-        <dt>
 
-          <code><a href="am_load.html">am_load()</a></code>
 
-        </dt>
-        <dd>Load an Automerge document from binary format</dd>
-
-        <dt>
-
-          <code><a href="am_map.html">am_map()</a></code>
-
-        </dt>
-        <dd>Create an Automerge map</dd>
-
-        <dt>
-
-          <code><a href="am_mark_create.html">am_mark_create()</a></code>
-
-        </dt>
-        <dd>Create a mark on a text range</dd>
-
-        <dt>
-
-          <code><a href="am_marks.html">am_marks()</a></code>
-
-        </dt>
-        <dd>Get all marks in a text object</dd>
-
-        <dt>
-
-          <code><a href="am_marks_at.html">am_marks_at()</a></code>
-
-        </dt>
-        <dd>Get marks at a specific position</dd>
-
-        <dt>
-
-          <code><a href="am_merge.html">am_merge()</a></code>
-
-        </dt>
-        <dd>Merge changes from another document</dd>
-
-        <dt>
-
-          <code><a href="am_put.html">am_put()</a></code>
-
-        </dt>
-        <dd>Put a value into an Automerge map or list</dd>
-
-        <dt>
-
-          <code><a href="am_put_path.html">am_put_path()</a></code>
-
-        </dt>
-        <dd>Set value at path</dd>
-
-        <dt>
-
-          <code><a href="am_rollback.html">am_rollback()</a></code>
-
-        </dt>
-        <dd>Roll back pending operations</dd>
-
-        <dt>
-
-          <code><a href="am_save.html">am_save()</a></code>
-
-        </dt>
-        <dd>Save an Automerge document to binary format</dd>
-
-        <dt>
-
-          <code><a href="am_set_actor.html">am_set_actor()</a></code>
-
-        </dt>
-        <dd>Set the actor ID of a document</dd>
-
-        <dt>
-
-          <code><a href="am_sync.html">am_sync()</a></code>
-
-        </dt>
-        <dd>Bidirectional synchronization</dd>
-
-        <dt>
-
-          <code><a href="am_sync_decode.html">am_sync_decode()</a></code>
-
-        </dt>
-        <dd>Receive and apply a sync message</dd>
-
-        <dt>
-
-          <code><a href="am_sync_encode.html">am_sync_encode()</a></code>
-
-        </dt>
-        <dd>Generate a sync message</dd>
-
-        <dt>
-
-          <code><a href="am_sync_state_new.html">am_sync_state_new()</a></code>
-
-        </dt>
-        <dd>Create a new sync state</dd>
-
-        <dt>
+      <dl><dt>
 
           <code><a href="am_text.html">am_text()</a></code>
 
@@ -345,26 +220,236 @@
 
         <dt>
 
-          <code><a href="am_values.html">am_values()</a></code>
-
-        </dt>
-        <dd>Get all values from a map or list</dd>
-
-        <dt>
-
           <code><a href="as.character.am_text.html">as.character(<i>&lt;am_text&gt;</i>)</a></code>
 
         </dt>
         <dd>Convert text object to character string</dd>
+      </dl></div><div class="section level2">
+      <h2 id="counters">Counters<a class="anchor" aria-label="anchor" href="#counters"></a></h2>
 
-        <dt>
+      <div class="section-desc"><p>Create and increment CRDT counters</p></div>
 
-          <code><a href="as.list.am_doc.html">as.list(<i>&lt;am_doc&gt;</i>)</a></code>
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="am_counter.html">am_counter()</a></code>
 
         </dt>
-        <dd>Convert document root to R list</dd>
+        <dd>Create an Automerge counter</dd>
 
         <dt>
+
+          <code><a href="am_counter_increment.html">am_counter_increment()</a></code>
+
+        </dt>
+        <dd>Increment a counter value</dd>
+      </dl></div><div class="section level2">
+      <h2 id="cursors-and-marks">Cursors and Marks<a class="anchor" aria-label="anchor" href="#cursors-and-marks"></a></h2>
+
+      <div class="section-desc"><p>Stable positions and text formatting</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="am_cursor.html">am_cursor()</a></code>
+
+        </dt>
+        <dd>Create a cursor at a position in a text object</dd>
+
+        <dt>
+
+          <code><a href="am_cursor_position.html">am_cursor_position()</a></code>
+
+        </dt>
+        <dd>Get the current position of a cursor</dd>
+
+        <dt>
+
+          <code><a href="am_mark_create.html">am_mark_create()</a></code>
+
+        </dt>
+        <dd>Create a mark on a text range</dd>
+
+        <dt>
+
+          <code><a href="am_marks.html">am_marks()</a></code>
+
+        </dt>
+        <dd>Get all marks in a text object</dd>
+
+        <dt>
+
+          <code><a href="am_marks_at.html">am_marks_at()</a></code>
+
+        </dt>
+        <dd>Get marks at a specific position</dd>
+      </dl></div><div class="section level2">
+      <h2 id="synchronization">Synchronization<a class="anchor" aria-label="anchor" href="#synchronization"></a></h2>
+
+      <div class="section-desc"><p>Sync documents across peers</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="am_sync.html">am_sync()</a></code>
+
+        </dt>
+        <dd>Bidirectional synchronization</dd>
+
+        <dt>
+
+          <code><a href="am_sync_state_new.html">am_sync_state_new()</a></code>
+
+        </dt>
+        <dd>Create a new sync state</dd>
+
+        <dt>
+
+          <code><a href="am_sync_encode.html">am_sync_encode()</a></code>
+
+        </dt>
+        <dd>Generate a sync message</dd>
+
+        <dt>
+
+          <code><a href="am_sync_decode.html">am_sync_decode()</a></code>
+
+        </dt>
+        <dd>Receive and apply a sync message</dd>
+      </dl></div><div class="section level2">
+      <h2 id="history-and-changes">History and Changes<a class="anchor" aria-label="anchor" href="#history-and-changes"></a></h2>
+
+      <div class="section-desc"><p>Track document history and changes</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="am_get_heads.html">am_get_heads()</a></code>
+
+        </dt>
+        <dd>Get the current heads of a document</dd>
+
+        <dt>
+
+          <code><a href="am_get_changes.html">am_get_changes()</a></code>
+
+        </dt>
+        <dd>Get changes since specified heads</dd>
+
+        <dt>
+
+          <code><a href="am_get_history.html">am_get_history()</a></code>
+
+        </dt>
+        <dd>Get document history</dd>
+
+        <dt>
+
+          <code><a href="am_apply_changes.html">am_apply_changes()</a></code>
+
+        </dt>
+        <dd>Apply changes to a document</dd>
+
+        <dt>
+
+          <code><a href="am_get_last_local_change.html">am_get_last_local_change()</a></code>
+
+        </dt>
+        <dd>Get the last change made by the local actor</dd>
+
+        <dt>
+
+          <code><a href="am_get_change_by_hash.html">am_get_change_by_hash()</a></code>
+
+        </dt>
+        <dd>Get a specific change by its hash</dd>
+
+        <dt>
+
+          <code><a href="am_get_changes_added.html">am_get_changes_added()</a></code>
+
+        </dt>
+        <dd>Get changes in one document that are not in another</dd>
+      </dl></div><div class="section level2">
+      <h2 id="type-constructors">Type Constructors<a class="anchor" aria-label="anchor" href="#type-constructors"></a></h2>
+
+      <div class="section-desc"><p>Explicit type constructors for objects</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="am_list.html">am_list()</a></code>
+
+        </dt>
+        <dd>Create an Automerge list</dd>
+
+        <dt>
+
+          <code><a href="am_map.html">am_map()</a></code>
+
+        </dt>
+        <dd>Create an Automerge map</dd>
+      </dl></div><div class="section level2">
+      <h2 id="path-based-access">Path-Based Access<a class="anchor" aria-label="anchor" href="#path-based-access"></a></h2>
+
+      <div class="section-desc"><p>Navigate deep nested structures</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="am_get_path.html">am_get_path()</a></code>
+
+        </dt>
+        <dd>Navigate deep structures with path</dd>
+
+        <dt>
+
+          <code><a href="am_put_path.html">am_put_path()</a></code>
+
+        </dt>
+        <dd>Set value at path</dd>
+
+        <dt>
+
+          <code><a href="am_delete_path.html">am_delete_path()</a></code>
+
+        </dt>
+        <dd>Delete value at path</dd>
+      </dl></div><div class="section level2">
+      <h2 id="conversion-helpers">Conversion Helpers<a class="anchor" aria-label="anchor" href="#conversion-helpers"></a></h2>
+
+      <div class="section-desc"><p>Convert between R lists and Automerge documents</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
 
           <code><a href="as_automerge.html">as_automerge()</a></code>
 
@@ -373,17 +458,49 @@
 
         <dt>
 
+          <code><a href="from_automerge.html">from_automerge()</a></code>
+
+        </dt>
+        <dd>Convert Automerge document to R list</dd>
+      </dl></div><div class="section level2">
+      <h2 id="constants">Constants<a class="anchor" aria-label="anchor" href="#constants"></a></h2>
+
+      <div class="section-desc"><p>Package constants and enumerations</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
           <code><a href="automerge-constants.html">AM_ROOT</a></code> <code><a href="automerge-constants.html">AM_OBJ_TYPE_LIST</a></code> <code><a href="automerge-constants.html">AM_OBJ_TYPE_MAP</a></code> <code><a href="automerge-constants.html">AM_OBJ_TYPE_TEXT</a></code> <code><a href="automerge-constants.html">AM_MARK_EXPAND_NONE</a></code> <code><a href="automerge-constants.html">AM_MARK_EXPAND_BEFORE</a></code> <code><a href="automerge-constants.html">AM_MARK_EXPAND_AFTER</a></code> <code><a href="automerge-constants.html">AM_MARK_EXPAND_BOTH</a></code>
 
         </dt>
         <dd>Automerge Constants</dd>
+      </dl></div><div class="section level2">
+      <h2 id="s-methods">S3 Methods<a class="anchor" aria-label="anchor" href="#s-methods"></a></h2>
 
-        <dt>
+      <div class="section-desc"><p>R methods for Automerge objects</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
 
           <code><a href="extract-am_doc.html">`[[`(<i>&lt;am_doc&gt;</i>)</a></code> <code><a href="extract-am_doc.html">`$`(<i>&lt;am_doc&gt;</i>)</a></code>
 
         </dt>
         <dd>Extract from Automerge document root</dd>
+
+        <dt>
+
+          <code><a href="replace-am_doc.html">`[[&lt;-`(<i>&lt;am_doc&gt;</i>)</a></code> <code><a href="replace-am_doc.html">`$&lt;-`(<i>&lt;am_doc&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Replace in Automerge document root</dd>
 
         <dt>
 
@@ -394,10 +511,10 @@
 
         <dt>
 
-          <code><a href="from_automerge.html">from_automerge()</a></code>
+          <code><a href="replace-am_object.html">`[[&lt;-`(<i>&lt;am_object&gt;</i>)</a></code> <code><a href="replace-am_object.html">`$&lt;-`(<i>&lt;am_object&gt;</i>)</a></code>
 
         </dt>
-        <dd>Convert Automerge document to R list</dd>
+        <dd>Replace in Automerge object</dd>
 
         <dt>
 
@@ -429,24 +546,24 @@
 
         <dt>
 
-          <code><a href="print.am_counter.html">print(<i>&lt;am_counter&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Print Automerge counter</dd>
-
-        <dt>
-
-          <code><a href="print.am_cursor.html">print(<i>&lt;am_cursor&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Print Automerge cursor</dd>
-
-        <dt>
-
           <code><a href="print.am_doc.html">print(<i>&lt;am_doc&gt;</i>)</a></code>
 
         </dt>
         <dd>Print Automerge document</dd>
+
+        <dt>
+
+          <code><a href="as.list.am_doc.html">as.list(<i>&lt;am_doc&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Convert document root to R list</dd>
+
+        <dt>
+
+          <code><a href="print.am_object.html">print(<i>&lt;am_object&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print Automerge object (fallback for unknown types)</dd>
 
         <dt>
 
@@ -464,20 +581,6 @@
 
         <dt>
 
-          <code><a href="print.am_object.html">print(<i>&lt;am_object&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Print Automerge object (fallback for unknown types)</dd>
-
-        <dt>
-
-          <code><a href="print.am_syncstate.html">print(<i>&lt;am_syncstate&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Print Automerge sync state</dd>
-
-        <dt>
-
           <code><a href="print.am_text.html">print(<i>&lt;am_text&gt;</i>)</a></code>
 
         </dt>
@@ -485,19 +588,27 @@
 
         <dt>
 
-          <code><a href="replace-am_doc.html">`[[&lt;-`(<i>&lt;am_doc&gt;</i>)</a></code> <code><a href="replace-am_doc.html">`$&lt;-`(<i>&lt;am_doc&gt;</i>)</a></code>
+          <code><a href="print.am_counter.html">print(<i>&lt;am_counter&gt;</i>)</a></code>
 
         </dt>
-        <dd>Replace in Automerge document root</dd>
+        <dd>Print Automerge counter</dd>
 
         <dt>
 
-          <code><a href="replace-am_object.html">`[[&lt;-`(<i>&lt;am_object&gt;</i>)</a></code> <code><a href="replace-am_object.html">`$&lt;-`(<i>&lt;am_object&gt;</i>)</a></code>
+          <code><a href="print.am_cursor.html">print(<i>&lt;am_cursor&gt;</i>)</a></code>
 
         </dt>
-        <dd>Replace in Automerge object</dd>
+        <dd>Print Automerge cursor</dd>
+
+        <dt>
+
+          <code><a href="print.am_syncstate.html">print(<i>&lt;am_syncstate&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print Automerge sync state</dd>
       </dl></div>
-  </main></div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
    </div>

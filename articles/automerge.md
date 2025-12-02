@@ -43,7 +43,7 @@ library(automerge)
 doc <- am_create()
 print(doc)
 #> <Automerge Document>
-#> Actor: 9060c20f8099d0158b2f02c663fe1487 
+#> Actor: 1329c9a3c3d7c773452223afe2006afd 
 #> Root keys: 0
 ```
 
@@ -278,7 +278,7 @@ am_put(doc9, AM_ROOT, "created_at", Sys.time())
 am_put(doc9, AM_ROOT, "updated_at", Sys.time())
 
 doc9[["created_at"]]
-#> [1] "2025-12-02 22:16:07 UTC"
+#> [1] "2025-12-02 23:52:10 UTC"
 ```
 
 ## Saving and Loading Documents
@@ -403,7 +403,7 @@ peer2[["data2"]]
   Patterns](http://shikokuchuo.net/automerge-r/articles/sync-protocol.md)
   for collaborative workflows
 - Check the [Quick
-  Reference](http://shikokuchuo.net/automerge-r/articles/very-quick-reference.md)
+  Reference](http://shikokuchuo.net/automerge-r/articles/quick-reference.md)
   for a one-page guide to all functions
 
 ## Getting Help

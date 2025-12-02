@@ -5,9 +5,9 @@ articles:
   automerge: automerge.html
   crdt-concepts: crdt-concepts.html
   cross-platform: cross-platform.html
+  quick-reference: quick-reference.html
   sync-protocol: sync-protocol.html
-  very-quick-reference: very-quick-reference.html
-last_built: 2025-12-02T22:15Z
+last_built: 2025-12-02T23:51Z
 urls:
   reference: http://shikokuchuo.net/automerge-r/reference
   article: http://shikokuchuo.net/automerge-r/articles
