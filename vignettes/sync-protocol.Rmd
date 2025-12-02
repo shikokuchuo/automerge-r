@@ -601,7 +601,7 @@ result_full$size
 ## Next Steps
 
 - Learn about [CRDT Concepts](crdt-concepts.html) to understand merge behavior
-- Check the [Quick Reference](very-quick-reference.html) for all sync functions
+- Check the [Quick Reference](quick-reference.html) for all sync functions
 
 ## Further Reading
 

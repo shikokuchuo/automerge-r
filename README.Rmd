@@ -72,7 +72,7 @@ Building from source requires Rust >= 1.89.0 ([rustup.rs](https://rustup.rs/)) a
 ## Documentation
 
 - [Getting Started](https://shikokuchuo.net/automerge-r/articles/automerge.html): Introduction and basic usage
-- [Quick Reference](https://shikokuchuo.net/automerge-r/articles/very-quick-reference.html): Function reference organized by task
+- [Quick Reference](https://shikokuchuo.net/automerge-r/articles/quick-reference.html): Function reference organized by task
 - [CRDT Concepts](https://shikokuchuo.net/automerge-r/articles/crdt-concepts.html): Understanding conflict-free data types
 - [Sync Protocol](https://shikokuchuo.net/automerge-r/articles/sync-protocol.html): Low-level synchronization details
 - [Function Reference](https://shikokuchuo.net/automerge-r/reference/index.html): Complete API documentation

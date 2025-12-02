@@ -492,4 +492,4 @@ doc26[["status"]] # Should be prepared for either 'published' or 'archived'
 ## Next Steps
 
 - Learn about [Synchronization Patterns](sync-protocol.html) to use CRDTs in practice
-- Check the [Quick Reference](very-quick-reference.html) for all available functions
+- Check the [Quick Reference](quick-reference.html) for all available functions

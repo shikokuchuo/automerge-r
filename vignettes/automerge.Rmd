@@ -372,7 +372,7 @@ peer2[["data2"]]
 
 - Learn about [CRDT Concepts](crdt-concepts.html) to understand the theory behind Automerge
 - Explore [Synchronization Patterns](sync-protocol.html) for collaborative workflows
-- Check the [Quick Reference](very-quick-reference.html) for a one-page guide to all functions
+- Check the [Quick Reference](quick-reference.html) for a one-page guide to all functions
 
 ## Getting Help
 

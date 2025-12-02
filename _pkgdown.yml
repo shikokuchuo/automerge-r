@@ -2,3 +2,175 @@ url: http://shikokuchuo.net/automerge-r/
 template:
   package: tidytemplate
   bootstrap: 5
+
+reference:
+  - title: "Document Lifecycle"
+    desc: >
+      Create, save, load, and manage Automerge documents
+    contents:
+      - am_create
+      - am_load
+      - am_save
+      - am_fork
+      - am_merge
+      - am_commit
+      - am_rollback
+
+  - title: "Actor Management"
+    desc: >
+      Get and set document actor IDs
+    contents:
+      - am_get_actor
+      - am_get_actor_hex
+      - am_set_actor
+
+  - title: "Object Operations"
+    desc: >
+      Create and manipulate maps, lists, and nested objects
+    contents:
+      - am_put
+      - am_get
+      - am_delete
+      - am_insert
+      - am_keys
+      - am_values
+      - am_length
+
+  - title: "Text Operations"
+    desc: >
+      Work with collaborative text objects
+    contents:
+      - am_text
+      - am_text_get
+      - am_text_splice
+      - as.character.am_text
+
+  - title: "Counters"
+    desc: >
+      Create and increment CRDT counters
+    contents:
+      - am_counter
+      - am_counter_increment
+
+  - title: "Cursors and Marks"
+    desc: >
+      Stable positions and text formatting
+    contents:
+      - am_cursor
+      - am_cursor_position
+      - am_mark_create
+      - am_marks
+      - am_marks_at
+
+  - title: "Synchronization"
+    desc: >
+      Sync documents across peers
+    contents:
+      - am_sync
+      - am_sync_state_new
+      - am_sync_encode
+      - am_sync_decode
+
+  - title: "History and Changes"
+    desc: >
+      Track document history and changes
+    contents:
+      - am_get_heads
+      - am_get_changes
+      - am_get_history
+      - am_apply_changes
+      - am_get_last_local_change
+      - am_get_change_by_hash
+      - am_get_changes_added
+
+  - title: "Type Constructors"
+    desc: >
+      Explicit type constructors for objects
+    contents:
+      - am_list
+      - am_map
+
+  - title: "Path-Based Access"
+    desc: >
+      Navigate deep nested structures
+    contents:
+      - am_get_path
+      - am_put_path
+      - am_delete_path
+
+  - title: "Conversion Helpers"
+    desc: >
+      Convert between R lists and Automerge documents
+    contents:
+      - as_automerge
+      - from_automerge
+
+  - title: "Constants"
+    desc: >
+      Package constants and enumerations
+    contents:
+      - automerge-constants
+      - AM_ROOT
+      - AM_OBJ_TYPE_LIST
+      - AM_OBJ_TYPE_MAP
+      - AM_OBJ_TYPE_TEXT
+      - AM_MARK_EXPAND_NONE
+      - AM_MARK_EXPAND_BEFORE
+      - AM_MARK_EXPAND_AFTER
+      - AM_MARK_EXPAND_BOTH
+
+  - title: "S3 Methods"
+    desc: >
+      R methods for Automerge objects
+    contents:
+      - extract-am_doc
+      - replace-am_doc
+      - extract-am_object
+      - replace-am_object
+      - length.am_doc
+      - length.am_object
+      - names.am_doc
+      - names.am_map
+      - print.am_doc
+      - as.list.am_doc
+      - print.am_object
+      - print.am_list
+      - print.am_map
+      - print.am_text
+      - print.am_counter
+      - print.am_cursor
+      - print.am_syncstate
+
+articles:
+  - title: "Getting Started"
+    navbar: ~
+    contents:
+      - automerge
+      - quick-reference
+
+  - title: "Guides"
+    navbar: ~
+    contents:
+      - crdt-concepts
+      - sync-protocol
+      - cross-platform
+
+navbar:
+  structure:
+    left:  [intro, reference, articles, news]
+    right: [search, github]
+  components:
+    articles:
+      text: Articles
+      menu:
+      - text: Getting Started
+        href: articles/automerge.html
+      - text: Quick Reference
+        href: articles/quick-reference.html
+      - text: -------
+      - text: CRDT Concepts
+        href: articles/crdt-concepts.html
+      - text: Sync Protocol
+        href: articles/sync-protocol.html
+      - text: Cross-Platform Interoperability
+        href: articles/cross-platform.html

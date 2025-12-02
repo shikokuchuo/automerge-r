@@ -49,12 +49,12 @@ am_commit(bob, "Bob's data")
 am_sync(alice, bob)
 alice
 #> <Automerge Document>
-#> Actor: f13c3435c37f00870ad5006bd804566d 
+#> Actor: 041776402d3a5fa40447704eb7c2a96a 
 #> Root keys: 3 
 #> Keys: experiment, humidity, temperature
 bob
 #> <Automerge Document>
-#> Actor: 492d96612922d06aa4ca653d14f3bb0a 
+#> Actor: 5a25bfd5053b1498aa65acc3de1c18d3 
 #> Root keys: 3 
 #> Keys: experiment, humidity, temperature
 ```
@@ -89,7 +89,7 @@ Rtools43+ on Windows).
   Started](https://shikokuchuo.net/automerge-r/articles/automerge.html):
   Introduction and basic usage
 - [Quick
-  Reference](https://shikokuchuo.net/automerge-r/articles/very-quick-reference.html):
+  Reference](https://shikokuchuo.net/automerge-r/articles/quick-reference.html):
   Function reference organized by task
 - [CRDT
   Concepts](https://shikokuchuo.net/automerge-r/articles/crdt-concepts.html):

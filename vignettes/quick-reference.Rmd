@@ -74,6 +74,7 @@ value <- am_get(doc, AM_ROOT, "key") # Get value
 # Introspection
 keys <- names(doc) # Get all keys
 keys <- am_keys(doc, AM_ROOT) # Functional version
+values <- am_values(doc, AM_ROOT) # Get all values
 n <- length(doc) # Number of keys
 n <- am_length(doc, AM_ROOT) # Functional version
 ```
