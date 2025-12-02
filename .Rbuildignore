@@ -16,3 +16,5 @@
 ^pkgdown$
 ^doc$
 ^Meta$
+^vignettes/.*\.automerge$
+^inst/js/.*\.automerge$

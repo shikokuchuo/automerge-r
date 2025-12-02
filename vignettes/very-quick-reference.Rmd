@@ -246,7 +246,9 @@ doc <- as_automerge(list(name = "Alice", age = 30L))
 
 # Automerge → R
 r_list <- from_automerge(doc)
-r_list <- as.list(doc)
+
+r_list <- as.list(doc) # S3 method for documents
+text_str <- as.character(text_obj) # S3 method for text objects
 ```
 
 ## Pipe-Friendly Style

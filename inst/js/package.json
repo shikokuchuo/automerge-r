@@ -1,0 +1,17 @@
+{
+  "name": "automerge-r-interop-examples",
+  "version": "1.0.0",
+  "description": "JavaScript examples for automerge R package cross-platform vignette",
+  "private": true,
+  "scripts": {
+    "example1": "node create-shared-doc.js test.automerge",
+    "example2": "node verify-r-changes.js test.automerge",
+    "example3": "node concurrent-edit.js base.automerge js_edit.automerge",
+    "example4": "node verify-merge.js merged.automerge",
+    "test": "npm run example1 && echo '✓ Created test fixture for R'",
+    "help": "echo 'Available commands:\n  npm run example1  - Create document in JavaScript\n  npm run example2  - Verify R changes\n  npm run example3  - Make concurrent edits\n  npm run example4  - Verify merged document\n  npm test          - Create test fixture'"
+  },
+  "dependencies": {
+    "@automerge/automerge": "^2.2.0"
+  }
+}
