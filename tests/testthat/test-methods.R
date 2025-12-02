@@ -654,6 +654,65 @@ test_that("as.list.am_text returns text content as string", {
   expect_equal(result, "Hello world")
 })
 
+test_that("as.character.am_text converts text object to string", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "notes", am_text("Hello World"))
+  text_obj <- am_get(doc, AM_ROOT, "notes")
+
+  # Use R-idiomatic as.character()
+  result <- as.character(text_obj)
+  expect_type(result, "character")
+  expect_equal(result, "Hello World")
+})
+
+test_that("as.character.am_text equivalent to am_text_get()", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "content", am_text("Test content"))
+  text_obj <- am_get(doc, AM_ROOT, "content")
+
+  # Both should return identical results
+  char_result <- as.character(text_obj)
+  get_result <- am_text_get(text_obj)
+
+  expect_identical(char_result, get_result)
+})
+
+test_that("as.character.am_text works with empty text", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "empty", am_text(""))
+  text_obj <- am_get(doc, AM_ROOT, "empty")
+
+  result <- as.character(text_obj)
+  expect_type(result, "character")
+  expect_equal(result, "")
+  expect_equal(nchar(result), 0)
+})
+
+test_that("as.character.am_text works with multibyte characters", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "emoji", am_text("Hello 😀 World"))
+  text_obj <- am_get(doc, AM_ROOT, "emoji")
+
+  result <- as.character(text_obj)
+  expect_type(result, "character")
+  expect_equal(result, "Hello 😀 World")
+  # Verify multibyte handling
+  expect_true(grepl("😀", result))
+})
+
+test_that("as.character.am_text works after text modifications", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "doc", am_text("Original"))
+  text_obj <- am_get(doc, AM_ROOT, "doc")
+
+  # Modify text
+  am_text_splice(text_obj, 8, 0, " Text")
+
+  # Convert to string
+  result <- as.character(text_obj)
+  expect_equal(result, "Original Text")
+})
+
 test_that("print.am_cursor displays cursor info", {
   doc <- am_create()
   am_put(doc, AM_ROOT, "text", am_text("Hello World"))

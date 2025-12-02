@@ -382,6 +382,28 @@ as.list.am_text <- function(x, doc = NULL, ...) {
   am_text_get(x)
 }
 
+#' Convert text object to character string
+#'
+#' Extracts the full text content from an Automerge text object as a standard
+#' character string.
+#'
+#' @param x An Automerge text object
+#' @param ... Additional arguments (unused)
+#' @return Character string with the full text content
+#' @export
+#' @examples
+#' doc <- am_create()
+#' am_put(doc, AM_ROOT, "notes", am_text("Hello World"))
+#' text_obj <- am_get(doc, AM_ROOT, "notes")
+#'
+#' text_string <- as.character(text_obj)
+#' text_string  # "Hello World"
+#'
+#' identical(as.character(text_obj), am_text_get(text_obj))  # TRUE
+as.character.am_text <- function(x, ...) {
+  am_text_get(x)
+}
+
 #' Print Automerge cursor
 #'
 #' @param x An Automerge cursor
