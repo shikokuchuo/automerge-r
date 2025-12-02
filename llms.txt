@@ -201,6 +201,8 @@ licensed)
   : Splice text in a text object
 - [`am_values()`](http://shikokuchuo.net/automerge-r/reference/am_values.md)
   : Get all values from a map or list
+- [`as.character(`*`<am_text>`*`)`](http://shikokuchuo.net/automerge-r/reference/as.character.am_text.md)
+  : Convert text object to character string
 - [`as.list(`*`<am_doc>`*`)`](http://shikokuchuo.net/automerge-r/reference/as.list.am_doc.md)
   : Convert document root to R list
 - [`as_automerge()`](http://shikokuchuo.net/automerge-r/reference/as_automerge.md)

@@ -287,9 +287,9 @@ doc16[["updated_at"]] <- Sys.time()
 am_merge(doc15, doc16)
 
 doc15[["created_at"]]
-#> [1] "2025-12-01 10:25:57 UTC"
+#> [1] "2025-12-02 20:18:18 UTC"
 doc15[["updated_at"]]
-#> [1] "2025-12-01 10:25:57 UTC"
+#> [1] "2025-12-02 20:18:18 UTC"
 ```
 
 **When to use**: Audit trails, modification times, temporal metadata.
@@ -541,7 +541,7 @@ am_merge(doc26, doc27)
 
 # One will win - application should handle both states sensibly
 doc26[["status"]] # Should be prepared for either 'published' or 'archived'
-#> [1] "archived"
+#> [1] "published"
 ```
 
 ## Further Reading

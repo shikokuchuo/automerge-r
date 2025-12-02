@@ -355,9 +355,9 @@ conflict resolution semantics (one value wins).</p>
 <span><span class="fu"><a href="../reference/am_merge.html">am_merge</a></span><span class="op">(</span><span class="va">doc15</span>, <span class="va">doc16</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">doc15</span><span class="op">[[</span><span class="st">"created_at"</span><span class="op">]</span><span class="op">]</span></span>
-<span><span class="co">#&gt; [1] "2025-12-01 10:25:57 UTC"</span></span>
+<span><span class="co">#&gt; [1] "2025-12-02 20:18:18 UTC"</span></span>
 <span><span class="va">doc15</span><span class="op">[[</span><span class="st">"updated_at"</span><span class="op">]</span><span class="op">]</span></span>
-<span><span class="co">#&gt; [1] "2025-12-01 10:25:57 UTC"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "2025-12-02 20:18:18 UTC"</span></span></code></pre></div>
 <p><strong>When to use</strong>: Audit trails, modification times,
 temporal metadata.</p>
 </div>
@@ -614,7 +614,7 @@ well:</p>
 <span></span>
 <span><span class="co"># One will win - application should handle both states sensibly</span></span>
 <span><span class="va">doc26</span><span class="op">[[</span><span class="st">"status"</span><span class="op">]</span><span class="op">]</span> <span class="co"># Should be prepared for either 'published' or 'archived'</span></span>
-<span><span class="co">#&gt; [1] "archived"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "published"</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
