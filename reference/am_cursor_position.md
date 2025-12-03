@@ -2,19 +2,16 @@
 
 Retrieves the current position of a cursor within a text object. The
 position automatically adjusts as text is inserted or deleted before the
-cursor's original position.
+cursor's original position. The cursor remembers which text object it
+was created for, so you only need to pass the cursor itself.
 
 ## Usage
 
 ``` r
-am_cursor_position(obj, cursor)
+am_cursor_position(cursor)
 ```
 
 ## Arguments
-
-- obj:
-
-  An Automerge object ID (must be a text object)
 
 - cursor:
 
@@ -39,7 +36,7 @@ text_obj <- am_get(doc, AM_ROOT, "text")
 cursor <- am_cursor(text_obj, 5)
 
 # Get position
-pos <- am_cursor_position(text_obj, cursor)
+pos <- am_cursor_position(cursor)
 pos  # 5
 #> [1] 5
 ```
