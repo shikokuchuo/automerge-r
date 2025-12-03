@@ -12,6 +12,6 @@
     "help": "echo 'Available commands:\n  npm run example1  - Create document in JavaScript\n  npm run example2  - Verify R changes\n  npm run example3  - Make concurrent edits\n  npm run example4  - Verify merged document\n  npm test          - Create test fixture'"
   },
   "dependencies": {
-    "@automerge/automerge": "^2.2.0"
+    "@automerge/automerge": "^3.2.1"
   }
 }
