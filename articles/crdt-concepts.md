@@ -219,7 +219,7 @@ doc9[["title"]] <- "My Document"
 doc10[["title"]] <- "Our Document"
 am_merge(doc9, doc10)
 doc9[["title"]] # One value wins deterministically
-#> [1] "Our Document"
+#> [1] "My Document"
 
 # Text object (CRDT)
 doc11 <- am_create()
@@ -287,9 +287,9 @@ doc16[["updated_at"]] <- Sys.time()
 am_merge(doc15, doc16)
 
 doc15[["created_at"]]
-#> [1] "2025-12-03 10:57:31 UTC"
+#> [1] "2025-12-03 13:38:52 UTC"
 doc15[["updated_at"]]
-#> [1] "2025-12-03 10:57:31 UTC"
+#> [1] "2025-12-03 13:38:52 UTC"
 ```
 
 **When to use**: Audit trails, modification times, temporal metadata.
