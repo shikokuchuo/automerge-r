@@ -673,11 +673,11 @@ test_that("am_cursor_position validation errors", {
 
   # cursor must be external pointer
   expect_snapshot(error = TRUE, {
-    am_cursor_position(text_obj, "not a cursor")
+    am_cursor_position("not a cursor")
   })
 
   expect_snapshot(error = TRUE, {
-    am_cursor_position(text_obj, 123)
+    am_cursor_position(123)
   })
 })
 

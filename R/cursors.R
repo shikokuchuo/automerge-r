@@ -45,7 +45,7 @@
 #' am_text_splice(text_obj, 0, 0, "Hi ")
 #'
 #' # Cursor position automatically adjusts
-#' new_pos <- am_cursor_position(text_obj, cursor)
+#' new_pos <- am_cursor_position(cursor)
 #' new_pos  # 8 (cursor moved by 3 characters)
 am_cursor <- function(obj, position) {
   .Call(C_am_cursor, obj, position)
@@ -55,9 +55,9 @@ am_cursor <- function(obj, position) {
 #'
 #' Retrieves the current position of a cursor within a text object. The
 #' position automatically adjusts as text is inserted or deleted before
-#' the cursor's original position.
+#' the cursor's original position. The cursor remembers which text object
+#' it was created for, so you only need to pass the cursor itself.
 #'
-#' @param obj An Automerge object ID (must be a text object)
 #' @param cursor An `am_cursor` object created by [am_cursor()]
 #'
 #' @return Integer position (0-based inter-character position) where the cursor
@@ -73,10 +73,10 @@ am_cursor <- function(obj, position) {
 #' cursor <- am_cursor(text_obj, 5)
 #'
 #' # Get position
-#' pos <- am_cursor_position(text_obj, cursor)
+#' pos <- am_cursor_position(cursor)
 #' pos  # 5
-am_cursor_position <- function(obj, cursor) {
-  .Call(C_am_cursor_position, obj, cursor)
+am_cursor_position <- function(cursor) {
+  .Call(C_am_cursor_position, cursor)
 }
 
 #' Create a mark on a text range
@@ -144,8 +144,14 @@ am_cursor_position <- function(obj, cursor) {
 #' # Get all marks
 #' marks <- am_marks(text_obj)
 #' marks
-am_mark_create <- function(obj, start, end, name, value,
-                           expand = AM_MARK_EXPAND_NONE) {
+am_mark_create <- function(
+  obj,
+  start,
+  end,
+  name,
+  value,
+  expand = AM_MARK_EXPAND_NONE
+) {
   invisible(.Call(C_am_mark_create, obj, start, end, name, value, expand))
 }
 

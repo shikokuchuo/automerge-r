@@ -290,7 +290,7 @@ cursor <- am_cursor(text17, 6)
 am_text_splice(text17, 0, 0, "Hi ")
 
 # Cursor automatically adjusts
-new_pos <- am_cursor_position(text17, cursor)
+new_pos <- am_cursor_position(cursor)
 new_pos # Cursor moved with text from original position 6
 ```
 

@@ -12,14 +12,11 @@
  * @return External pointer to AMcursor wrapped as am_cursor S3 class
  */
 SEXP C_am_cursor(SEXP obj_ptr, SEXP position) {
-    // Get document from object ID
     SEXP doc_ptr = get_doc_from_objid(obj_ptr);
     AMdoc *doc = get_doc(doc_ptr);
 
-    // Get object ID
     const AMobjId *obj_id = get_objid(obj_ptr);
 
-    // Validate position (0-based indexing)
     if (TYPEOF(position) != INTSXP && TYPEOF(position) != REALSXP) {
         Rf_error("position must be numeric");
     }
@@ -32,20 +29,18 @@ SEXP C_am_cursor(SEXP obj_ptr, SEXP position) {
     }
     size_t c_pos = (size_t) r_pos;  // Direct use, already 0-based
 
-    // Call AMgetCursor (heads parameter NULL for current state)
+    // heads parameter NULL for current state
     AMresult *result = AMgetCursor(doc, obj_id, c_pos, NULL);
     CHECK_RESULT(result, AM_VAL_TYPE_CURSOR);
 
-    // Extract cursor from result item
     AMitem *item = AMresultItem(result);
     AMcursor const *cursor = NULL;
     AMitemToCursor(item, &cursor);
 
-    // Wrap result as external pointer with parent = doc_ptr
-    // The cursor pointer is borrowed from the result, so we wrap the result
-    SEXP cursor_ptr = PROTECT(wrap_am_result(result, doc_ptr));
+    // Store obj_ptr in prot field so am_cursor_position can retrieve it
+    SEXP cursor_ptr = PROTECT(R_MakeExternalPtr(result, R_NilValue, obj_ptr));
+    R_RegisterCFinalizer(cursor_ptr, am_result_finalizer);
 
-    // Set class to am_cursor
     Rf_classgets(cursor_ptr, Rf_mkString("am_cursor"));
 
     UNPROTECT(1);
@@ -55,25 +50,25 @@ SEXP C_am_cursor(SEXP obj_ptr, SEXP position) {
 /**
  * Get the position of a cursor in a text object.
  *
- * R signature: am_cursor_position(obj, cursor)
+ * R signature: am_cursor_position(cursor)
  *
- * @param obj_ptr External pointer to AMobjId (must be text object)
  * @param cursor_ptr External pointer to AMresult containing cursor
  * @return R integer (0-based position)
  */
-SEXP C_am_cursor_position(SEXP obj_ptr, SEXP cursor_ptr) {
-    // Get document from object ID
-    SEXP doc_ptr = get_doc_from_objid(obj_ptr);
-    AMdoc *doc = get_doc(doc_ptr);
-
-    // Get object ID
-    const AMobjId *obj_id = get_objid(obj_ptr);
-
-    // Extract cursor from cursor_ptr
-    // The cursor is stored in an AMresult wrapped as external pointer
+SEXP C_am_cursor_position(SEXP cursor_ptr) {
     if (TYPEOF(cursor_ptr) != EXTPTRSXP) {
         Rf_error("cursor must be an external pointer (am_cursor object)");
     }
+
+    SEXP obj_ptr = R_ExternalPtrProtected(cursor_ptr);
+    if (obj_ptr == R_NilValue) {
+        Rf_error("Invalid cursor: no associated text object");
+    }
+
+    SEXP doc_ptr = get_doc_from_objid(obj_ptr);
+    AMdoc *doc = get_doc(doc_ptr);
+
+    const AMobjId *obj_id = get_objid(obj_ptr);
 
     AMresult *cursor_result = (AMresult *) R_ExternalPtrAddr(cursor_ptr);
     if (!cursor_result) {
@@ -84,16 +79,13 @@ SEXP C_am_cursor_position(SEXP obj_ptr, SEXP cursor_ptr) {
     AMcursor const *cursor = NULL;
     AMitemToCursor(cursor_item, &cursor);
 
-    // Call AMgetCursorPosition (heads parameter NULL for current state)
     AMresult *result = AMgetCursorPosition(doc, obj_id, cursor, NULL);
     CHECK_RESULT(result, AM_VAL_TYPE_UINT);
 
-    // Extract position from result
     AMitem *item = AMresultItem(result);
     uint64_t c_pos;
     AMitemToUint(item, &c_pos);
 
-    // Return 0-based position directly
     if (c_pos > INT_MAX) {
         AMresultFree(result);
         Rf_error("Position too large to represent as R integer");
@@ -149,18 +141,15 @@ static SEXP convert_mark_to_r_list(AMmark const *mark, size_t index) {
  * @return R list of marks
  */
 static SEXP C_am_marks_impl(SEXP obj_ptr, int filter_position) {
-    // Get document from object ID
     SEXP doc_ptr = get_doc_from_objid(obj_ptr);
     AMdoc *doc = get_doc(doc_ptr);
 
-    // Get object ID
     const AMobjId *obj_id = get_objid(obj_ptr);
 
-    // Call AMmarks (heads parameter NULL for current state)
+    // heads parameter NULL for current state
     AMresult *result = AMmarks(doc, obj_id, NULL);
     CHECK_RESULT(result, AM_VAL_TYPE_VOID);
 
-    // Get items iterator
     AMitems items = AMresultItems(result);
     size_t total_count = AMitemsSize(&items);
 
@@ -189,19 +178,15 @@ static SEXP C_am_marks_impl(SEXP obj_ptr, int filter_position) {
         }
     }
 
-    // Create R list to store marks
     SEXP marks_list = PROTECT(Rf_allocVector(VECSXP, output_count));
 
-    // Iterate and collect marks
     size_t output_index = 0;
     for (size_t i = 0; i < total_count; i++) {
         AMitem *item = AMitemsNext(&items, 1);
 
-        // Extract mark
         AMmark const *mark = NULL;
         AMitemToMark(item, &mark);
 
-        // Apply filter if needed
         if (filtering) {
             size_t c_start = AMmarkStart(mark);
             size_t c_end = AMmarkEnd(mark);
@@ -219,7 +204,7 @@ static SEXP C_am_marks_impl(SEXP obj_ptr, int filter_position) {
     }
 
     AMresultFree(result);
-    UNPROTECT(1);  // marks_list
+    UNPROTECT(1);
     return marks_list;
 }
 
@@ -391,11 +376,9 @@ static SEXP amitem_to_r_value(AMitem *item) {
  */
 SEXP C_am_mark_create(SEXP obj_ptr, SEXP start, SEXP end,
                       SEXP name, SEXP value, SEXP expand) {
-    // Get document from object ID
     SEXP doc_ptr = get_doc_from_objid(obj_ptr);
     AMdoc *doc = get_doc(doc_ptr);
 
-    // Get object ID
     const AMobjId *obj_id = get_objid(obj_ptr);
 
     // Validate start position (0-based indexing)
@@ -428,17 +411,14 @@ SEXP C_am_mark_create(SEXP obj_ptr, SEXP start, SEXP end,
         Rf_error("end must be greater than start");
     }
 
-    // Validate and convert name
     if (TYPEOF(name) != STRSXP || Rf_xlength(name) != 1) {
         Rf_error("name must be a single character string");
     }
     const char *name_str = CHAR(STRING_ELT(name, 0));
-    AMbyteSpan name_span = {.src = (uint8_t const *)name_str, .count = strlen(name_str)};
+    AMbyteSpan name_span = {.src = (uint8_t const *) name_str, .count = strlen(name_str)};
 
-    // Convert expand parameter
     AMmarkExpand expand_mode = r_expand_to_c(expand);
 
-    // Convert value to AMitem
     AMresult *value_result = r_value_to_amitem(value);
     if (!value_result) {
         Rf_error("Failed to convert mark value to AMitem");
@@ -446,14 +426,11 @@ SEXP C_am_mark_create(SEXP obj_ptr, SEXP start, SEXP end,
 
     AMitem *value_item = AMresultItem(value_result);
 
-    // Call AMmarkCreate
     AMresult *result = AMmarkCreate(doc, obj_id, c_start, c_end, expand_mode,
                                      name_span, value_item);
 
-    // Free value result
     AMresultFree(value_result);
 
-    // Check result
     CHECK_RESULT(result, AM_VAL_TYPE_VOID);
     AMresultFree(result);
 
@@ -482,7 +459,6 @@ SEXP C_am_marks(SEXP obj_ptr) {
  * @return R list of marks that include the position, each mark is a list with: name, value, start, end
  */
 SEXP C_am_marks_at(SEXP obj_ptr, SEXP position) {
-    // Validate position (0-based indexing)
     if (TYPEOF(position) != INTSXP && TYPEOF(position) != REALSXP) {
         Rf_error("position must be numeric");
     }

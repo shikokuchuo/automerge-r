@@ -36,7 +36,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"C_am_get_changes_added", (DL_FUNC) &C_am_get_changes_added, 2},
     // Cursor and mark operations
     {"C_am_cursor", (DL_FUNC) &C_am_cursor, 2},
-    {"C_am_cursor_position", (DL_FUNC) &C_am_cursor_position, 2},
+    {"C_am_cursor_position", (DL_FUNC) &C_am_cursor_position, 1},
     {"C_am_mark_create", (DL_FUNC) &C_am_mark_create, 6},
     {"C_am_marks", (DL_FUNC) &C_am_marks, 1},
     {"C_am_marks_at", (DL_FUNC) &C_am_marks_at, 2},

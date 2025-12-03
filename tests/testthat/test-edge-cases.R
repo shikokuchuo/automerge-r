@@ -572,11 +572,11 @@ test_that("cursor at boundary and beyond", {
 
   # Position 0 (before first character)
   cursor0 <- am_cursor(text_obj, 0)
-  expect_equal(am_cursor_position(text_obj, cursor0), 0)
+  expect_equal(am_cursor_position(cursor0), 0)
 
   # Position 3 (within text bounds)
   cursor3 <- am_cursor(text_obj, 3)
-  expect_equal(am_cursor_position(text_obj, cursor3), 3)
+  expect_equal(am_cursor_position(cursor3), 3)
 
   # Position at end of text (length) errors - cursors must be < length
   expect_snapshot(error = TRUE, transform = strip_line_numbers, {
@@ -1028,7 +1028,7 @@ test_that("text operations with empty text objects", {
 
   # Now cursor works with non-empty text
   cursor <- am_cursor(text_obj, 0)
-  expect_equal(am_cursor_position(text_obj, cursor), 0)
+  expect_equal(am_cursor_position(cursor), 0)
 })
 
 test_that("counter operations on various object types", {

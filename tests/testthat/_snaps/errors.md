@@ -713,7 +713,7 @@
 # am_cursor_position validation errors
 
     Code
-      am_cursor_position(text_obj, "not a cursor")
+      am_cursor_position("not a cursor")
     Condition
       Error in `am_cursor_position()`:
       ! cursor must be an external pointer (am_cursor object)
@@ -721,7 +721,7 @@
 ---
 
     Code
-      am_cursor_position(text_obj, 123)
+      am_cursor_position(123)
     Condition
       Error in `am_cursor_position()`:
       ! cursor must be an external pointer (am_cursor object)

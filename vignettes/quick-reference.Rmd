@@ -141,7 +141,7 @@ content <- am_text_get(text_obj) # Get full text
 
 # Cursors (stable positions)
 cursor <- am_cursor(text_obj, 5) # Create cursor at position 5
-pos <- am_cursor_position(text_obj, cursor) # Get current position
+pos <- am_cursor_position(cursor) # Get current position
 
 # Marks (formatting)
 am_mark_create(text_obj, 0, 5, "bold", TRUE, expand = "none")

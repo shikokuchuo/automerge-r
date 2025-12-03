@@ -4,11 +4,9 @@
 \alias{am_cursor_position}
 \title{Get the current position of a cursor}
 \usage{
-am_cursor_position(obj, cursor)
+am_cursor_position(cursor)
 }
 \arguments{
-\item{obj}{An Automerge object ID (must be a text object)}
-
 \item{cursor}{An \code{am_cursor} object created by \code{\link[=am_cursor]{am_cursor()}}}
 }
 \value{
@@ -18,7 +16,8 @@ currently points. See \code{\link[=am_cursor]{am_cursor()}} for indexing details
 \description{
 Retrieves the current position of a cursor within a text object. The
 position automatically adjusts as text is inserted or deleted before
-the cursor's original position.
+the cursor's original position. The cursor remembers which text object
+it was created for, so you only need to pass the cursor itself.
 }
 \examples{
 doc <- am_create()
@@ -29,6 +28,6 @@ text_obj <- am_get(doc, AM_ROOT, "text")
 cursor <- am_cursor(text_obj, 5)
 
 # Get position
-pos <- am_cursor_position(text_obj, cursor)
+pos <- am_cursor_position(cursor)
 pos  # 5
 }

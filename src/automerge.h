@@ -72,7 +72,7 @@ SEXP C_am_apply_changes(SEXP doc_ptr, SEXP changes);
 
 // Cursor and mark operations (cursors.c)
 SEXP C_am_cursor(SEXP obj_ptr, SEXP position);
-SEXP C_am_cursor_position(SEXP obj_ptr, SEXP cursor_ptr);
+SEXP C_am_cursor_position(SEXP cursor_ptr);
 SEXP C_am_mark_create(SEXP obj_ptr, SEXP start, SEXP end, SEXP name, SEXP value, SEXP expand);
 SEXP C_am_marks(SEXP obj_ptr);
 SEXP C_am_marks_at(SEXP obj_ptr, SEXP position);
