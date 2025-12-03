@@ -37,12 +37,12 @@ am_commit(bob, "Bob's data")
 am_sync(alice, bob)
 alice
 #> <Automerge Document>
-#> Actor: 041776402d3a5fa40447704eb7c2a96a 
+#> Actor: c23764d2a11f6f0cef5d28a1eb2c4c75 
 #> Root keys: 3 
 #> Keys: experiment, humidity, temperature
 bob
 #> <Automerge Document>
-#> Actor: 5a25bfd5053b1498aa65acc3de1c18d3 
+#> Actor: 4bbc9fe0f47d3a0bce040be08a414851 
 #> Root keys: 3 
 #> Keys: experiment, humidity, temperature
 ```
@@ -86,6 +86,9 @@ Rtools43+ on Windows).
 - [Sync
   Protocol](https://shikokuchuo.net/automerge-r/articles/sync-protocol.html):
   Low-level synchronization details
+- [Cross-Platform
+  Synchronization](https://shikokuchuo.net/automerge-r/articles/cross-platform.html):
+  Interoperability with JavaScript and other platforms
 - [Function
   Reference](https://shikokuchuo.net/automerge-r/reference/index.html):
   Complete API documentation
