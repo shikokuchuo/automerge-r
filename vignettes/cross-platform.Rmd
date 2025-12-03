@@ -647,8 +647,7 @@ system.file("js", package = "automerge")
 ## Further Reading
 
 - [Automerge Website](https://automerge.org)
-- [Binary Format Specification](https://automerge.org/automerge-binary-format-spec)
-- [JavaScript API Documentation](https://automerge.org/docs/api/)
+- [Binary Format Specification](https://automerge.org/automerge-binary-format-spec/)
 - [CRDT Research Papers](https://crdt.tech)
 - [Sync Protocol Vignette](sync-protocol.html) - Details on the sync protocol
 - [CRDT Concepts Vignette](crdt-concepts.html) - Understanding CRDTs
